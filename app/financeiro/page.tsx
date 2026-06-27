@@ -179,7 +179,7 @@ export default function FinanceiroDashboardPage() {
     loadAllTransactions();
   }, []);
 
-  const [church, setChurch] = useState(canSeeAllChurches ? 'ALL' : (currentUser.churchId || 'ALL'));
+  const [church, setChurch] = useState(canSeeAllChurches ? 'ALL' : (currentUser?.churchId || 'ALL'));
   const [startDate, setStartDate] = useState(firstDayStr);
   const [endDate, setEndDate] = useState(lastDayStr);
   
@@ -200,7 +200,7 @@ export default function FinanceiroDashboardPage() {
 
   useEffect(() => {
     if (!canSeeAllChurches) {
-      setChurch(currentUser.churchId || 'ALL');
+      setChurch(currentUser?.churchId || 'ALL');
     } else {
       setChurch('ALL');
     }
