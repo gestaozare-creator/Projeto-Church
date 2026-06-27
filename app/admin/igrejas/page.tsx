@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { MOCK_CHURCHES, Church, MOCK_MINISTRIES, MinistryGroup } from '@/lib/mock-data';
 import { supabase } from '@/lib/supabaseClient';
 
 
 export default function IgrejasPage() {
   const [churches, setChurches] = useState<any[]>([]);
-  const [ministryGroups, setMinistryGroups] = useState<MinistryGroup[]>(MOCK_MINISTRIES);
+  const [ministryGroups, setMinistryGroups] = useState<any[]>([]);
   
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);

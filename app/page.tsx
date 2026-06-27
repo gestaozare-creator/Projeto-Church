@@ -1,12 +1,13 @@
 "use client";
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { MOCK_CHURCHES, Member, MemberStatus } from '../lib/mock-data';
+import { Member, MemberStatus } from '../lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function Home() {
   const { currentUser, canSeeAllChurches } = useAuth();
   const [members, setMembers] = useState<Member[]>([]);
+  const [dbChurches, setDbChurches] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [church, setChurch] = useState(canSeeAllChurches ? 'ALL' : (currentUser?.churchId || ''));
   const [startDate, setStartDate] = useState(() => {
@@ -23,10 +24,10 @@ export default function Home() {
   const availableHorarios = useMemo(() => {
     let svcs: any[] = [];
     if (church === 'ALL') {
-      svcs = MOCK_CHURCHES.flatMap(c => c.services || []);
+      svcs = dbChurches.flatMap(c => c.church_services || []);
     } else {
-      const c = MOCK_CHURCHES.find(c => c.id === church);
-      svcs = c?.services || [];
+      const c = dbChurches.find(c => c.id === church);
+      svcs = c?.church_services || [];
     }
     if (cultoFilter === 'ALL') {
       const times = new Set(svcs.map(s => s.time));
@@ -52,12 +53,22 @@ export default function Home() {
     }
   }, [canSeeAllChurches, currentUser]);
 
-  // Carregar dados de membros do Supabase
+  // Carregar dados reais (Membros, Igrejas e Cultos)
   useEffect(() => {
-    async function fetchMembers() {
-      const { data, error } = await supabase
-        .from('members')
-        .select('*');
+    async function fetchData() {
+      // Fetch Churches with Services
+      const { data: churchesData } = await supabase
+        .from('churches')
+        .select('*, church_services(*)');
+      if (churchesData) setDbChurches(churchesData);
+
+      // Fetch Members
+      let query = supabase.from('members').select('*');
+      if (!canSeeAllChurches && currentUser?.churchId) {
+        query = query.eq('church_id', currentUser.churchId);
+      }
+      
+      const { data, error } = await query;
       
       if (data) {
         const formatados: Member[] = data.map(m => ({
@@ -77,8 +88,8 @@ export default function Home() {
         setMembers(formatados);
       }
     }
-    fetchMembers();
-  }, []);
+    fetchData();
+  }, [canSeeAllChurches, currentUser]);
 
   const [sel, setSel] = useState<Member | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -287,7 +298,7 @@ export default function Home() {
     </div>
   );
 
-  const selectedChurchObj = sel ? MOCK_CHURCHES.find(c => c.id === sel.churchId) : null;
+  const selectedChurchObj = sel ? dbChurches.find(c => c.id === sel.churchId) : null;
 
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'100%', gap:'12px', overflow:'hidden', minHeight:0 }}>
@@ -300,11 +311,11 @@ export default function Home() {
         {canSeeAllChurches ? (
           <select className="filter-select" style={{ padding:'8px', fontSize:'0.8rem', minWidth:'140px' }} value={church} onChange={e => setChurch(e.target.value)}>
             <option value="ALL">⛪ Todas</option>
-            {MOCK_CHURCHES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {dbChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         ) : (
           <div className="filter-select" style={{ padding:'8px', fontSize:'0.8rem', minWidth:'140px', opacity: 0.8, pointerEvents: 'none', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
-            {MOCK_CHURCHES.find(c => c.id === church)?.name || 'Igreja Local'}
+            {dbChurches.find(c => c.id === church)?.name || 'Igreja Local'}
           </div>
         )}
         <select value={cultoFilter} onChange={e => setCultoFilter(e.target.value)} className="search-input glass-input" style={{ padding: '8px', fontSize: '0.8rem' }}>

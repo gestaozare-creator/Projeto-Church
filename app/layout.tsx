@@ -96,9 +96,11 @@ function AppContent({ children }: { children: React.ReactNode }) {
             ) : (
               <>
                 {/* SECRETARIA — visível para todos */}
-                <div className="nav-item">
-                  <div 
-                    className={`nav-link ${activeMenu === 'secretaria' ? 'active' : ''}`} 
+                {/* SECRETARIA — Oculto para Líder Kids */}
+                {currentUser.role !== 'kids_leader' && (
+                  <div className="nav-item">
+                    <div 
+                      className={`nav-link ${activeMenu === 'secretaria' ? 'active' : ''}`} 
                     onClick={() => toggleMenu('secretaria')}
                   >
                     📁 Secretaria
@@ -114,8 +116,10 @@ function AppContent({ children }: { children: React.ReactNode }) {
                       <Link href="/agenda" className={`sub-link ${pathname === '/agenda' ? 'active' : ''}`}>📅 Agenda</Link>
                       <Link href="/eventos" className={`sub-link ${pathname === '/eventos' ? 'active' : ''}`}>🎟️ Eventos</Link>
                     </div>
+                    </div>
                   )}
                 </div>
+                )}
 
                 {/* FINANCEIRO — oculto APENAS para secretária e Líder Kids */}
                 {canSeeFinanceiro && (
@@ -137,7 +141,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
                   </div>
                 )}
 
-                <div className="nav-item">
+                {/* DEPARTAMENTOS — Oculto para Secretaria */}
+                {currentUser.role !== 'secretaria' && (
+                  <div className="nav-item">
                   <div 
                     className={`nav-link ${activeMenu === 'departamentos' ? 'active' : ''}`} 
                     onClick={() => toggleMenu('departamentos')}
@@ -153,6 +159,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
                     </div>
                   )}
                 </div>
+                )}
 
                 {/* ADMINISTRAÇÃO — EXCLUSIVO DO MASTER */}
                 {canManageSystem && (

@@ -1,36 +1,47 @@
 "use client";
-import { useState, useMemo } from 'react';
-import { MOCK_MEMBERS, MOCK_CHURCHES, MOCK_GOALS, Goal } from '../../lib/mock-data';
-
-const VISITORS = [
-  { id:'v1', name:'Rafael Moura', churchId: '1', status:'visitante', integrationDate: '2026-05-18' },
-  { id:'v2', name:'Bruna Dias', churchId: '2', status:'em_conversao', integrationDate: '2026-05-15' },
-  { id:'v3', name:'Lucas Freitas', churchId: '3', status:'visitante', integrationDate: '2026-05-20' },
-  { id:'v4', name:'Carla Mendes', churchId: '1', status:'visitante', integrationDate: '2026-05-10' },
-  { id:'v5', name:'Pedro Santos', churchId: '2', status:'em_conversao', integrationDate: '2026-05-11' },
-];
+import { useState, useMemo, useEffect } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function RankingAlmas() {
   const [year, setYear] = useState('2026');
-  const [goals, setGoals] = useState<Goal[]>(MOCK_GOALS);
+  const [dbMembers, setDbMembers] = useState<any[]>([]);
+  const [dbChurches, setDbChurches] = useState<any[]>([]);
+  const [dbVisitors, setDbVisitors] = useState<any[]>([]);
+  const [goals, setGoals] = useState<any[]>([]);
   const [editingGoal, setEditingGoal] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(0);
   const [chartChurch, setChartChurch] = useState('ALL'); // Filtro de igreja no gráfico
 
+  useEffect(() => {
+    async function loadData() {
+      const { data: c } = await supabase.from('churches').select('*');
+      if (c) setDbChurches(c);
+
+      const { data: m } = await supabase.from('members').select('*');
+      if (m) {
+        setDbMembers(m.map(x => ({ ...x, churchId: x.church_id, integrationDate: x.created_at })));
+      }
+      
+      setDbVisitors([]); // Simulando que não há tabela visitors nativa por enquanto
+      setGoals([]);
+    }
+    loadData();
+  }, []);
+
   // ── Estatísticas ANUAIS por igreja ──
   const churchStats = useMemo(() => {
     const stats: Record<string, { church: any; almas: number; membros: number; visitantes: number; goal: number }> = {};
-    MOCK_CHURCHES.forEach(c => {
+    dbChurches.forEach(c => {
       const goal = goals.find(g => g.churchId === c.id && g.year.toString() === year)?.target || 0;
       stats[c.id] = { church: c, almas: 0, membros: 0, visitantes: 0, goal };
     });
-    MOCK_MEMBERS.forEach(m => {
-      if (m.status === 'ativo' && m.integrationDate.startsWith(`${year}-`)) {
+    dbMembers.forEach(m => {
+      if (m.status === 'ativo' && m.integrationDate && m.integrationDate.startsWith(`${year}-`)) {
         if (stats[m.churchId]) { stats[m.churchId].membros++; stats[m.churchId].almas++; }
       }
     });
-    VISITORS.forEach(v => {
-      if (v.integrationDate.startsWith(`${year}-`)) {
+    dbVisitors.forEach(v => {
+      if (v.integrationDate && v.integrationDate.startsWith(`${year}-`)) {
         if (stats[v.churchId]) { stats[v.churchId].visitantes++; stats[v.churchId].almas++; }
       }
     });
@@ -50,17 +61,17 @@ export default function RankingAlmas() {
 
     for (let i = 1; i <= 12; i++) {
       const mStr = i.toString().padStart(2, '0');
-      MOCK_MEMBERS.forEach(m => {
+      dbMembers.forEach(m => {
         if (m.status === 'ativo') {
           const matchChurch = chartChurch === 'ALL' || m.churchId === chartChurch;
-          if (matchChurch && m.integrationDate.startsWith(`${currentYear}-${mStr}`)) maxMonthWithDataCurr = i;
-          if (matchChurch && m.integrationDate.startsWith(`${prevYear}-${mStr}`)) maxMonthWithDataPrev = i;
+          if (matchChurch && m.integrationDate && m.integrationDate.startsWith(`${currentYear}-${mStr}`)) maxMonthWithDataCurr = i;
+          if (matchChurch && m.integrationDate && m.integrationDate.startsWith(`${prevYear}-${mStr}`)) maxMonthWithDataPrev = i;
         }
       });
-      VISITORS.forEach(v => {
+      dbVisitors.forEach(v => {
         const matchChurch = chartChurch === 'ALL' || v.churchId === chartChurch;
-        if (matchChurch && v.integrationDate.startsWith(`${currentYear}-${mStr}`)) maxMonthWithDataCurr = i;
-        if (matchChurch && v.integrationDate.startsWith(`${prevYear}-${mStr}`)) maxMonthWithDataPrev = i;
+        if (matchChurch && v.integrationDate && v.integrationDate.startsWith(`${currentYear}-${mStr}`)) maxMonthWithDataCurr = i;
+        if (matchChurch && v.integrationDate && v.integrationDate.startsWith(`${prevYear}-${mStr}`)) maxMonthWithDataPrev = i;
       });
     }
 
@@ -71,17 +82,17 @@ export default function RankingAlmas() {
     for (let i = 1; i <= 12; i++) {
       const mStr = i.toString().padStart(2, '0');
       let currCount = 0, prevCount = 0;
-      MOCK_MEMBERS.forEach(m => {
+      dbMembers.forEach(m => {
         if (m.status === 'ativo') {
           const matchChurch = chartChurch === 'ALL' || m.churchId === chartChurch;
-          if (matchChurch && m.integrationDate.startsWith(`${currentYear}-${mStr}`)) currCount++;
-          if (matchChurch && m.integrationDate.startsWith(`${prevYear}-${mStr}`)) prevCount++;
+          if (matchChurch && m.integrationDate && m.integrationDate.startsWith(`${currentYear}-${mStr}`)) currCount++;
+          if (matchChurch && m.integrationDate && m.integrationDate.startsWith(`${prevYear}-${mStr}`)) prevCount++;
         }
       });
-      VISITORS.forEach(v => {
+      dbVisitors.forEach(v => {
         const matchChurch = chartChurch === 'ALL' || v.churchId === chartChurch;
-        if (matchChurch && v.integrationDate.startsWith(`${currentYear}-${mStr}`)) currCount++;
-        if (matchChurch && v.integrationDate.startsWith(`${prevYear}-${mStr}`)) prevCount++;
+        if (matchChurch && v.integrationDate && v.integrationDate.startsWith(`${currentYear}-${mStr}`)) currCount++;
+        if (matchChurch && v.integrationDate && v.integrationDate.startsWith(`${prevYear}-${mStr}`)) prevCount++;
       });
       
       cumCurr += currCount; 
@@ -124,8 +135,8 @@ export default function RankingAlmas() {
   }, [year, chartChurch]);
 
   const conversions = useMemo(() => {
-    return VISITORS.filter(v => v.integrationDate.startsWith(`${year}-`) && v.status === 'em_conversao').length;
-  }, [year]);
+    return dbVisitors.filter(v => v.integrationDate && v.integrationDate.startsWith(`${year}-`) && v.status === 'em_conversao').length;
+  }, [year, dbVisitors]);
 
   const top3 = churchStats.slice(0, 3);
   const globalTarget = goals.find(g => g.churchId === 'GLOBAL' && g.year.toString() === year)?.target || churchStats.reduce((a, c) => a + c.goal, 0);
@@ -225,8 +236,8 @@ export default function RankingAlmas() {
               <div style={{ display:'flex', gap:'10px', alignItems:'center' }}>
                 {/* Seletor de Igreja */}
                 <select value={chartChurch} onChange={e => setChartChurch(e.target.value)} className="search-input glass-input" style={{ padding:'4px 8px', fontSize:'0.65rem' }}>
-                  <option value="ALL">Todas as Igrejas</option>
-                  {MOCK_CHURCHES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  <option value="ALL">Todas as Igrejas (Global)</option>
+                  {dbChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
                 {/* Legenda */}
                 <div style={{ display:'flex', gap:'10px', fontSize:'0.55rem' }}>

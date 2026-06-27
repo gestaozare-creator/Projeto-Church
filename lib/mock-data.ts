@@ -3,7 +3,7 @@ export interface MinistryGroup {
   name: string;
 }
 
-export const MOCK_MINISTRIES: MinistryGroup[] = [];
+
 
 export interface ChurchService {
   id: string;
@@ -36,7 +36,7 @@ export interface Church {
   services?: ChurchService[]; // Cultos Regulares (Ex: Domingo às 18:00)
 }
 
-export const MOCK_CHURCHES: Church[] = [];
+
 
 export interface Goal {
   id: string;
@@ -45,7 +45,7 @@ export interface Goal {
   target: number;
 }
 
-export const MOCK_GOALS: Goal[] = [];
+
 
 export type MemberStatus = 'pendente' | 'ativo' | 'inativo';
 
@@ -64,7 +64,7 @@ export interface Member {
   status: MemberStatus;
 }
 
-export const MOCK_MEMBERS: Member[] = [];
+
 
 // ============================================================
 // MÓDULO FINANCEIRO
@@ -77,7 +77,7 @@ export interface Supplier {
   phone: string;
 }
 
-export const MOCK_SUPPLIERS: Supplier[] = [];
+
 
 export type TransactionType = 'receita' | 'despesa';
 export type TransactionStatus = 'pendente' | 'confirmado' | 'vencido' | 'cancelado';
@@ -98,7 +98,7 @@ export interface Transaction {
   paidDate?: string; // data efetiva do pagamento
 }
 
-export const MOCK_TRANSACTIONS: Transaction[] = [];
+
 
 // ============================================================
 // MÓDULO AGENDA/CULTOS
@@ -135,9 +135,9 @@ export interface EventGuest {
   ticketPricePaid: number;
 }
 
-export const MOCK_EVENT_GUEST: EventGuest[] = [];
 
-export const MOCK_EVENTS: ChurchEvent[] = [];
+
+
 
 // ============================================================
 // MÓDULO PATRIMÔNIO (ATIVOS)
@@ -155,7 +155,7 @@ export interface Asset {
   expenseId?: string; // Vinculado a uma despesa no financeiro
 }
 
-export const MOCK_ASSETS: Asset[] = [];
+
 
 // ============================================================
 // MÓDULO MINISTÉRIO INFANTIL (KIDS)
@@ -184,6 +184,6 @@ export interface KidCheckIn {
   status: 'presente' | 'liberado';
 }
 
-export const MOCK_KIDS: Kid[] = [];
 
-export const MOCK_KIDS_CHECKIN: KidCheckIn[] = [];
+
+
