@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
-import { MOCK_CHURCHES, MOCK_TRANSACTIONS } from '@/lib/mock-data';
+import { Transaction } from '@/lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
+import { useGlobalData } from '@/hooks/useGlobalData';
+import { supabase } from '@/lib/supabaseClient';
 
 // Componente Reutilizável de Gráfico de Rosca (Donut)
 function DonutChart({ 
@@ -150,6 +152,32 @@ const { firstDayStr, lastDayStr } = getMonthBounds();
 
 export default function FinanceiroDashboardPage() {
   const { currentUser, canSeeAllChurches } = useAuth();
+  const { churches, churchServices } = useGlobalData();
+  const [dbTransactions, setDbTransactions] = useState<Transaction[]>([]);
+
+  useEffect(() => {
+    async function loadAllTransactions() {
+      const { data } = await supabase.from('transactions').select('*');
+      if (data) {
+        setDbTransactions(data.map((t: any) => ({
+          id: t.id,
+          churchId: t.church_id || '1',
+          type: t.type,
+          category: t.category,
+          description: t.description || '',
+          amount: Number(t.amount),
+          paymentMethod: t.payment_method || '',
+          memberId: t.member_id || undefined,
+          supplierId: t.supplier_id || undefined,
+          status: t.status,
+          date: t.date,
+          dueDate: t.due_date || undefined,
+          paidDate: t.paid_date || undefined
+        })));
+      }
+    }
+    loadAllTransactions();
+  }, []);
 
   const [church, setChurch] = useState(canSeeAllChurches ? 'ALL' : (currentUser.churchId || 'ALL'));
   const [startDate, setStartDate] = useState(firstDayStr);
@@ -188,12 +216,10 @@ export default function FinanceiroDashboardPage() {
   const availableHorarios = useMemo(() => {
     let svcs: any[] = [];
     if (church === 'ALL') {
-      svcs = MOCK_CHURCHES.flatMap(c => c.services || []);
+      svcs = churchServices || [];
     } else {
-      const c = MOCK_CHURCHES.find(c => c.id === church);
-      svcs = c?.services || [];
+      svcs = churchServices?.filter(s => s.church_id === church) || [];
     }
-
     if (cultoFilter === 'ALL') {
       const times = new Set(svcs.map(s => s.time));
       return Array.from(times).sort();
@@ -202,10 +228,12 @@ export default function FinanceiroDashboardPage() {
                       cultoFilter === 'quarta' ? 'Quarta-feira' : 
                       cultoFilter === 'sabado' ? 'Sábado' : '';
       
-      const times = new Set(svcs.filter(s => s.dayOfWeek === dayName).map(s => s.time));
+      const times = new Set(svcs.filter(s => s.day_of_week === dayName).map(s => s.time));
       return Array.from(times).sort();
     }
-  }, [church, cultoFilter]);
+  }, [church, cultoFilter, churchServices]);
+
+  // Remove dangling code
 
   useEffect(() => {
     setHorarioFilter('ALL');
@@ -213,7 +241,7 @@ export default function FinanceiroDashboardPage() {
 
   // 1. Filtrar Transações Ativas
   const filteredTransactions = useMemo(() => {
-    return MOCK_TRANSACTIONS.filter(t => {
+    return dbTransactions.filter(t => {
       if (church !== 'ALL' && t.churchId !== church) return false;
       if (t.status === 'cancelado') return false;
       if (startDate && t.date < startDate) return false;
@@ -310,7 +338,7 @@ export default function FinanceiroDashboardPage() {
   }, [filteredTransactions]);
 
   const chartTransactions = useMemo(() => {
-    return MOCK_TRANSACTIONS.filter(t => {
+    return dbTransactions.filter(t => {
       if (church !== 'ALL' && t.churchId !== church) return false;
       if (t.status === 'cancelado') return false;
       return true;
@@ -521,7 +549,7 @@ export default function FinanceiroDashboardPage() {
     
     filteredTransactions.filter(t => t.status === 'confirmado' || t.status === 'pendente').forEach(t => {
       if (!map.has(t.churchId)) {
-        const churchData = MOCK_CHURCHES.find(c => c.id === t.churchId);
+        const churchData = churches.find(c => c.id === t.churchId);
         map.set(t.churchId, { churchName: churchData ? churchData.name : 'Desconhecida', entradas: 0, saidas: 0, saldo: 0 });
       }
       
@@ -561,11 +589,11 @@ export default function FinanceiroDashboardPage() {
           {canSeeAllChurches ? (
             <select value={church} onChange={e => setChurch(e.target.value)} className="search-input glass-input" style={{ padding: '6px 12px' }}>
               <option value="ALL">Todas as Igrejas</option>
-              {MOCK_CHURCHES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {churches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           ) : (
             <div className="search-input glass-input" style={{ padding: '6px 12px', fontSize: '0.8rem', opacity: 0.8, pointerEvents: 'none' }}>
-              {MOCK_CHURCHES.find(c => c.id === church)?.name || 'Igreja Local'}
+              {churches.find(c => c.id === church)?.name || 'Igreja Local'}
             </div>
           )}
           <select value={cultoFilter} onChange={e => setCultoFilter(e.target.value)} className="search-input glass-input" style={{ padding: '6px 12px' }}>

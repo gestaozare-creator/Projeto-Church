@@ -1,11 +1,13 @@
 "use client";
 import { useState, useMemo, useEffect } from 'react';
-import { MOCK_TRANSACTIONS, MOCK_CHURCHES, MOCK_SUPPLIERS, Transaction } from '../../../lib/mock-data';
+import { MOCK_CHURCHES, Transaction } from '../../../lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
+import { useGlobalData } from '@/hooks/useGlobalData';
 
 export default function ContasPagar() {
   const { currentUser, canSeeAllChurches } = useAuth();
+  const { churches, churchServices, suppliers } = useGlobalData();
   
   const [church, setChurch] = useState(canSeeAllChurches ? 'ALL' : (currentUser?.churchId || ''));
   const [startDate, setStartDate] = useState(() => {
@@ -22,10 +24,9 @@ export default function ContasPagar() {
   const availableHorarios = useMemo(() => {
     let svcs: any[] = [];
     if (church === 'ALL') {
-      svcs = MOCK_CHURCHES.flatMap(c => c.services || []);
+      svcs = churchServices || [];
     } else {
-      const c = MOCK_CHURCHES.find(c => c.id === church);
-      svcs = c?.services || [];
+      svcs = churchServices?.filter(s => s.church_id === church) || [];
     }
     if (cultoFilter === 'ALL') {
       const times = new Set(svcs.map(s => s.time));
@@ -35,10 +36,10 @@ export default function ContasPagar() {
                       cultoFilter === 'quarta' ? 'Quarta-feira' : 
                       cultoFilter === 'sabado' ? 'Sábado' : '';
       
-      const times = new Set(svcs.filter(s => s.dayOfWeek === dayName).map(s => s.time));
+      const times = new Set(svcs.filter(s => s.day_of_week === dayName).map(s => s.time));
       return Array.from(times).sort();
     }
-  }, [church, cultoFilter]);
+  }, [church, cultoFilter, churchServices]);
 
   useEffect(() => {
     setHorarioFilter('ALL');
@@ -77,7 +78,7 @@ export default function ContasPagar() {
       }));
       setLocalTransactions(formatadas);
     } else {
-      setLocalTransactions(MOCK_TRANSACTIONS.filter(t => t.type === 'despesa'));
+      setLocalTransactions([]);
     }
   }
 
@@ -107,9 +108,7 @@ export default function ContasPagar() {
     
     let finalSupplierId = formData.get('supplierId') as string || undefined;
     if (selectedSupplier === 'NOVO') {
-      const newId = 's_' + Math.random().toString(36).substr(2, 9);
-      MOCK_SUPPLIERS.push({ id: newId, name: formData.get('customSupplier') as string, document: '', phone: '' });
-      finalSupplierId = newId;
+      finalSupplierId = undefined; // Pularmos a criação inline para manter simples por enquanto
     }
 
     const amount = parseFloat(formData.get('amount') as string) || 0;
@@ -127,7 +126,7 @@ export default function ContasPagar() {
       .from('transactions')
       .insert({
         church_id: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
-        supplier_id: isUuid ? finalSupplierId : null, // Só insere se for UUID válido
+        supplier_id: finalSupplierId,
         type: 'despesa',
         category: finalCategory as string,
         amount: amount,
@@ -245,7 +244,7 @@ export default function ContasPagar() {
     return Math.floor((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   };
 
-  const getSupplierName = (id?: string) => id ? MOCK_SUPPLIERS.find(s => s.id === id)?.name || 'Desconhecido' : '-';
+  const getSupplierName = (id?: string) => id ? suppliers.find(s => s.id === id)?.name || 'Desconhecido' : '-';
 
   const expiringSoonCount = pendentes.filter(t => {
     if(!t.dueDate) return false;
@@ -325,7 +324,7 @@ export default function ContasPagar() {
           <h3 style={{ fontSize: '1.3rem', margin: 0 }}>📉 Contas a Pagar</h3>
           <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Gestão de pagamentos e fornecedores</span>
         </div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '4px' }}>
             <button 
               onClick={() => setViewMode('kanban')}
@@ -341,11 +340,11 @@ export default function ContasPagar() {
           {canSeeAllChurches ? (
             <select value={church} onChange={e => setChurch(e.target.value)} className="search-input glass-input" style={{ padding: '6px 12px' }}>
               <option value="ALL">Todas as Igrejas</option>
-              {MOCK_CHURCHES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {churches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           ) : (
             <div className="search-input glass-input" style={{ padding: '6px 12px', fontSize: '0.8rem', opacity: 0.8, pointerEvents: 'none' }}>
-              {MOCK_CHURCHES.find(c => c.id === church)?.name || 'Igreja Local'}
+              {churches.find(c => c.id === church)?.name || 'Igreja Local'}
             </div>
           )}
           <select value={cultoFilter} onChange={e => setCultoFilter(e.target.value)} className="search-input glass-input" style={{ padding: '6px 12px' }}>
@@ -618,8 +617,7 @@ export default function ContasPagar() {
                   ) : (
                     <select name="supplierId" value={selectedSupplier} onChange={e => setSelectedSupplier(e.target.value)} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
                       <option value="">Selecione...</option>
-                      {MOCK_SUPPLIERS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                      <option value="NOVO">➕ Adicionar Novo Fornecedor...</option>
+                      {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
                   )}
                 </div>

@@ -237,9 +237,11 @@ export default function Visitantes() {
     e.preventDefault();
     if (!newForm.name || !newForm.phone || !newForm.region || !newForm.source) return;
 
+    const newId = 'v_' + Date.now().toString();
     const { data: newMemberDb, error } = await supabase
       .from('members')
       .insert({
+        id: newId,
         name: newForm.name,
         phone: newForm.phone,
         email: newForm.email || '',
@@ -248,7 +250,7 @@ export default function Visitantes() {
         address: newForm.address || '',
         function: 'Visitante',
         status: 'pendente', // 'pendente' = visitante (em_conversao)
-        church_id: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d'
+        church_id: currentUser?.churchId || '1'
       })
       .select()
       .single();

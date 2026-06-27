@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { MOCK_SYSTEM_USERS } from '@/context/AuthContext';
 
 export default function IgrejasPage() {
-  const [churches, setChurches] = useState<Church[]>(MOCK_CHURCHES);
+  const [churches, setChurches] = useState<any[]>([]);
   const [ministryGroups, setMinistryGroups] = useState<MinistryGroup[]>(MOCK_MINISTRIES);
   
   const [showModal, setShowModal] = useState(false);
@@ -16,6 +16,50 @@ export default function IgrejasPage() {
   
   const [liveCounts, setLiveCounts] = useState<Record<string, { members: number; transactions: number }>>({});
   const [loadingLive, setLoadingLive] = useState(true);
+
+  useEffect(() => {
+    async function loadChurches() {
+      const { data: churchesDb } = await supabase.from('churches').select('*');
+      const { data: servicesDb } = await supabase.from('church_services').select('*');
+      
+      if (churchesDb) {
+        const formatted = churchesDb.map(c => {
+          const svcs = (servicesDb || []).filter(s => s.church_id === c.id).map(s => ({
+            id: s.id,
+            name: s.name,
+            dayOfWeek: s.day_of_week,
+            time: s.time
+          }));
+          return {
+            id: c.id,
+            ministryId: c.ministry_id || 'min1',
+            name: c.name,
+            isHeadquarters: c.is_headquarters,
+            city: c.city || '',
+            neighborhood: '',
+            state: c.state || '',
+            address: '',
+            phone: '',
+            pastorName: '',
+            logoUrl: c.logo_url || '',
+            primaryColor: '#3498db',
+            secondaryColor: '#2c3e50',
+            status: 'ativa',
+            plan: c.plan || 'Basic',
+            memberLimit: c.member_limit,
+            userLimit: 3,
+            subscriptionStatus: c.subscription_status || 'Trial',
+            departments: c.departments || ['Louvor', 'Infantil'],
+            coverPhotoUrl: c.cover_photo_url || '',
+            activeModules: ['secretaria', 'financeiro', 'departamentos'],
+            services: svcs
+          };
+        });
+        setChurches(formatted);
+      }
+    }
+    loadChurches();
+  }, []);
 
   useEffect(() => {
     async function loadLiveStats() {
@@ -134,19 +178,71 @@ export default function IgrejasPage() {
     setShowModal(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if(confirm('Tem certeza que deseja excluir esta igreja?')) {
-      setChurches(churches.filter(c => c.id !== id));
+      // Remover do banco
+      const { error } = await supabase.from('churches').delete().eq('id', id);
+      if (!error) {
+        setChurches(churches.filter(c => c.id !== id));
+      } else {
+        alert('Erro ao excluir igreja: ' + error.message);
+      }
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      setChurches(churches.map(c => c.id === editingId ? { ...c, ...formData } as Church : c));
-    } else {
-      setChurches([...churches, { ...formData, id: Date.now().toString() } as Church]);
+    let targetId = editingId;
+    
+    if (!targetId) {
+      targetId = Date.now().toString();
     }
+
+    const churchData = {
+      id: targetId,
+      name: formData.name,
+      is_headquarters: formData.isHeadquarters || false,
+      city: formData.city || '',
+      state: formData.state || 'SP',
+      ministry_id: formData.ministryId || null,
+      plan: formData.plan || 'Basic',
+      member_limit: formData.memberLimit || null,
+      subscription_status: formData.subscriptionStatus || 'Trial',
+      departments: formData.departments || [],
+      logo_url: formData.logoUrl || null,
+      cover_photo_url: formData.coverPhotoUrl || null
+    };
+
+    const { error: churchError } = await supabase.from('churches').upsert(churchData);
+
+    if (churchError) {
+      alert('Erro ao salvar igreja: ' + churchError.message);
+      return;
+    }
+
+    // Atualiza estado local
+    if (editingId) {
+      setChurches(churches.map(c => c.id === editingId ? { ...c, ...formData } : c));
+    } else {
+      setChurches([...churches, { ...formData, id: targetId } as any]);
+    }
+
+    // Save Services to Supabase
+    if (formData.services) {
+      // Delete old ones
+      await supabase.from('church_services').delete().eq('church_id', targetId);
+      // Insert new ones
+      const toInsert = formData.services.map((s: any) => ({
+        church_id: targetId,
+        name: s.name,
+        day_of_week: s.dayOfWeek,
+        time: s.time
+      }));
+      if (toInsert.length > 0) {
+        await supabase.from('church_services').insert(toInsert);
+      }
+    }
+
     setShowModal(false);
   };
 
@@ -501,7 +597,7 @@ export default function IgrejasPage() {
                   </div>
 
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: 'auto' }}>
-                    {c.departments?.slice(0, 4).map(d => (
+                    {c.departments?.slice(0, 4).map((d: string) => (
                       <span key={d} style={{ fontSize: '0.6rem', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px' }}>{d}</span>
                     ))}
                     {c.departments && c.departments.length > 4 && <span style={{ fontSize: '0.6rem', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px' }}>+{c.departments.length - 4}</span>}

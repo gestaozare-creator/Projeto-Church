@@ -1,16 +1,21 @@
 "use client";
 import { useState, useMemo, useEffect } from 'react';
-import { MOCK_CHURCHES, Asset } from '../../../lib/mock-data';
+import { Asset } from '../../../lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
+import { useGlobalData } from '@/hooks/useGlobalData';
 
 export default function GestaoPatrimonio() {
   const { currentUser, canSeeAllChurches } = useAuth();
+  const { churches } = useGlobalData();
   
   const [church, setChurch] = useState(canSeeAllChurches ? 'ALL' : (currentUser?.churchId || ''));
   const [search, setSearch] = useState('');
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [dbAssets, setDbAssets] = useState<Asset[]>([]);
+  
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Carregar dados de Patrimônio do Supabase
   useEffect(() => {
@@ -46,12 +51,68 @@ export default function GestaoPatrimonio() {
     });
   }, [dbAssets, church, search]);
 
+  const handleSaveAsset = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const targetId = editingId || 'ast_' + Date.now().toString();
+
+    const newAsset = {
+      id: targetId,
+      church_id: currentUser?.churchId || '1',
+      name: formData.get('name') as string,
+      category: formData.get('category') as string,
+      condition: formData.get('condition') as string,
+      location: formData.get('location') as string,
+      purchase_value: Number(formData.get('purchaseValue')) || 0,
+      purchase_date: formData.get('purchaseDate') as string
+    };
+
+    const { error } = await supabase.from('assets').upsert(newAsset);
+    
+    if (error) {
+      alert('Erro ao salvar patrimônio: ' + error.message);
+      return;
+    }
+
+    const savedAsset: Asset = {
+      id: newAsset.id,
+      churchId: newAsset.church_id,
+      name: newAsset.name,
+      category: newAsset.category,
+      condition: newAsset.condition as any,
+      location: newAsset.location,
+      purchaseValue: newAsset.purchase_value,
+      purchaseDate: newAsset.purchase_date
+    };
+
+    if (editingId) {
+      setDbAssets(prev => prev.map(a => a.id === editingId ? savedAsset : a));
+    } else {
+      setDbAssets(prev => [savedAsset, ...prev]);
+    }
+
+    setShowAddModal(false);
+    setEditingId(null);
+  };
+
+  const handleDeleteAsset = async (id: string) => {
+    if (confirm('Tem certeza que deseja excluir este patrimônio?')) {
+      const { error } = await supabase.from('assets').delete().eq('id', id);
+      if (error) {
+        alert('Erro ao excluir patrimônio: ' + error.message);
+        return;
+      }
+      setDbAssets(prev => prev.filter(a => a.id !== id));
+      setSelectedAsset(null);
+    }
+  };
+
   const totalInvested = assets.reduce((acc, curr) => acc + curr.purchaseValue, 0);
   const maintenanceCount = assets.filter(a => a.condition === 'Em Manutenção').length;
   const newCount = assets.filter(a => a.condition === 'Novo').length;
 
   const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
-  const getChurchName = (id: string) => MOCK_CHURCHES.find(c => c.id === id)?.name || 'Igreja Desconhecida';
+  const getChurchName = (id: string) => churches.find(c => c.id === id)?.name || 'Igreja Desconhecida';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '14px', paddingBottom: '20px' }}>
@@ -66,7 +127,7 @@ export default function GestaoPatrimonio() {
           {canSeeAllChurches ? (
             <select value={church} onChange={e => setChurch(e.target.value)} className="search-input glass-input" style={{ padding: '6px 12px' }}>
               <option value="ALL">Todas as Igrejas</option>
-              {MOCK_CHURCHES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {churches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           ) : (
             <div className="search-input glass-input" style={{ padding: '6px 12px', fontSize: '0.8rem', opacity: 0.8, pointerEvents: 'none' }}>
@@ -81,6 +142,9 @@ export default function GestaoPatrimonio() {
             className="search-input glass-input" 
             style={{ padding: '6px 12px', width: '200px' }}
           />
+          <button onClick={() => { setEditingId(null); setShowAddModal(true); }} className="add-button" style={{ padding: '6px 14px', borderRadius: '8px', background: '#3498db', color: '#fff', border: 'none', fontWeight: 600, cursor: 'pointer' }}>
+            + Novo
+          </button>
         </div>
       </div>
 
@@ -168,10 +232,26 @@ export default function GestaoPatrimonio() {
               <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(52,152,219,0.15)', color: '#3498db', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
                 🪑
               </div>
-              <div>
+              <div style={{ flex: 1 }}>
                 <h3 style={{ margin: 0, fontSize: '1.4rem' }}>Detalhes do Patrimônio</h3>
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>ID: #{selectedAsset.id} | Integrado ao Financeiro</div>
               </div>
+              <button 
+                onClick={() => {
+                  setEditingId(selectedAsset.id);
+                  setSelectedAsset(null);
+                  setShowAddModal(true);
+                }} 
+                style={{ background: 'transparent', border: '1px solid #3498db', color: '#3498db', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+              >
+                Editar
+              </button>
+              <button 
+                onClick={() => handleDeleteAsset(selectedAsset.id)} 
+                style={{ background: 'transparent', border: '1px solid #e74c3c', color: '#e74c3c', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+              >
+                Excluir
+              </button>
             </div>
 
             <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
@@ -255,6 +335,60 @@ export default function GestaoPatrimonio() {
 
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* MODAL ADICIONAR/EDITAR PATRIMÔNIO */}
+      {showAddModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="glass" style={{ padding: '24px', borderRadius: '16px', width: '100%', maxWidth: '500px' }}>
+            <h3 style={{ marginTop: 0, color: '#3498db', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {editingId ? 'Editar Patrimônio' : 'Novo Patrimônio'}
+            </h3>
+            <form onSubmit={handleSaveAsset}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
+                <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Nome do Bem</label>
+                  <input name="name" type="text" required defaultValue={editingId ? dbAssets.find(a => a.id === editingId)?.name : ''} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Categoria</label>
+                  <select name="category" required defaultValue={editingId ? dbAssets.find(a => a.id === editingId)?.category : 'Equipamentos'} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
+                    <option value="Equipamentos">Equipamentos</option>
+                    <option value="Instrumentos">Instrumentos</option>
+                    <option value="Estrutura">Estrutura</option>
+                    <option value="Móveis">Móveis</option>
+                    <option value="Eletrônicos">Eletrônicos</option>
+                  </select>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Condição</label>
+                  <select name="condition" required defaultValue={editingId ? dbAssets.find(a => a.id === editingId)?.condition : 'Novo'} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
+                    <option value="Novo">Novo</option>
+                    <option value="Bom">Bom</option>
+                    <option value="Em Manutenção">Em Manutenção</option>
+                    <option value="Descartado">Descartado</option>
+                  </select>
+                </div>
+                <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Localização</label>
+                  <input name="location" type="text" required defaultValue={editingId ? dbAssets.find(a => a.id === editingId)?.location : ''} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Valor Aquisição</label>
+                  <input name="purchaseValue" type="number" step="0.01" required defaultValue={editingId ? dbAssets.find(a => a.id === editingId)?.purchaseValue : ''} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Data Aquisição</label>
+                  <input name="purchaseDate" type="date" required defaultValue={editingId ? dbAssets.find(a => a.id === editingId)?.purchaseDate : new Date().toISOString().split('T')[0]} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
+                <button type="button" onClick={() => { setShowAddModal(false); setEditingId(null); }} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer' }}>Cancelar</button>
+                <button type="submit" style={{ flex: 2, padding: '10px', borderRadius: '8px', background: '#3498db', border: 'none', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>Salvar Patrimônio</button>
+              </div>
+            </form>
           </div>
         </div>
       )}

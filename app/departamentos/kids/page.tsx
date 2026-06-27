@@ -122,47 +122,30 @@ export default function InfantilDashboardPage() {
   // 1. MONITOR DE SALAS: Agrupamento em tempo real
   useEffect(() => {
     async function carregarDadosIniciais() {
-      // 1. Buscar salas configuradas no Supabase
-      const { data: salasDb } = await supabase.from('kids_rooms').select('*');
-      if (salasDb && salasDb.length > 0) {
-        const novasRegras: any = {};
-        salasDb.forEach(sala => {
-          const keySimplificada = sala.name.replace(/[^\w]/g, '').replace('🍼', '').replace('🎨', '').replace('🚀', '').replace('⚡', '').trim();
-          novasRegras[sala.name.includes('Berçário') ? 'Berçário' : 
-                      sala.name.includes('Maternal') ? 'Maternal' : 
-                      sala.name.includes('Juniores') ? 'Juniores' : 'Teens'] = {
-            id: sala.id,
-            label: sala.name,
-            minAge: sala.min_age,
-            maxAge: sala.max_age,
-            maxKidsPerTio: sala.max_kids_per_tio,
-            capacity: sala.capacity
-          };
-        });
-        setRoomRules(novasRegras);
-      }
+      // 1. Buscar salas configuradas no Supabase (Nós usamos constantes de sala agora, sem DB para kids_rooms)
+      // Usaremos as regras locais já configuradas no state roomRules.
 
       // 2. Buscar crianças cadastradas
       const { data: kidsDb } = await supabase
         .from('kids')
-        .select('*, members(name, phone)');
+        .select('*');
       if (kidsDb) {
         const kidsFormatadas: Kid[] = kidsDb.map(k => ({
           id: k.id,
           name: k.name,
           birthDate: k.birth_date,
-          parentName: k.members?.name || 'Responsável Não Identificado',
-          parentPhone: k.members?.phone || '',
+          parentName: k.parent_name || 'Responsável Não Identificado',
+          parentPhone: k.parent_phone || '',
           allergies: k.allergies || 'Sem alergias',
-          churchId: '1'
+          churchId: k.church_id || '1'
         }));
         setKidsList(kidsFormatadas);
       }
 
       // 3. Buscar check-ins ativos de hoje
       const { data: checkinsDb } = await supabase
-        .from('kids_checkins')
-        .select('*, kids(*, members(name, phone)), kids_rooms(*)')
+        .from('kids_checkin')
+        .select('*, kids(*)')
         .eq('status', 'presente');
       
       if (checkinsDb) {
@@ -170,13 +153,11 @@ export default function InfantilDashboardPage() {
           id: c.id,
           kidId: c.kid_id,
           kidName: c.kids?.name || 'Criança',
-          room: c.kids_rooms?.name?.includes('Berçário') ? 'Berçário' : 
-                c.kids_rooms?.name?.includes('Maternal') ? 'Maternal' : 
-                c.kids_rooms?.name?.includes('Juniores') ? 'Juniores' : 'Teens',
-          checkInTime: new Date(c.checked_in_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+          room: c.room,
+          checkInTime: new Date(c.checkin_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
           securityCode: c.security_code,
-          parentName: c.kids?.members?.name || 'Responsável',
-          parentPhone: c.kids?.members?.phone || '',
+          parentName: c.kids?.parent_name || 'Responsável',
+          parentPhone: c.kids?.parent_phone || '',
           status: c.status
         }));
         setCheckins(checkinsFormatados);
@@ -187,8 +168,8 @@ export default function InfantilDashboardPage() {
 
     // 4. Canal de tempo real (Realtime) para atualizações instantâneas de Check-in e Check-out
     const canalCheckins = supabase
-      .channel('kids_checkins_realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'kids_checkins' }, () => {
+      .channel('kids_checkin_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'kids_checkin' }, () => {
         carregarDadosIniciais();
       })
       .subscribe();
@@ -261,28 +242,16 @@ export default function InfantilDashboardPage() {
     const room = getRoomByAge(age);
     const securityCode = `K-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    // Buscar o ID da sala correspondente no banco (usando limit 1 para evitar erros de duplicidade)
-    const { data: roomsDb } = await supabase
-      .from('kids_rooms')
-      .select('id')
-      .ilike('name', `%${room}%`)
-      .limit(1);
-
-    const roomDb = roomsDb && roomsDb[0];
-
-    if (!roomDb) {
-      alert('Erro: Sala correspondente não encontrada no banco do Supabase.');
-      return;
-    }
-
     // Criar check-in real no Supabase
     const { data: newCheckinDb, error } = await supabase
-      .from('kids_checkins')
+      .from('kids_checkin')
       .insert({
         kid_id: kid.id.startsWith('k-vis-') ? null : kid.id, // Se for visitante temporário, pode ser nulo ou cadastrado
-        room_id: roomDb.id,
+        room: room,
         security_code: securityCode,
-        status: 'presente'
+        status: 'presente',
+        service_date: new Date().toISOString().split('T')[0],
+        service_time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
       })
       .select()
       .single();
@@ -350,9 +319,9 @@ export default function InfantilDashboardPage() {
       .insert({
         name: visitorData.kidName,
         birth_date: visitorData.birthDate,
-        parent_id: parentId,
-        allergies: visitorData.allergies || 'Sem alergias',
-        emergency_contact: visitorData.parentPhone
+        parent_name: visitorData.parentName,
+        parent_phone: visitorData.parentPhone,
+        allergies: visitorData.allergies || 'Sem alergias'
       })
       .select()
       .single();
@@ -395,10 +364,10 @@ export default function InfantilDashboardPage() {
   const handleConfirmCheckout = async (id: string) => {
     // Atualizar no Supabase
     const { error } = await supabase
-      .from('kids_checkins')
+      .from('kids_checkin')
       .update({
         status: 'liberado',
-        checked_out_at: new Date().toISOString()
+        checkout_time: new Date().toISOString()
       })
       .eq('id', id);
 
