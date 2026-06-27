@@ -53,7 +53,7 @@ export default function LoginPage() {
             <div style={{ color: '#3498db', margin: '0 0 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Church size={48} strokeWidth={1} />
             </div>
-            <h1 style={{ margin: '0 0 8px', fontSize: '1.8rem', fontWeight: 300, color: '#f1c40f', letterSpacing: '0.5px' }}>
+            <h1 style={{ margin: '0 0 8px', fontSize: '1.8rem', fontWeight: 300, color: '#3498db', letterSpacing: '0.5px' }}>
               Gestão Church
             </h1>
           </div>
