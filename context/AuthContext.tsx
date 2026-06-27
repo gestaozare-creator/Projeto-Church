@@ -1,6 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+import { useRouter, usePathname } from 'next/navigation';
 
 export type UserRole = 'superadmin' | 'pastor_diretor' | 'admin' | 'financeiro' | 'secretaria' | 'kids_leader';
 
@@ -12,81 +14,103 @@ export interface User {
   churchId: string | null;
 }
 
-export const MOCK_SYSTEM_USERS: User[] = [
-  {
-    id: 'u1',
-    name: 'Dono do Sistema (Master)',
-    email: 'master@projetochurch.com',
-    role: 'superadmin',
-    churchId: null, // Acesso total + Gestão do SaaS
-  },
-  {
-    id: 'u5',
-    name: 'Pr. Diretor (Presidente)',
-    email: 'diretor@projetochurch.com',
-    role: 'pastor_diretor',
-    churchId: null, // Acesso total a todas as igrejas (sem gestão do SaaS)
-  },
-  {
-    id: 'u2',
-    name: 'Pr. Local da Sede (Admin)',
-    email: 'pastor.sede@projetochurch.com',
-    role: 'admin',
-    churchId: 'igreja_sede_01', // Vê tudo, mas só da Sede
-  },
-  {
-    id: 'u4',
-    name: 'Tesoureiro Filial SP',
-    email: 'tesouraria.filial@projetochurch.com',
-    role: 'financeiro',
-    churchId: 'filial_sp_02', // Vê tudo, mas só da Filial SP
-  },
-  {
-    id: 'u3',
-    name: 'Secretária da Sede',
-    email: 'secretaria.sede@projetochurch.com',
-    role: 'secretaria',
-    churchId: 'igreja_sede_01', // Vê tudo MENOS financeiro, só da Sede
-  },
-  {
-    id: 'u6',
-    name: 'Tia Rose (Líder Kids)',
-    email: 'kids@projetochurch.com',
-    role: 'kids_leader',
-    churchId: 'igreja_sede_01', // Acesso exclusivo ao Kids
-  },
-];
-
 interface AuthContextType {
-  currentUser: User;
-  setCurrentUser: (user: User) => void;
-  usersList: User[];
-  /** Pode ver todas as igrejas (filtro global liberado) */
+  currentUser: User | null;
+  loading: boolean;
   canSeeAllChurches: boolean;
-  /** Pode ver o menu financeiro */
   canSeeFinanceiro: boolean;
-  /** Pode gerenciar o sistema (criar usuários, igrejas, etc.) — EXCLUSIVO Master */
   canManageSystem: boolean;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<User>(MOCK_SYSTEM_USERS[0]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await loadUserProfile(session.user);
+      } else {
+        setLoading(false);
+      }
+    };
+
+    fetchSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        await loadUserProfile(session.user);
+      } else {
+        setCurrentUser(null);
+        setLoading(false);
+        if (pathname !== '/login') {
+          router.push('/login');
+        }
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [pathname, router]);
+
+  const loadUserProfile = async (authUser: any) => {
+    try {
+      // Fetch role and church_id from our custom table
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role, church_id, email')
+        .eq('id', authUser.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching user role:', error);
+      }
+
+      setCurrentUser({
+        id: authUser.id,
+        name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário',
+        email: authUser.email || '',
+        role: (data?.role as UserRole) || 'secretaria', // fallback
+        churchId: data?.church_id || null,
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+  };
 
   // Derivações de permissão centralizadas
-  const canSeeAllChurches = currentUser.role === 'superadmin' || currentUser.role === 'pastor_diretor';
-  const canSeeFinanceiro = currentUser.role !== 'secretaria' && currentUser.role !== 'kids_leader';
-  const canManageSystem = currentUser.role === 'superadmin';
+  const canSeeAllChurches = currentUser?.role === 'superadmin' || currentUser?.role === 'pastor_diretor';
+  const canSeeFinanceiro = currentUser?.role !== 'secretaria' && currentUser?.role !== 'kids_leader';
+  const canManageSystem = currentUser?.role === 'superadmin';
+
+  // Redirecionamento de proteção de rotas
+  useEffect(() => {
+    if (!loading && !currentUser && pathname !== '/login') {
+      router.push('/login');
+    }
+  }, [loading, currentUser, pathname, router]);
 
   return (
     <AuthContext.Provider value={{
       currentUser,
-      setCurrentUser,
-      usersList: MOCK_SYSTEM_USERS,
+      loading,
       canSeeAllChurches,
       canSeeFinanceiro,
       canManageSystem,
+      signOut,
     }}>
       {children}
     </AuthContext.Provider>

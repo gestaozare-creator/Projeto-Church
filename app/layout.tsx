@@ -7,7 +7,7 @@ import './globals.css';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 
 function AppContent({ children }: { children: React.ReactNode }) {
-  const { currentUser, setCurrentUser, usersList, canSeeFinanceiro, canManageSystem } = useAuth();
+  const { currentUser, loading, signOut, usersList, canSeeFinanceiro, canManageSystem } = useAuth();
   const [theme, setTheme] = useState('light');
   const [activeMenu, setActiveMenu] = useState('secretaria');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -45,15 +45,24 @@ function AppContent({ children }: { children: React.ReactNode }) {
   };
 
   const isPublicRoute = pathname?.startsWith('/formulario');
+  const isLoginRoute = pathname === '/login';
   
   useEffect(() => {
-    if (isPublicRoute && typeof document !== 'undefined') {
+    if ((isPublicRoute || isLoginRoute) && typeof document !== 'undefined') {
       document.documentElement.setAttribute('data-theme', 'light');
     }
-  }, [isPublicRoute]);
+  }, [isPublicRoute, isLoginRoute]);
 
-  if (isPublicRoute) {
+  if (isPublicRoute || isLoginRoute) {
     return <>{children}</>;
+  }
+
+  if (loading || !currentUser) {
+    return (
+      <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center', background: '#0d0e15', color: '#fff' }}>
+        Carregando...
+      </div>
+    );
   }
 
   // Badge visual do perfil
@@ -170,20 +179,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
 
         {/* MOCK LOGIN WIDGET */}
         <div style={{ marginTop: 'auto', padding: '16px', background: 'rgba(255,255,255,0.03)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '8px', fontWeight: 600 }}>Simulador de Perfil (Mock):</div>
-          <select 
-            className="search-input glass-input" 
-            style={{ width: '100%', padding: '8px', fontSize: '0.75rem', colorScheme: 'dark' }}
-            value={currentUser.id}
-            onChange={(e) => {
-              const u = usersList.find(x => x.id === e.target.value);
-              if (u) setCurrentUser(u);
-            }}
-          >
-            {usersList.map(u => (
-              <option key={u.id} value={u.id}>{u.name}</option>
-            ))}
-          </select>
           <div style={{ marginTop: '6px', fontSize: '0.65rem', color: badge.color, fontWeight: 'bold' }}>
             {badge.label}
           </div>
@@ -192,6 +187,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
               Igreja: {currentUser.churchId === 'igreja_sede_01' ? 'Sede' : 'Filial SP'}
             </div>
           )}
+          <button onClick={signOut} className="glass-button" style={{ marginTop: 'auto', marginBottom: '20px', marginLeft: '20px', marginRight: '20px', background: 'rgba(231,76,60,0.1)', color: '#e74c3c' }}>
+            Sair (Logout)
+          </button>
         </div>
       </aside>
       
