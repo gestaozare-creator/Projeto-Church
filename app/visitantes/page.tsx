@@ -28,17 +28,6 @@ const CULTS_DEFAULT = [
   { id: 'c3', time: '20:00', name: 'Culto de Ensino' }
 ];
 
-const MOCK_VISITORS: Visitor[] = [
-  { id: 'v1', churchId: '1', date: '2026-05-18', cultId: 'c1', name: 'Rafael Moura', phone: '(11) 91111-1111', email: 'rafael@email.com', region: 'Zona Norte', source: 'Redes Sociais', wantsVisit: true, status: 'visitante', address: 'Santana, São Paulo', notes: '' },
-  { id: 'v2', churchId: '1', date: '2026-05-18', cultId: 'c2', name: 'Bruna Dias', phone: '(11) 92222-2222', email: 'bruna@email.com', region: 'Centro', source: 'Convite de Amigo', wantsVisit: false, status: 'em_conversao', address: 'Bela Vista, São Paulo', notes: 'Já participou 3 vezes' },
-  { id: 'v3', churchId: '2', date: '2026-05-18', cultId: 'c1', name: 'Lucas Freitas', phone: '(19) 93333-3333', email: '', region: 'Zona Sul', source: 'Passou na frente', wantsVisit: true, status: 'visitante', address: 'Ipiranga, São Paulo', notes: '' },
-  { id: 'v4', churchId: '1', date: '2026-05-11', cultId: 'c1', name: 'Carla Mendes', phone: '(11) 94444-4444', email: 'carla@email.com', region: 'Zona Oeste', source: 'Instagram', wantsVisit: false, status: 'visitante', address: 'Pinheiros, São Paulo', notes: '' },
-  { id: 'v5', churchId: '2', date: '2026-05-11', cultId: 'c3', name: 'Pedro Santos', phone: '(11) 95555-5555', email: '', region: 'Centro', source: 'Convite de Membro', wantsVisit: true, status: 'em_conversao', address: 'Liberdade, São Paulo', notes: 'Quer estudar a Bíblia' },
-  { id: 'v6', churchId: '1', date: '2026-04-27', cultId: 'c2', name: 'Ana Paula Costa', phone: '(11) 96666-6666', email: 'ana@email.com', region: 'Zona Norte', source: 'Evento especial', wantsVisit: false, status: 'membro', address: 'Tucuruvi, São Paulo', notes: 'Já se tornou membro' },
-  { id: 'v7', churchId: '3', date: '2026-04-20', cultId: 'c1', name: 'Marcos Oliveira', phone: '(11) 97777-7777', email: '', region: 'Zona Leste', source: 'Redes Sociais', wantsVisit: true, status: 'visitante', address: 'Tatuapé, São Paulo', notes: '' },
-  { id: 'v8', churchId: '1', date: '2026-03-16', cultId: 'c1', name: 'Juliana Ferreira', phone: '(11) 98888-8888', email: 'ju@email.com', region: 'Centro', source: 'Google', wantsVisit: false, status: 'em_conversao', address: 'Consolação, São Paulo', notes: 'Frequenta há 2 meses' },
-];
-
 export default function Visitantes() {
   const { currentUser, canSeeAllChurches } = useAuth();
   
