@@ -34,52 +34,29 @@ export default function LoginPage() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      /* Imagem de fundo de uma igreja / adoração de alta qualidade, com um overlay escuro */
-      background: 'linear-gradient(rgba(13, 14, 21, 0.8), rgba(13, 14, 21, 0.9)), url("https://images.unsplash.com/photo-1438232992991-995b7058bbb3?q=80&w=2000&auto=format&fit=crop") center/cover no-repeat',
+      /* Imagem de fundo gerada */
+      background: 'linear-gradient(rgba(13, 14, 21, 0.7), rgba(13, 14, 21, 0.9)), url("/login-bg.png") center/cover no-repeat',
       padding: '20px'
     }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '900px',
-        display: 'flex',
-        borderRadius: '24px',
-        boxShadow: '0 30px 60px rgba(0,0,0,0.6)',
-        overflow: 'hidden',
-        border: '1px solid rgba(255,255,255,0.1)',
-        backdropFilter: 'blur(20px)',
-        background: 'rgba(20, 25, 40, 0.5)'
-      }}>
+      <div className="flex flex-col md:flex-row w-full max-w-[900px] rounded-[24px] shadow-[0_30px_60px_rgba(0,0,0,0.6)] overflow-hidden border border-white/10 backdrop-blur-[20px] bg-[#141928]/50">
         
-        {/* Lado Esquerdo - Branding (Visível apenas em telas maiores) */}
-        <div style={{
-          flex: 1,
-          padding: '60px 40px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
+        {/* Lado Esquerdo - Branding */}
+        <div className="flex-1 p-8 md:p-12 flex flex-col justify-center border-b md:border-b-0 md:border-r border-white/5" style={{
           background: 'linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(46, 204, 113, 0.05))',
-          borderRight: '1px solid rgba(255,255,255,0.05)'
-        }} className="hidden md:flex">
-          <div style={{ width: '80px', height: '80px', background: 'linear-gradient(135deg, #3498db, #2ecc71)', borderRadius: '20px', margin: '0 0 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', boxShadow: '0 10px 20px rgba(52, 152, 219, 0.3)' }}>
+        }}>
+          <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, #3498db, #2ecc71)', borderRadius: '20px', margin: '0 0 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', boxShadow: '0 10px 20px rgba(52, 152, 219, 0.3)' }}>
             ⛪
           </div>
-          <h1 style={{ margin: '0 0 16px', fontSize: '2.5rem', fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>
+          <h1 style={{ margin: '0 0 12px', fontSize: '2rem', fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>
             Gestão<br/>Church
           </h1>
-          <p style={{ margin: 0, color: 'rgba(255,255,255,0.7)', fontSize: '1.1rem', lineHeight: 1.6 }}>
+          <p style={{ margin: 0, color: 'rgba(255,255,255,0.7)', fontSize: '1rem', lineHeight: 1.5 }}>
             O sistema inteligente e definitivo para a administração da sua igreja. Tenha o controle total em suas mãos.
           </p>
         </div>
 
         {/* Lado Direito - Formulário */}
-        <div style={{
-          flex: 1,
-          padding: '60px 40px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          background: 'rgba(10, 12, 20, 0.7)'
-        }}>
+        <div className="flex-1 p-8 md:p-12 flex flex-col justify-center bg-[#0a0c14]/70">
           <div style={{ marginBottom: '40px' }}>
             <h2 style={{ margin: '0 0 8px', fontSize: '1.8rem', fontWeight: 700, color: '#fff' }}>
               Bem-vindo de volta
