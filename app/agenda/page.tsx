@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
-import { MOCK_CHURCHES, ChurchEvent, Church } from '@/lib/mock-data';
+import { ChurchEvent, Church } from '@/lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -14,9 +14,22 @@ export default function AgendaPage() {
   const [selectedChurchId, setSelectedChurchId] = useState<string>(canSeeAllChurches ? 'all' : (currentUser?.churchId || '1'));
   const [selectedType, setSelectedType] = useState<string>('all');
   
-  // Efeito para carregar eventos do Supabase
+  const [dbChurches, setDbChurches] = useState<any[]>([]);
+
+  // Efeito para carregar eventos e igrejas do Supabase
   useEffect(() => {
-    async function fetchEvents() {
+    async function fetchData() {
+      // Fetch Churches
+      const { data: churchesData } = await supabase.from('churches').select('*');
+      if (churchesData) {
+        setDbChurches(churchesData.map(c => ({
+          id: c.id,
+          name: c.name,
+          isHeadquarters: c.is_headquarters
+        })));
+      }
+
+      // Fetch Events
       const { data, error } = await supabase
         .from('events')
         .select('*');
@@ -46,7 +59,7 @@ export default function AgendaPage() {
       }
     }
 
-    fetchEvents();
+    fetchData();
   }, []);
 
   // Modais e Formulários
@@ -337,7 +350,7 @@ export default function AgendaPage() {
                   padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', outline: 'none' 
                 }}>
                 <option value="all" style={{ background: '#111' }}>Todas as Congregações (e Global)</option>
-                {MOCK_CHURCHES.map(c => (
+                {dbChurches.map(c => (
                   <option key={c.id} value={c.id} style={{ background: '#111' }}>
                     {c.name} {c.isHeadquarters ? '★ Sede' : ''}
                   </option>

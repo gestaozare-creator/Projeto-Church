@@ -1,12 +1,21 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth, User, UserRole } from '@/context/AuthContext';
-import { MOCK_CHURCHES } from '@/lib/mock-data';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function UsuariosPage() {
   const { currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
+  const [dbChurches, setDbChurches] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function loadChurches() {
+      const { data } = await supabase.from('churches').select('*');
+      if (data) setDbChurches(data);
+    }
+    loadChurches();
+  }, []);
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -14,7 +23,7 @@ export default function UsuariosPage() {
     name: '',
     email: '',
     role: 'admin',
-    churchId: MOCK_CHURCHES[0]?.id || ''
+    churchId: ''
   });
 
   const roleBadge: Record<string, { label: string; color: string }> = {
@@ -32,7 +41,7 @@ export default function UsuariosPage() {
       name: '',
       email: '',
       role: 'admin',
-      churchId: MOCK_CHURCHES[0]?.id || ''
+      churchId: dbChurches[0]?.id || ''
     });
     setShowModal(true);
   };
@@ -60,8 +69,8 @@ export default function UsuariosPage() {
     const finalData = { ...formData };
     if (finalData.role === 'superadmin' || finalData.role === 'pastor_diretor') {
       finalData.churchId = null;
-    } else if (!finalData.churchId && MOCK_CHURCHES.length > 0) {
-      finalData.churchId = MOCK_CHURCHES[0].id;
+    } else if (!finalData.churchId && dbChurches.length > 0) {
+      finalData.churchId = dbChurches[0].id;
     }
 
     if (editingId) {
@@ -109,7 +118,7 @@ export default function UsuariosPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {users.map(u => {
           const badge = roleBadge[u.role];
-          const churchName = u.churchId ? MOCK_CHURCHES.find(c => c.id === u.churchId)?.name : 'Acesso Global (Todas)';
+          const churchName = u.churchId ? dbChurches.find(c => c.id === u.churchId)?.name : 'Acesso Global (Todas)';
 
           return (
             <div key={u.id} className="glass" style={{ padding: '14px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -179,7 +188,7 @@ export default function UsuariosPage() {
                   <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Igreja de Lotação</label>
                   <select required className="search-input glass-input" style={{ padding: '8px', width: '100%', boxSizing: 'border-box' }} value={formData.churchId || ''} onChange={e => setFormData({...formData, churchId: e.target.value})}>
                     <option value="" disabled>Selecione uma Igreja...</option>
-                    {MOCK_CHURCHES.map(c => (
+                    {dbChurches.map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { MOCK_CHURCHES, Asset } from '../../../../lib/mock-data';
+import { Asset } from '../../../../lib/mock-data';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function PatrimonioQRView() {
@@ -33,6 +33,13 @@ export default function PatrimonioQRView() {
           purchaseDate: data.purchase_date || '',
           expenseId: data.expense_id || undefined
         });
+        
+        if (data.church_id) {
+          const { data: churchData } = await supabase.from('churches').select('name').eq('id', data.church_id).maybeSingle();
+          if (churchData) {
+            setChurchName(churchData.name);
+          }
+        }
       }
       setLoading(false);
     }
@@ -40,7 +47,9 @@ export default function PatrimonioQRView() {
     fetchAsset();
   }, [id]);
 
-  const getChurchName = (cid: string) => MOCK_CHURCHES.find(c => c.id === cid)?.name || 'Igreja Desconhecida';
+  const [churchName, setChurchName] = useState('Igreja Desconhecida');
+
+  const getChurchName = () => churchName;
 
   if (loading) {
     return (
@@ -81,7 +90,7 @@ export default function PatrimonioQRView() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '30px' }}>
           <div style={{ background: 'rgba(0,0,0,0.2)', padding: '12px 16px', borderRadius: '8px' }}>
             <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', letterSpacing: '1px' }}>Propriedade de</div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>⛪ {getChurchName(asset.churchId)}</div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>⛪ {getChurchName()}</div>
           </div>
 
           <div style={{ background: 'rgba(0,0,0,0.2)', padding: '12px 16px', borderRadius: '8px' }}>

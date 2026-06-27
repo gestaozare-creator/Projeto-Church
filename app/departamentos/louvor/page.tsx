@@ -4,17 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 
-// MOCK: Simulando os dados que viriam da Secretaria filtrados por "departamento === 'Louvor'"
-const MOCK_LOUVOR_MEMBERS = [
-  { id: '1', name: 'João Silva', function: 'Bateria', status: 'ativo' },
-  { id: '2', name: 'Marcos Almeida', function: 'Violão', status: 'ativo' },
-  { id: '3', name: 'Lucas Oliveira', function: 'Baixo', status: 'inativo' },
-  { id: '4', name: 'Ana Costa', function: 'Vocal', status: 'ativo' },
-  { id: '5', name: 'Sara Mendes', function: 'Vocal', status: 'ativo' },
-  { id: '6', name: 'Pedro Souza', function: 'Teclado', status: 'ativo' },
-  { id: '7', name: 'Thiago Nunes', function: 'Guitarra', status: 'ativo' },
-  { id: '8', name: 'Felipe Costa', function: 'Bateria', status: 'ativo' },
-];
+
 
 const LOUVOR_ROLES = ['Ministro', 'Vocal', 'Violão', 'Guitarra', 'Baixo', 'Teclado', 'Bateria'];
 
@@ -43,7 +33,7 @@ export default function LouvorDashboardPage() {
 
   // Record<date, Record<role, memberId[]>>
   const [escalasGlobais, setEscalasGlobais] = useState<Record<string, Record<string, string[]>>>({});
-  const [dbMembers, setDbMembers] = useState<any[]>(MOCK_LOUVOR_MEMBERS);
+  const [dbMembers, setDbMembers] = useState<any[]>([]);
   const [showPreview, setShowPreview] = useState<'dia' | 'mes' | null>(null);
 
   // Carregar dados de membros e escalas do banco de dados
@@ -55,10 +45,8 @@ export default function LouvorDashboardPage() {
         .select('id, name, function, status')
         .eq('ministry', 'Louvor');
       
-      if (membersDb && membersDb.length > 0) {
+      if (membersDb) {
         setDbMembers(membersDb);
-      } else {
-        setDbMembers(MOCK_LOUVOR_MEMBERS);
       }
 
       // 2. Carregar escalas do mês selecionado

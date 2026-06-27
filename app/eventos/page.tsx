@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
-import { MOCK_CHURCHES, MOCK_TRANSACTIONS, MOCK_MEMBERS, ChurchEvent, EventGuest, Church } from '@/lib/mock-data';
+import { ChurchEvent, EventGuest, Church } from '@/lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -13,6 +13,9 @@ export default function EventosPage() {
   const [guests, setGuests] = useState<EventGuest[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string>('');
   const [selectedChurchId, setSelectedChurchId] = useState<string>(canSeeAllChurches ? 'all' : (currentUser?.churchId || '1'));
+
+  const [dbChurches, setDbChurches] = useState<any[]>([]);
+  const [dbMembers, setDbMembers] = useState<any[]>([]);
 
   // Carregar dados de Eventos e Convidados do Supabase
   useEffect(() => {
@@ -56,6 +59,24 @@ export default function EventosPage() {
         status: g.status as any,
         ticketPricePaid: g.ticket_price_paid ? Number(g.ticket_price_paid) : 0
       }));
+
+      // 3. Carregar igrejas e membros
+      const { data: churchesDb } = await supabase.from('churches').select('*');
+      if (churchesDb) {
+        setDbChurches(churchesDb.map(c => ({ id: c.id, name: c.name, services: [] })));
+      }
+
+      const { data: membersDb } = await supabase.from('members').select('*');
+      if (membersDb) {
+        setDbMembers(membersDb.map(m => ({
+          id: m.id,
+          name: m.name,
+          phone: m.phone || '',
+          status: m.status,
+          ministry: m.ministry,
+          function: m.function
+        })));
+      }
 
       setEvents(formatadosEvents);
       setGuests(formatadosGuests);
@@ -127,11 +148,11 @@ export default function EventosPage() {
   // Cultos fixos da igreja selecionada
   const activeChurchServices = useMemo(() => {
     if (selectedChurchId === 'all') {
-       return MOCK_CHURCHES.flatMap(c => (c.services || []).map(s => ({...s, churchName: c.name})));
+       return dbChurches.flatMap(c => (c.services || []).map((s: any) => ({...s, churchName: c.name})));
     }
-    const church = MOCK_CHURCHES.find(c => c.id === selectedChurchId);
-    return church?.services?.map(s => ({...s, churchName: church.name})) || [];
-  }, [selectedChurchId]);
+    const church = dbChurches.find(c => c.id === selectedChurchId);
+    return church?.services?.map((s: any) => ({...s, churchName: church.name})) || [];
+  }, [selectedChurchId, dbChurches]);
 
   // BLOCO 1: Métricas de Convites, Presenças, Receitas e ROI do evento ativo
   const metrics = useMemo(() => {
@@ -366,40 +387,43 @@ export default function EventosPage() {
   };
 
   // Integração com o Financeiro Geral
-  const handleIntegrateWithFinance = () => {
+  const handleIntegrateWithFinance = async () => {
     if (!activeEvent) return;
 
+    const txsToInsert = [];
+
     // Criar uma despesa baseada no custo do evento no mock geral
-    const newExpense = {
-      id: `t-evt-c-${Date.now()}`,
-      churchId: activeEvent.churchId === 'GLOBAL' ? '1' : activeEvent.churchId,
-      type: 'despesa' as const,
-      category: 'Manutenção/Eventos',
-      description: `Custo Realizado Evento: ${activeEvent.title}`,
-      amount: metrics.custo,
-      paymentMethod: 'Boleto',
-      status: 'confirmado' as const,
-      date: activeEvent.date,
-      paidDate: activeEvent.date
-    };
+    if (metrics.custo > 0) {
+      txsToInsert.push({
+        church_id: activeEvent.churchId === 'GLOBAL' ? '1' : activeEvent.churchId,
+        type: 'despesa',
+        category: 'Manutenção/Eventos',
+        description: `Custo Realizado Evento: ${activeEvent.title}`,
+        amount: metrics.custo,
+        payment_method: 'Boleto',
+        status: 'confirmado',
+        date: activeEvent.date,
+        paid_date: activeEvent.date
+      });
+    }
 
     // Criar uma receita baseada na venda de ingressos
-    const newRevenue = {
-      id: `t-evt-r-${Date.now()}`,
-      churchId: activeEvent.churchId === 'GLOBAL' ? '1' : activeEvent.churchId,
-      type: 'receita' as const,
-      category: 'Campanha',
-      description: `Bilheteria/Inscrições Evento: ${activeEvent.title}`,
-      amount: metrics.receita,
-      paymentMethod: 'PIX',
-      status: 'confirmado' as const,
-      date: activeEvent.date,
-      paidDate: activeEvent.date
-    };
-
-    MOCK_TRANSACTIONS.push(newExpense);
     if (metrics.receita > 0) {
-      MOCK_TRANSACTIONS.push(newRevenue);
+      txsToInsert.push({
+        church_id: activeEvent.churchId === 'GLOBAL' ? '1' : activeEvent.churchId,
+        type: 'receita',
+        category: 'Campanha',
+        description: `Bilheteria/Inscrições Evento: ${activeEvent.title}`,
+        amount: metrics.receita,
+        payment_method: 'PIX',
+        status: 'confirmado',
+        date: activeEvent.date,
+        paid_date: activeEvent.date
+      });
+    }
+
+    if (txsToInsert.length > 0) {
+      await supabase.from('transactions').insert(txsToInsert);
     }
 
     setIntegrationSuccess(true);
@@ -438,14 +462,14 @@ export default function EventosPage() {
     let listToImport: { name: string; phone: string }[] = [];
 
     if (group === 'todos') {
-      listToImport = MOCK_MEMBERS.map(m => ({ name: m.name, phone: m.phone }));
+      listToImport = dbMembers.map(m => ({ name: m.name, phone: m.phone }));
     } else if (group === 'visitantes') {
-      listToImport = MOCK_MEMBERS.filter(m => m.status === 'pendente').map(m => ({ name: m.name + ' (Visitante)', phone: m.phone }));
+      listToImport = dbMembers.filter(m => m.status === 'pendente').map(m => ({ name: m.name + ' (Visitante)', phone: m.phone }));
     } else if (group === 'pastores') {
-      listToImport = MOCK_MEMBERS.filter(m => m.function.toLowerCase().includes('pastor') || m.name.toLowerCase().includes('pr.')).map(m => ({ name: m.name, phone: m.phone }));
+      listToImport = dbMembers.filter(m => m.function?.toLowerCase().includes('pastor') || m.name.toLowerCase().includes('pr.')).map(m => ({ name: m.name, phone: m.phone }));
     } else {
       // Mapeamento de grupos de departamentos do sistema
-      listToImport = MOCK_MEMBERS.filter(m => m.ministry === group).map(m => ({ name: m.name, phone: m.phone }));
+      listToImport = dbMembers.filter(m => m.ministry === group).map(m => ({ name: m.name, phone: m.phone }));
     }
 
     if (listToImport.length === 0) {
@@ -534,7 +558,7 @@ export default function EventosPage() {
                 padding: '8px 14px', borderRadius: '8px', fontSize: '0.85rem', outline: 'none' 
               }}>
               <option value="all" style={{ background: '#111' }}>Todas as Congregações</option>
-              {MOCK_CHURCHES.map(c => (
+              {dbChurches.map(c => (
                 <option key={c.id} value={c.id} style={{ background: '#111' }}>{c.name}</option>
               ))}
             </select>

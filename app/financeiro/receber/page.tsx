@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo, useEffect } from 'react';
-import { MOCK_CHURCHES, Transaction } from '../../../lib/mock-data';
+import { Transaction } from '../../../lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { useGlobalData } from '@/hooks/useGlobalData';

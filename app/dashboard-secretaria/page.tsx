@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { MOCK_CHURCHES } from '@/lib/mock-data';
 import { supabase } from '@/lib/supabaseClient';
 
 interface DBVisitor {
@@ -147,12 +146,14 @@ export default function DashboardSecretariaPage() {
   const [cultoFilter, setCultoFilter] = useState('ALL');
   const [horarioFilter, setHorarioFilter] = useState('ALL');
 
+  const [dbChurches, setDbChurches] = useState<any[]>([]);
+
   const availableHorarios = useMemo(() => {
     let svcs: any[] = [];
     if (church === 'ALL') {
-      svcs = MOCK_CHURCHES.flatMap(c => c.services || []);
+      svcs = dbChurches.flatMap(c => c.services || []);
     } else {
-      const c = MOCK_CHURCHES.find(c => c.id === church);
+      const c = dbChurches.find(c => c.id === church);
       svcs = c?.services || [];
     }
     if (cultoFilter === 'ALL') {
@@ -166,7 +167,7 @@ export default function DashboardSecretariaPage() {
       const times = new Set(svcs.filter(s => s.dayOfWeek === dayName).map(s => s.time));
       return Array.from(times).sort();
     }
-  }, [church, cultoFilter]);
+  }, [church, cultoFilter, dbChurches]);
 
   useEffect(() => {
     setHorarioFilter('ALL');
@@ -189,6 +190,17 @@ export default function DashboardSecretariaPage() {
 
   useEffect(() => {
     async function fetchDashboardData() {
+      // Carregar igrejas do Supabase
+      const { data: churchesDb } = await supabase.from('churches').select('*');
+      if (churchesDb) {
+        setDbChurches(churchesDb.map(c => ({
+          id: c.id,
+          name: c.name,
+          isHeadquarters: c.is_headquarters,
+          services: [] // Add parsing if needed or keep empty
+        })));
+      }
+
       // Carregar membros do Supabase
       const { data: membersDb } = await supabase
         .from('members')
@@ -422,11 +434,11 @@ export default function DashboardSecretariaPage() {
           {canSeeAllChurches ? (
             <select value={church} onChange={e => setChurch(e.target.value)} className="search-input glass-input" style={{ padding: '8px 14px', fontSize: '0.85rem' }}>
               <option value="ALL">⛪ Todas as Igrejas</option>
-              {MOCK_CHURCHES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {dbChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           ) : (
             <div className="search-input glass-input" style={{ padding: '8px 14px', fontSize: '0.85rem', opacity: 0.8, pointerEvents: 'none', background: 'rgba(255,255,255,0.05)' }}>
-              {MOCK_CHURCHES.find(c => c.id === church)?.name || 'Igreja Local'}
+              {dbChurches.find(c => c.id === church)?.name || 'Igreja Local'}
             </div>
           )}
           

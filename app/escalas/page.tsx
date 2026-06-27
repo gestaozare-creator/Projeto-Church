@@ -1,14 +1,32 @@
 "use client";
 
-import { useState } from 'react';
-import { MOCK_MEMBERS } from '../../lib/mock-data';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function Escalas() {
   const [selectedService, setSelectedService] = useState('Culto de Domingo - 18h');
   const [selectedDate, setSelectedDate] = useState('2026-05-24');
   
+  const [dbMembers, setDbMembers] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchMembers() {
+      const { data } = await supabase.from('members').select('*');
+      if (data) {
+        setDbMembers(data.map(m => ({
+          id: m.id,
+          name: m.name,
+          ministry: m.ministry,
+          function: m.function,
+          photoUrl: m.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}`
+        })));
+      }
+    }
+    fetchMembers();
+  }, []);
+
   // Filtrar apenas membros do Louvor e Mídia como exemplo para escalas
-  const availableMembers = MOCK_MEMBERS.filter(m => m.ministry === 'Louvor' || m.ministry === 'Mídia');
+  const availableMembers = dbMembers.filter(m => m.ministry === 'Louvor' || m.ministry === 'Mídia');
 
   return (
     <div className="page-wrapper">

@@ -1,6 +1,6 @@
 "use client";
-import { useState, useMemo } from 'react';
-import { MOCK_MEMBERS, MOCK_CHURCHES, Member } from '../../lib/mock-data';
+import { useState, useMemo, useEffect } from 'react';
+import { supabase } from '../../lib/supabaseClient';
 import { BRAZIL_STATES } from '../../lib/brazil-map-data';
 
 // Visitantes mock com state
@@ -17,6 +17,20 @@ const VISITORS = [
 type Person = { id:string; name:string; phone:string; address:string; state:string; type:'membro'|'visitante'; photoUrl?:string; function?:string; ministry?:string; status?:string };
 
 export default function Mapeamento() {
+  const [dbMembers, setDbMembers] = useState<any[]>([]);
+  const [dbChurches, setDbChurches] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      const { data: membersData } = await supabase.from('members').select('*');
+      if (membersData) setDbMembers(membersData);
+
+      const { data: churchesData } = await supabase.from('churches').select('*');
+      if (churchesData) setDbChurches(churchesData);
+    }
+    fetchData();
+  }, []);
+
   const [selectedState, setSelectedState] = useState<string|null>(null);
   const [selectedPerson, setSelectedPerson] = useState<Person|null>(null);
   const [filter, setFilter] = useState<'todos'|'membro'|'visitante'>('todos');
@@ -25,13 +39,13 @@ export default function Mapeamento() {
 
   // Unificar membros ativos + visitantes
   const allPeople: Person[] = useMemo(() => {
-    const members = MOCK_MEMBERS.filter(m => m.status === 'ativo').map(m => ({
+    const members = dbMembers.filter(m => m.status === 'ativo').map(m => ({
       id: m.id, name: m.name, phone: m.phone, address: m.address, state: m.state,
       type: 'membro' as const, photoUrl: m.photoUrl, function: m.function, ministry: m.ministry, status: m.status
     }));
     const visitors = VISITORS.map(v => ({ ...v, photoUrl: `https://i.pravatar.cc/150?u=${v.name.replace(/\s/g,'')}` }));
     return [...members, ...visitors];
-  }, []);
+  }, [dbMembers]);
 
   const filteredPeople = useMemo(() => {
     if (filter === 'todos') return allPeople;
@@ -97,7 +111,7 @@ export default function Mapeamento() {
     const mapZ = selectedPerson ? 12 : 8; // Zoom levemente menor para caber a rota
     
     // Configuração do mapa com rota quando tem uma pessoa selecionada
-    const defaultChurchAddress = MOCK_CHURCHES[0]?.address || 'Centro, São Paulo, SP';
+    const defaultChurchAddress = dbChurches[0]?.address || 'Centro, São Paulo, SP';
     const mapUrl = selectedPerson
       ? `https://maps.google.com/maps?saddr=${encodeURIComponent(defaultChurchAddress)}&daddr=${encodeURIComponent(selectedPerson.address)}&t=&z=${mapZ}&ie=UTF8&output=embed`
       : `https://maps.google.com/maps?q=${encodeURIComponent(mapQ)}&t=&z=${mapZ}&ie=UTF8&iwloc=B&output=embed`;

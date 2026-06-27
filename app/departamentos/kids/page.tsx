@@ -1,18 +1,11 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { MOCK_MEMBERS, MOCK_KIDS, MOCK_KIDS_CHECKIN, Kid, KidCheckIn, Member } from '@/lib/mock-data';
+import { Kid, KidCheckIn, Member } from '@/lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 
-// Voluntários iniciais do Kids
-const MOCK_KIDS_MEMBERS = [
-  { id: '1', name: 'Tia Rose', function: 'Berçário (0-2)', status: 'ativo' },
-  { id: '2', name: 'Tia Ana', function: 'Maternal (3-5)', status: 'ativo' },
-  { id: '3', name: 'Tio Paulo', function: 'Juniores (6-9)', status: 'ativo' },
-  { id: '4', name: 'Tia Carla', function: 'Teens (10-12)', status: 'ativo' },
-  { id: '5', name: 'Tia Simone', function: 'Apoio', status: 'ativo' },
-];
+
 
 const KIDS_ROLES = ['Berçário (0-2)', 'Maternal (3-5)', 'Juniores (6-9)', 'Teens (10-12)', 'Apoio'];
 
@@ -23,8 +16,9 @@ export default function InfantilDashboardPage() {
   const [activeTab, setActiveTab] = useState<'monitor' | 'checkin' | 'checkout' | 'escala'>('monitor');
 
   // Estados dos Dados Kids
-  const [kidsList, setKidsList] = useState<Kid[]>(MOCK_KIDS);
-  const [checkins, setCheckins] = useState<KidCheckIn[]>(MOCK_KIDS_CHECKIN);
+  const [kidsList, setKidsList] = useState<Kid[]>([]);
+  const [checkins, setCheckins] = useState<KidCheckIn[]>([]);
+  const [dbMembers, setDbMembers] = useState<any[]>([]);
 
   // Estados dos Formulários
   const [searchParentQuery, setSearchParentQuery] = useState('');
@@ -122,8 +116,12 @@ export default function InfantilDashboardPage() {
   // 1. MONITOR DE SALAS: Agrupamento em tempo real
   useEffect(() => {
     async function carregarDadosIniciais() {
-      // 1. Buscar salas configuradas no Supabase (Nós usamos constantes de sala agora, sem DB para kids_rooms)
-      // Usaremos as regras locais já configuradas no state roomRules.
+      // 1. Buscar membros do Kids (Infantil)
+      const { data: membersDb } = await supabase
+        .from('members')
+        .select('id, name, function, status')
+        .eq('ministry', 'Infantil');
+      if (membersDb) setDbMembers(membersDb);
 
       // 2. Buscar crianças cadastradas
       const { data: kidsDb } = await supabase
@@ -397,10 +395,10 @@ export default function InfantilDashboardPage() {
 
   const stats = useMemo(() => {
     return {
-      total: MOCK_KIDS_MEMBERS.length,
-      ativos: MOCK_KIDS_MEMBERS.filter(m => m.status === 'ativo').length
+      total: dbMembers.length,
+      ativos: dbMembers.filter(m => m.status === 'ativo').length
     };
-  }, []);
+  }, [dbMembers]);
 
   const handleAssign = (role: string, memberId: string) => {
     setEscalasGlobais(prev => {
@@ -740,7 +738,7 @@ export default function InfantilDashboardPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
               {KIDS_ROLES.map(role => {
                 const assigned = escalasGlobais[activeDate]?.[role] || [];
-                const suggested = MOCK_KIDS_MEMBERS.filter(m => m.function === role && !assigned.includes(m.id));
+                const suggested = dbMembers.filter(m => m.function === role && !assigned.includes(m.id));
 
                 return (
                   <div key={role} style={{ background: 'rgba(0,0,0,0.15)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -748,14 +746,14 @@ export default function InfantilDashboardPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', minHeight: '30px', marginBottom: '8px' }}>
                       {assigned.map(id => (
                         <div key={id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(253, 121, 168, 0.1)', border: '1px solid #fd79a8', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem' }}>
-                          <span>{MOCK_KIDS_MEMBERS.find(m => m.id === id)?.name}</span>
+                          <span>{dbMembers.find(m => m.id === id)?.name}</span>
                           <button onClick={() => handleRemove(role, id)} style={{ background: 'transparent', border: 'none', color: '#e74c3c', cursor: 'pointer' }}>×</button>
                         </div>
                       ))}
                     </div>
                     <select className="search-input glass-input" style={{ width: '100%', padding: '4px', fontSize: '0.7rem' }} value="" onChange={(e) => { if (e.target.value) handleAssign(role, e.target.value); }}>
                       <option value="" disabled>+ Voluntário</option>
-                      {MOCK_KIDS_MEMBERS.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                      {dbMembers.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                     </select>
                   </div>
                 );

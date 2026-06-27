@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { MOCK_CHURCHES } from '@/lib/mock-data';
 import { supabase } from '@/lib/supabaseClient';
 
 type VisitorStatus = 'visitante' | 'em_conversao' | 'membro';
@@ -43,7 +42,8 @@ const MOCK_VISITORS: Visitor[] = [
 export default function Visitantes() {
   const { currentUser, canSeeAllChurches } = useAuth();
   
-  const [visitors, setVisitors] = useState<Visitor[]>(MOCK_VISITORS);
+  const [visitors, setVisitors] = useState<Visitor[]>([]);
+  const [dbChurches, setDbChurches] = useState<any[]>([]);
   const [cults] = useState(CULTS_DEFAULT);
   const [sel, setSel] = useState<Visitor | null>(null);
 
@@ -97,9 +97,9 @@ export default function Visitantes() {
   const availableHorarios = useMemo(() => {
     let svcs: any[] = [];
     if (churchF === 'ALL' || churchF === 'all') {
-      svcs = MOCK_CHURCHES.flatMap(c => c.services || []);
+      svcs = dbChurches.flatMap(c => c.services || []);
     } else {
-      const c = MOCK_CHURCHES.find(c => c.id === churchF);
+      const c = dbChurches.find(c => c.id === churchF);
       svcs = c?.services || [];
     }
     if (cultoFilter === 'ALL') {
@@ -113,7 +113,7 @@ export default function Visitantes() {
       const times = new Set(svcs.filter(s => s.dayOfWeek === dayName).map(s => s.time));
       return Array.from(times).sort();
     }
-  }, [churchF, cultoFilter]);
+  }, [churchF, cultoFilter, dbChurches]);
 
   useEffect(() => {
     setHorarioFilter('ALL');
@@ -125,9 +125,13 @@ export default function Visitantes() {
     }
   }, [canSeeAllChurches, currentUser]);
 
-  // Carregar dados de visitantes do Supabase
   useEffect(() => {
     async function fetchVisitors() {
+      const { data: churchesDb } = await supabase.from('churches').select('*');
+      if (churchesDb) {
+        setDbChurches(churchesDb.map(c => ({ id: c.id, name: c.name, services: [] })));
+      }
+
       // Procuramos membros com a função de visitante ou em consolidação (status pendente/ativo)
       // Como na nossa tabela colocamos a função 'Visitante (Kids)' ou nula, buscamos aqui
       const { data, error } = await supabase
@@ -324,11 +328,11 @@ export default function Visitantes() {
         {canSeeAllChurches ? (
           <select className="filter-select" style={{ padding:'7px 8px', fontSize:'0.8rem', minWidth:'140px' }} value={churchF} onChange={e => setChurchF(e.target.value)}>
             <option value="all">⛪ Todas as Igrejas</option>
-            {MOCK_CHURCHES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {dbChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         ) : (
           <div className="filter-select" style={{ padding:'7px 8px', fontSize:'0.8rem', minWidth:'140px', opacity: 0.8, pointerEvents: 'none', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
-            {MOCK_CHURCHES.find(c => c.id === churchF)?.name || 'Igreja Local'}
+            {dbChurches.find(c => c.id === churchF)?.name || 'Igreja Local'}
           </div>
         )}
         

@@ -4,16 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 
-const MOCK_OBREIROS_MEMBERS = [
-  { id: '1', name: 'Antônio Silva', function: 'Porta Principal', status: 'ativo' },
-  { id: '2', name: 'Maria Souza', function: 'Altar', status: 'ativo' },
-  { id: '3', name: 'Pedro Paulo', function: 'Corredor Central', status: 'ativo' },
-  { id: '4', name: 'Lúcia Costa', function: 'Porta Lateral', status: 'ativo' },
-  { id: '5', name: 'Jorge Freitas', function: 'Estacionamento', status: 'ativo' },
-  { id: '6', name: 'Marta Dias', function: 'Porta Principal', status: 'inativo' },
-  { id: '7', name: 'Sérgio Ramos', function: 'Estacionamento', status: 'ativo' },
-  { id: '8', name: 'Cláudia Lima', function: 'Altar', status: 'ativo' },
-];
+
 
 const OBREIROS_ROLES = ['Altar', 'Corredor Central', 'Porta Principal', 'Porta Lateral', 'Estacionamento'];
 
@@ -38,7 +29,7 @@ export default function ObreirosDashboardPage() {
   const [timelineDates, setTimelineDates] = useState<string[]>(getCultosDoMes(selectedMonthStr));
   const [activeDate, setActiveDate] = useState<string>(timelineDates[0] || new Date().toISOString().split('T')[0]);
   const [escalasGlobais, setEscalasGlobais] = useState<Record<string, Record<string, string[]>>>({});
-  const [dbMembers, setDbMembers] = useState<any[]>(MOCK_OBREIROS_MEMBERS);
+  const [dbMembers, setDbMembers] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadData() {
@@ -47,10 +38,8 @@ export default function ObreirosDashboardPage() {
         .select('id, name, function, status')
         .eq('ministry', 'Obreiros');
       
-      if (membersDb && membersDb.length > 0) {
+      if (membersDb) {
         setDbMembers(membersDb);
-      } else {
-        setDbMembers(MOCK_OBREIROS_MEMBERS);
       }
 
       const [y, m] = selectedMonthStr.split('-');

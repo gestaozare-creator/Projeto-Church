@@ -4,17 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 
-// MOCK: Simulando equipe técnica
-const MOCK_MIDIA_MEMBERS = [
-  { id: '1', name: 'Carlos Técnico', function: 'Som', status: 'ativo' },
-  { id: '2', name: 'Bia Fernandes', function: 'Fotografia', status: 'ativo' },
-  { id: '3', name: 'Felipe Rocha', function: 'Transmissão', status: 'ativo' },
-  { id: '4', name: 'Julia Castro', function: 'Projeção', status: 'ativo' },
-  { id: '5', name: 'Roberto Luz', function: 'Iluminação', status: 'ativo' },
-  { id: '6', name: 'Daniel Alves', function: 'Fotografia', status: 'inativo' },
-  { id: '7', name: 'Amanda Tech', function: 'Transmissão', status: 'ativo' },
-  { id: '8', name: 'Luiz Som', function: 'Som', status: 'ativo' },
-];
+
 
 const MIDIA_ROLES = ['Som', 'Transmissão', 'Projeção', 'Iluminação', 'Fotografia'];
 
@@ -39,7 +29,7 @@ export default function MidiaDashboardPage() {
   const [timelineDates, setTimelineDates] = useState<string[]>(getCultosDoMes(selectedMonthStr));
   const [activeDate, setActiveDate] = useState<string>(timelineDates[0] || new Date().toISOString().split('T')[0]);
   const [escalasGlobais, setEscalasGlobais] = useState<Record<string, Record<string, string[]>>>({});
-  const [dbMembers, setDbMembers] = useState<any[]>(MOCK_MIDIA_MEMBERS);
+  const [dbMembers, setDbMembers] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadData() {
@@ -48,10 +38,8 @@ export default function MidiaDashboardPage() {
         .select('id, name, function, status')
         .eq('ministry', 'Mídia');
       
-      if (membersDb && membersDb.length > 0) {
+      if (membersDb) {
         setDbMembers(membersDb);
-      } else {
-        setDbMembers(MOCK_MIDIA_MEMBERS);
       }
 
       const [y, m] = selectedMonthStr.split('-');
