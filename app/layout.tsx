@@ -7,7 +7,7 @@ import './globals.css';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 
 function AppContent({ children }: { children: React.ReactNode }) {
-  const { currentUser, loading, signOut, usersList, canSeeFinanceiro, canManageSystem } = useAuth();
+  const { currentUser, loading, signOut, canSeeFinanceiro, canManageSystem } = useAuth();
   const [theme, setTheme] = useState('light');
   const [activeMenu, setActiveMenu] = useState('secretaria');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

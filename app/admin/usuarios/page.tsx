@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from 'react';
-import { useAuth, MOCK_SYSTEM_USERS, User, UserRole } from '@/context/AuthContext';
+import { useAuth, User, UserRole } from '@/context/AuthContext';
 import { MOCK_CHURCHES } from '@/lib/mock-data';
 
 export default function UsuariosPage() {
   const { currentUser } = useAuth();
-  const [users, setUsers] = useState<User[]>(MOCK_SYSTEM_USERS);
+  const [users, setUsers] = useState<User[]>([]);
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);

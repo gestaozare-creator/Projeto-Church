@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { MOCK_CHURCHES, Church, MOCK_MINISTRIES, MinistryGroup } from '@/lib/mock-data';
 import { supabase } from '@/lib/supabaseClient';
-import { MOCK_SYSTEM_USERS } from '@/context/AuthContext';
+
 
 export default function IgrejasPage() {
   const [churches, setChurches] = useState<any[]>([]);
@@ -291,7 +291,7 @@ export default function IgrejasPage() {
     const fileCount = memberCount + (memberCount > 0 ? 10 : 0); // Ex: fotos de membros + fotos de capa
     
     // Contagem de administradores/usuários configurados no sistema para esta igreja específica
-    const activeUsersCount = MOCK_SYSTEM_USERS.filter(u => u.churchId === churchId).length || 1;
+    const activeUsersCount = 1;
 
     const dbSizeKB = (memberCount * 5) + (transCount * 2); // 5KB por membro, 2KB por transação
     const storageSizeKB = fileCount * 150; // 150KB por arquivo de imagem
