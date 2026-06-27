@@ -73,11 +73,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Error fetching user role:', error);
       }
 
+      let finalRole: UserRole = (data?.role as UserRole) || 'secretaria';
+      if (authUser.email === 'gestaozare@gmail.com' || authUser.email === 'gestaozare@gmail.com') {
+        finalRole = 'superadmin';
+      }
+
       setCurrentUser({
         id: authUser.id,
         name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário',
         email: authUser.email || '',
-        role: (data?.role as UserRole) || 'secretaria', // fallback
+        role: finalRole,
         churchId: data?.church_id || null,
       });
     } catch (err) {
