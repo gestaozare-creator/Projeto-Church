@@ -38,29 +38,17 @@ export default function LoginPage() {
       background: 'linear-gradient(rgba(13, 14, 21, 0.7), rgba(13, 14, 21, 0.9)), url("/login-bg.png") center/cover no-repeat',
       padding: '20px'
     }}>
-      <div className="flex flex-col md:flex-row w-full max-w-[900px] rounded-[24px] shadow-[0_30px_60px_rgba(0,0,0,0.6)] overflow-hidden border border-white/10 backdrop-blur-[20px] bg-[#141928]/50">
+      <div className="flex flex-col w-full max-w-[460px] rounded-[24px] shadow-[0_30px_60px_rgba(0,0,0,0.6)] overflow-hidden border border-white/10 backdrop-blur-[20px] bg-[#0a0c14]/70">
         
-        {/* Lado Esquerdo - Branding */}
-        <div className="flex-1 p-8 md:p-12 flex flex-col justify-center border-b md:border-b-0 md:border-r border-white/5" style={{
-          background: 'linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(46, 204, 113, 0.05))',
-        }}>
-          <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, #3498db, #2ecc71)', borderRadius: '20px', margin: '0 0 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', boxShadow: '0 10px 20px rgba(52, 152, 219, 0.3)' }}>
-            ⛪
-          </div>
-          <h1 style={{ margin: '0 0 12px', fontSize: '2rem', fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>
-            Gestão<br/>Church
-          </h1>
-          <p style={{ margin: 0, color: 'rgba(255,255,255,0.7)', fontSize: '1rem', lineHeight: 1.5 }}>
-            O sistema inteligente e definitivo para a administração da sua igreja. Tenha o controle total em suas mãos.
-          </p>
-        </div>
-
-        {/* Lado Direito - Formulário */}
-        <div className="flex-1 p-8 md:p-12 flex flex-col justify-center bg-[#0a0c14]/70">
-          <div style={{ marginBottom: '40px' }}>
-            <h2 style={{ margin: '0 0 8px', fontSize: '1.8rem', fontWeight: 700, color: '#fff' }}>
-              Bem-vindo de volta
-            </h2>
+        <div className="p-8 md:p-10 flex flex-col justify-center">
+          
+          <div className="flex flex-col items-center text-center mb-8">
+            <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, #3498db, #2ecc71)', borderRadius: '20px', margin: '0 0 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', boxShadow: '0 10px 20px rgba(52, 152, 219, 0.3)' }}>
+              ⛪
+            </div>
+            <h1 style={{ margin: '0 0 8px', fontSize: '1.8rem', fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>
+              Gestão Church
+            </h1>
             <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
               Faça login para acessar o painel de controle.
             </p>
