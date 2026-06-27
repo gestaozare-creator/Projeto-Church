@@ -29,10 +29,18 @@ export default function LoginPage() {
 
   return (
     <div 
-      className="flex-1 w-full min-h-screen flex items-center justify-center p-5 bg-no-repeat bg-center bg-contain md:bg-cover"
       style={{
+        width: '100vw',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
         backgroundColor: '#0a0c12',
-        backgroundImage: "url('/login-bg.png')"
+        backgroundImage: "url('/login-bg.png')",
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        backgroundSize: 'cover'
       }}
     >
       <div className="flex flex-col w-full max-w-[600px] rounded-[24px] shadow-[0_30px_60px_rgba(0,0,0,0.6)] overflow-hidden border border-white/10 backdrop-blur-[20px] bg-[#0a0c14]/70">
