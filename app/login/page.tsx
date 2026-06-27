@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Eye, EyeOff, Lock, Mail, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Church } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -10,6 +11,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,13 +50,13 @@ export default function LoginPage() {
         <div className="p-8 md:p-10 flex flex-col justify-center">
           
           <div className="flex flex-col items-center text-center mb-8">
-            <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, #3498db, #2ecc71)', borderRadius: '20px', margin: '0 0 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', boxShadow: '0 10px 20px rgba(52, 152, 219, 0.3)' }}>
-              ⛪
+            <div style={{ color: '#3498db', margin: '0 0 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Church size={48} strokeWidth={1} />
             </div>
-            <h1 style={{ margin: '0 0 8px', fontSize: '1.8rem', fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>
+            <h1 style={{ margin: '0 0 8px', fontSize: '1.8rem', fontWeight: 300, color: '#f1c40f', letterSpacing: '0.5px' }}>
               Gestão Church
             </h1>
-            <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+            <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 300 }}>
               Faça login para acessar o painel de controle.
             </p>
           </div>
@@ -164,15 +166,14 @@ export default function LoginPage() {
               style={{
                 marginTop: '16px',
                 width: '100%',
-                padding: '16px',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, #3498db, #2980b9)',
-                border: 'none',
-                color: '#fff',
-                fontSize: '1.1rem',
-                fontWeight: 700,
+                padding: '12px',
+                borderRadius: '10px',
+                background: 'transparent',
+                border: '1px solid #3498db',
+                color: '#3498db',
+                fontSize: '1rem',
+                fontWeight: 400,
                 cursor: loading ? 'not-allowed' : 'pointer',
-                boxShadow: '0 8px 24px rgba(52, 152, 219, 0.3)',
                 transition: 'all 0.3s',
                 opacity: loading ? 0.7 : 1,
                 display: 'flex',
@@ -182,14 +183,12 @@ export default function LoginPage() {
               }}
               onMouseOver={e => {
                 if(!loading) {
-                  e.currentTarget.style.transform = 'translateY(-3px)';
-                  e.currentTarget.style.boxShadow = '0 12px 30px rgba(52, 152, 219, 0.4)';
+                  e.currentTarget.style.background = 'rgba(52, 152, 219, 0.1)';
                 }
               }}
               onMouseOut={e => {
                 if(!loading) {
-                  e.currentTarget.style.transform = 'none';
-                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(52, 152, 219, 0.3)';
+                  e.currentTarget.style.background = 'transparent';
                 }
               }}
             >
