@@ -43,7 +43,7 @@ export default function LoginPage() {
         backgroundSize: 'cover'
       }}
     >
-      <div className="flex flex-col w-full max-w-[600px] rounded-[24px] shadow-[0_30px_60px_rgba(0,0,0,0.6)] overflow-hidden border border-white/10 backdrop-blur-[20px] bg-[#0a0c14]/70">
+      <div className="flex flex-col w-full max-w-[700px] rounded-[24px] shadow-[0_30px_60px_rgba(0,0,0,0.6)] overflow-hidden border border-white/10 backdrop-blur-[20px] bg-[#0a0c14]/70">
         
         <div className="p-8 md:p-10 flex flex-col justify-center">
           
