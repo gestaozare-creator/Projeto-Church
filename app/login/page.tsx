@@ -26,6 +26,8 @@ export default function LoginPage() {
     if (error) {
       setErrorMsg(error.message);
       setLoading(false);
+    } else {
+      router.push('/');
     }
   };
 
