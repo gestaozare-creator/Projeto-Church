@@ -3,16 +3,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { BRAZIL_STATES } from '../../lib/brazil-map-data';
 
-// Visitantes mock com state
-const VISITORS = [
-  { id:'v1', name:'Rafael Moura', phone:'(11) 91111-1111', address:'Santana, São Paulo', state:'SP', type:'visitante' as const },
-  { id:'v2', name:'Bruna Dias', phone:'(11) 92222-2222', address:'Centro, São Paulo', state:'SP', type:'visitante' as const },
-  { id:'v3', name:'Lucas Freitas', phone:'(19) 93333-3333', address:'Cambuí, Campinas', state:'SP', type:'visitante' as const },
-  { id:'v4', name:'Carla Mendes', phone:'(21) 94444-4444', address:'Botafogo, Rio de Janeiro', state:'RJ', type:'visitante' as const },
-  { id:'v5', name:'Pedro Santos', phone:'(31) 95555-5555', address:'Centro, Belo Horizonte', state:'MG', type:'visitante' as const },
-  { id:'v6', name:'Ana Paula', phone:'(71) 96666-6666', address:'Pituba, Salvador', state:'BA', type:'visitante' as const },
-  { id:'v7', name:'Marcos Jr', phone:'(62) 97777-7777', address:'Setor Bueno, Goiânia', state:'GO', type:'visitante' as const },
-];
+
 
 type Person = { id:string; name:string; phone:string; address:string; state:string; type:'membro'|'visitante'; photoUrl?:string; function?:string; ministry?:string; status?:string };
 
@@ -39,12 +30,11 @@ export default function Mapeamento() {
 
   // Unificar membros ativos + visitantes
   const allPeople: Person[] = useMemo(() => {
-    const members = dbMembers.filter(m => m.status === 'ativo').map(m => ({
+    const members = dbMembers.map(m => ({
       id: m.id, name: m.name, phone: m.phone, address: m.address, state: m.state,
-      type: 'membro' as const, photoUrl: m.photoUrl, function: m.function, ministry: m.ministry, status: m.status
+      type: m.status === 'visitante' ? 'visitante' : 'membro' as const, photoUrl: m.photoUrl, function: m.function, ministry: m.ministry, status: m.status
     }));
-    const visitors = VISITORS.map(v => ({ ...v, photoUrl: `https://i.pravatar.cc/150?u=${v.name.replace(/\s/g,'')}` }));
-    return [...members, ...visitors];
+    return members;
   }, [dbMembers]);
 
   const filteredPeople = useMemo(() => {
