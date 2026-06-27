@@ -56,9 +56,6 @@ export default function LoginPage() {
             <h1 style={{ margin: '0 0 8px', fontSize: '1.8rem', fontWeight: 300, color: '#f1c40f', letterSpacing: '0.5px' }}>
               Gestão Church
             </h1>
-            <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 300 }}>
-              Faça login para acessar o painel de controle.
-            </p>
           </div>
 
           {errorMsg && (
