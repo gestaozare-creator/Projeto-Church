@@ -116,7 +116,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
                       <Link href="/agenda" className={`sub-link ${pathname === '/agenda' ? 'active' : ''}`}>📅 Agenda</Link>
                       <Link href="/eventos" className={`sub-link ${pathname === '/eventos' ? 'active' : ''}`}>🎟️ Eventos</Link>
                     </div>
-                    </div>
                   )}
                 </div>
                 )}
