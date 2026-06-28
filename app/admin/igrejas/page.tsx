@@ -101,7 +101,7 @@ export default function IgrejasPage() {
     loadLiveStats();
   }, [churches]);
   
-  const [formData, setFormData] = useState<Partial<Church & { activeModules: string[]; userLimit?: number }>>({
+  const [formData, setFormData] = useState<any>({
     ministryId: ministryGroups[0]?.id || '',
     name: '',
     isHeadquarters: false,
