@@ -1,15 +1,25 @@
 "use client";
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Member, MemberStatus } from '../lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
+import { Member, Church } from '@/types/database';
+import { useChurches } from '@/hooks/useChurches';
+import { useMembers } from '@/hooks/useMembers';
 
 export default function Home() {
   const { currentUser, canSeeAllChurches } = useAuth();
-  const [members, setMembers] = useState<Member[]>([]);
-  const [dbChurches, setDbChurches] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [church, setChurch] = useState(canSeeAllChurches ? 'ALL' : (currentUser?.churchId || ''));
+  const { churches: dbChurches, loading: churchesLoading } = useChurches();
+  const { members: allMembers, loading: membersLoading, setMembers } = useMembers();
+
+  // Filtramos os membros na memória para não refazer a chamada de rede à toa no MVP
+  const members = useMemo(() => {
+    if (canSeeAllChurches && church === 'ALL') return allMembers;
+    const targetId = !canSeeAllChurches ? currentUser?.churchId : church;
+    return allMembers.filter(m => m.church_id === targetId);
+  }, [allMembers, church, canSeeAllChurches, currentUser]);
+
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
@@ -24,10 +34,10 @@ export default function Home() {
   const availableHorarios = useMemo(() => {
     let svcs: any[] = [];
     if (church === 'ALL') {
-      svcs = dbChurches.flatMap(c => c.church_services || []);
+      svcs = dbChurches.flatMap(c => c.services || []);
     } else {
       const c = dbChurches.find(c => c.id === church);
-      svcs = c?.church_services || [];
+      svcs = c?.services || [];
     }
     if (cultoFilter === 'ALL') {
       const times = new Set(svcs.map(s => s.time));
@@ -46,49 +56,11 @@ export default function Home() {
     setHorarioFilter('ALL');
   }, [cultoFilter]);
 
-  // Efeito para sincronizar filtro caso a flag mude
+  // Sincronizar igreja selecionada com igreja do admin logado
   useEffect(() => {
     if (!canSeeAllChurches && currentUser?.churchId) {
       setChurch(currentUser.churchId);
     }
-  }, [canSeeAllChurches, currentUser]);
-
-  // Carregar dados reais (Membros, Igrejas e Cultos)
-  useEffect(() => {
-    async function fetchData() {
-      // Fetch Churches with Services
-      const { data: churchesData } = await supabase
-        .from('churches')
-        .select('*, church_services(*)');
-      if (churchesData) setDbChurches(churchesData);
-
-      // Fetch Members
-      let query = supabase.from('members').select('*');
-      if (!canSeeAllChurches && currentUser?.churchId) {
-        query = query.eq('church_id', currentUser.churchId);
-      }
-      
-      const { data, error } = await query;
-      
-      if (data) {
-        const formatados: Member[] = data.map(m => ({
-          id: m.id,
-          churchId: m.church_id || '1',
-          name: m.name,
-          phone: m.phone || '',
-          email: m.email || '',
-          address: m.address || '',
-          state: m.state || 'Geral',
-          function: m.function || 'Ainda não definida',
-          ministry: m.ministry || '',
-          photoUrl: m.photo_url || `https://i.pravatar.cc/150?u=${m.name.replace(/\s/g, '')}`,
-          integrationDate: m.created_at ? new Date(m.created_at).toISOString().split('T')[0] : '',
-          status: m.status as MemberStatus
-        }));
-        setMembers(formatados);
-      }
-    }
-    fetchData();
   }, [canSeeAllChurches, currentUser]);
 
   const [sel, setSel] = useState<Member | null>(null);
@@ -132,8 +104,8 @@ export default function Home() {
   };
 
   const filtered = useMemo(() => members.filter(m => {
-    const s = m.name.toLowerCase().includes(search.toLowerCase()) || m.function.toLowerCase().includes(search.toLowerCase());
-    const c = church === 'ALL' || church === 'all' || m.churchId === church;
+    const s = (m.name?.toLowerCase().includes(search.toLowerCase()) || false) || (m.function?.toLowerCase().includes(search.toLowerCase()) || false);
+    const c = church === 'ALL' || church === 'all' || m.church_id === church;
     const isNotVisitor = m.function !== 'Visitante (Kids)' && m.function !== 'Visitante';
     
     let d = true;
@@ -141,14 +113,14 @@ export default function Home() {
     if (startDate && mDate < startDate) d = false;
     if (endDate && mDate > endDate) d = false;
     
-    return s && c && isNotVisitor && d;
+    return s && isNotVisitor && d;
   }), [members, search, church, startDate, endDate, cultoFilter, horarioFilter]);
 
   const pendentes = filtered.filter(m => m.status === 'pendente');
   const ativos = filtered.filter(m => m.status === 'ativo');
   const inativos = filtered.filter(m => m.status === 'inativo');
 
-  const changeStatus = async (id: string, ns: MemberStatus) => {
+  const changeStatus = async (id: string, ns: 'ativo' | 'inativo' | 'visitante' | 'em_conversao' | 'pendente') => {
     if (ns === 'ativo') {
       const m = members.find(x => x.id === id);
       if (m && m.status === 'pendente') {
@@ -173,9 +145,9 @@ export default function Home() {
     if (sel?.id === id) setSel(p => p ? { ...p, status: ns } : null);
   };
 
-  const fmt = (d: string) => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
-  const isExp = (d: string) => { if (!d) return false; const e = new Date(d); e.setFullYear(e.getFullYear()+2); return e < new Date(); };
-  const calcExp = (d: string) => { if (!d) return '—'; const e = new Date(d); e.setFullYear(e.getFullYear()+2); return e.toLocaleDateString('pt-BR'); };
+  const fmt = (d?: string) => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
+  const isExp = (d?: string) => { if (!d) return false; const e = new Date(d); e.setFullYear(e.getFullYear()+2); return e < new Date(); };
+  const calcExp = (d?: string) => { if (!d) return '—'; const e = new Date(d); e.setFullYear(e.getFullYear()+2); return e.toLocaleDateString('pt-BR'); };
 
   const openEdit = (m: Member) => { setEditForm({...m}); setPhotoPreview(m.photoUrl||null); setIsCreating(false); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomChurch(false); setIsEditing(true); };
   const openCreate = () => { setEditForm({ id:'', name:'', function:'', ministry:'Louvor', phone:'', email:'', address:'', integrationDate: new Date().toISOString().split('T')[0], churchId: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', photoUrl:'', status:'ativo' }); setPhotoPreview(null); setIsCreating(true); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomChurch(false); setIsEditing(true); };
@@ -215,7 +187,7 @@ export default function Home() {
       if (data) {
         const newM: Member = {
           id: data.id,
-          churchId: data.church_id || '1',
+          church_id: data.church_id || '1',
           name: data.name,
           phone: data.phone || '',
           email: data.email || '',
@@ -225,7 +197,7 @@ export default function Home() {
           ministry: data.ministry || '',
           photoUrl: finalPhoto,
           integrationDate: data.created_at ? new Date(data.created_at).toISOString().split('T')[0] : '',
-          status: data.status as MemberStatus
+          status: data.status as any
         };
         setMembers(p => [...p, newM]);
         setSel(newM);
@@ -263,7 +235,7 @@ export default function Home() {
     w.document.close();
   };
 
-  const Row = ({ member, type }: { member: Member, type: MemberStatus }) => {
+  const Row = ({ member, type }: { member: Member, type: 'ativo' | 'inativo' | 'visitante' | 'em_conversao' | 'pendente' }) => {
     const isSel = sel?.id === member.id;
     const exp = isExp(member.integrationDate);
     return (
@@ -277,7 +249,7 @@ export default function Home() {
           <div style={{ fontSize:'0.8rem', color:'var(--text-secondary)', marginTop:'2px' }}>{member.function !== 'Ainda não definida' ? member.function : member.phone}</div>
         </div>
         <button 
-          onClick={e => { e.stopPropagation(); openWhatsApp(member.name, member.phone); }} 
+          onClick={e => { e.stopPropagation(); openWhatsApp(member.name, member.phone || ''); }}  
           style={{ width:'30px', height:'30px', borderRadius:'50%', border:'1.5px solid #25d366', background:'transparent', color:'#25d366', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all 0.2s' }}
           onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.background = '#25d366'; (e.currentTarget.querySelector('svg') as SVGElement).style.fill = '#fff'; }}
           onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'transparent'; (e.currentTarget.querySelector('svg') as SVGElement).style.fill = '#25d366'; }}
@@ -298,7 +270,7 @@ export default function Home() {
     </div>
   );
 
-  const selectedChurchObj = sel ? dbChurches.find(c => c.id === sel.churchId) : null;
+  const selectedChurchObj = sel ? dbChurches.find(c => c.id === sel.church_id) : null;
 
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'100%', gap:'12px', overflow:'hidden', minHeight:0 }}>
@@ -382,14 +354,14 @@ export default function Home() {
                 <img src={sel.photoUrl} alt={sel.name} className="modal-photo" style={{ width:'85px', height:'85px', border:'3px solid var(--primary-light)', display:'block', margin:'0 auto 12px' }} />
                 <h3 style={{ fontSize:'1.2rem', marginBottom:'4px' }}>{sel.name}</h3>
                 <div style={{ display:'flex', justifyContent:'center', gap:'4px', flexWrap:'wrap' }}>
-                  <span className="badge" style={{ padding:'3px 8px', fontSize:'0.6rem', margin:0 }}>{dbChurches.find((c: any) => c.id === sel.churchId)?.name || 'Igreja'}</span>
+                  <span className="badge" style={{ padding:'3px 8px', fontSize:'0.6rem', margin:0 }}>{dbChurches.find((c: Church) => c.id === sel.church_id)?.name || 'Igreja'}</span>
                   {sel.status === 'pendente' && <span className="badge" style={{ background:'#f39c12', padding:'3px 8px', fontSize:'0.6rem', margin:0, color:'#fff' }}>PENDENTE</span>}
                   {sel.status === 'ativo' && (isExp(sel.integrationDate) ? <span className="badge-expired" style={{ padding:'3px 8px' }}>VENCIDA</span> : <span className="badge-valid" style={{ padding:'3px 8px' }}>ATIVA</span>)}
                   {sel.status === 'inativo' && <span className="badge" style={{ background:'#95a5a6', padding:'3px 8px', fontSize:'0.6rem', margin:0, color:'#fff' }}>INATIVO</span>}
                 </div>
               </div>
               <div className="scroll-container" style={{ fontSize:'0.8rem', color:'var(--text-secondary)', display:'flex', flexDirection:'column', gap:'8px', maxHeight: '350px', overflowY:'auto', paddingRight:'4px' }}>
-                <InfoCard label="Função" value={sel.function} />
+                <InfoCard label="Função" value={sel.function || ''} />
                 {sel.ministry && <InfoCard label="Ministério" value={sel.ministry} />}
                 <InfoCard label="Contato" value={`📞 ${sel.phone}${sel.email ? '\n✉️ '+sel.email : ''}`} />
                 <InfoCard label="Endereço" value={`📍 ${sel.address}`} />
@@ -573,7 +545,7 @@ export default function Home() {
                       </div>
                     ) : (
                       <select name="churchId" value={editForm.churchId} onChange={e => { if (e.target.value === '__new__') { setCustomChurch(true); } else { onChange(e); }}} className="search-input glass-input" style={{ width:'100%', padding:'8px' }}>
-                        {dbChurches.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        {dbChurches.map((c: Church) => <option key={c.id} value={c.id}>{c.name}</option>)}
                         {customChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         <option value="__new__">➕ Cadastrar nova igreja...</option>
                       </select>

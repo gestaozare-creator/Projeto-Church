@@ -1,9 +1,21 @@
 "use client";
 import { useState, useMemo, useEffect } from 'react';
-import { Asset } from '../../../lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { useGlobalData } from '@/hooks/useGlobalData';
+
+// Tipo local de ativo (view model camelCase)
+interface Asset {
+  id: string;
+  churchId: string;
+  name: string;
+  category: string;
+  condition: 'Novo' | 'Bom' | 'Em Manutenção' | 'Descartado';
+  location: string;
+  purchaseValue: number;
+  purchaseDate: string;
+  expenseId?: string;
+}
 
 export default function GestaoPatrimonio() {
   const { currentUser, canSeeAllChurches } = useAuth();

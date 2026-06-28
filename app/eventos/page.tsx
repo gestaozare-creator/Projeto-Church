@@ -1,49 +1,54 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
-import { ChurchEvent, EventGuest, Church } from '@/lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
+import { useEvents, EventModel } from '@/hooks/useEvents';
+import { Church, ChurchEvent } from '@/types/database';
+
+export interface EventGuest {
+  id: string;
+  eventId: string;
+  memberName: string;
+  memberPhone: string;
+  status: 'pendente' | 'confirmado_pago' | 'confirmado_isento' | 'recusado' | 'presente';
+  ticketPricePaid: number;
+}
 
 export default function EventosPage() {
   const { currentUser, canSeeAllChurches } = useAuth();
 
-  // Estados principais
+  const { events: dbEvents, loading: eventsLoading } = useEvents();
   const [events, setEvents] = useState<ChurchEvent[]>([]);
   const [guests, setGuests] = useState<EventGuest[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string>('');
   const [selectedChurchId, setSelectedChurchId] = useState<string>(canSeeAllChurches ? 'all' : (currentUser?.churchId || '1'));
 
-  const [dbChurches, setDbChurches] = useState<any[]>([]);
+  const [dbChurches, setDbChurches] = useState<Church[]>([]);
   const [dbMembers, setDbMembers] = useState<any[]>([]);
 
   // Carregar dados de Eventos e Convidados do Supabase
   useEffect(() => {
     async function fetchEventsAndGuests() {
-      // 1. Carregar eventos
-      const { data: eventsDb } = await supabase
-        .from('events')
-        .select('*');
-
-      const formatadosEvents: ChurchEvent[] = (eventsDb || []).map(ev => ({
+      const formatadosEvents: ChurchEvent[] = (dbEvents || []).map(ev => ({
         id: ev.id,
         churchId: ev.church_id || '1',
         title: ev.title,
         description: ev.description || '',
-        type: ev.type as any,
-        departmentId: ev.department_id || undefined,
+        type: (ev as any).type as any,
+        departmentId: (ev as any).department_id || undefined,
         date: ev.date,
-        startTime: ev.start_time,
-        endTime: ev.end_time || undefined,
-        location: ev.location || '',
-        isGlobal: !!ev.is_global,
-        estimatedCost: ev.estimated_cost ? Number(ev.estimated_cost) : undefined,
-        actualCost: ev.actual_cost ? Number(ev.actual_cost) : undefined,
-        bannerUrl: ev.banner_url || undefined,
-        videoUrl: ev.video_url || undefined,
-        paymentLink: ev.payment_link || undefined,
-        ticketPrice: ev.ticket_price ? Number(ev.ticket_price) : undefined,
-        maxCapacity: ev.max_capacity || undefined
+        startTime: (ev as any).start_time,
+        endTime: (ev as any).end_time || undefined,
+        location: (ev as any).location || '',
+        isGlobal: !!(ev as any).is_global,
+        estimatedCost: (ev as any).estimated_cost ? Number((ev as any).estimated_cost) : undefined,
+        actualCost: (ev as any).actual_cost ? Number((ev as any).actual_cost) : undefined,
+        bannerUrl: (ev as any).banner_url || undefined,
+        videoUrl: (ev as any).video_url || undefined,
+        paymentLink: (ev as any).payment_link || undefined,
+        ticketPrice: (ev as any).ticket_price ? Number((ev as any).ticket_price) : undefined,
+        maxCapacity: (ev as any).max_capacity || undefined
       }));
 
       // 2. Carregar convidados
@@ -86,8 +91,10 @@ export default function EventosPage() {
       }
     }
 
-    fetchEventsAndGuests();
-  }, []);
+    if (!eventsLoading) {
+      fetchEventsAndGuests();
+    }
+  }, [dbEvents, eventsLoading]);
 
   // Modais de Criação/Edição e Integração
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -118,7 +125,7 @@ export default function EventosPage() {
   const [guestFormData, setGuestFormData] = useState({
     memberName: '',
     memberPhone: '',
-    status: 'confirmado_pago' as any,
+    status: 'confirmado_pago',
     ticketPricePaid: 0
   });
 

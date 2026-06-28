@@ -3,11 +3,20 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
+interface EscalaMember {
+  id: string;
+  name: string;
+  ministry?: string;
+  function?: string;
+  photoUrl: string;
+}
+
 export default function Escalas() {
+  const today = new Date().toISOString().slice(0, 10);
   const [selectedService, setSelectedService] = useState('Culto de Domingo - 18h');
-  const [selectedDate, setSelectedDate] = useState('2026-05-24');
+  const [selectedDate, setSelectedDate] = useState(today);
   
-  const [dbMembers, setDbMembers] = useState<any[]>([]);
+  const [dbMembers, setDbMembers] = useState<EscalaMember[]>([]);
 
   useEffect(() => {
     async function fetchMembers() {

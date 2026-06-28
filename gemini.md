@@ -71,3 +71,7 @@ Protocolo V.L.A.E.G.
 
 ## 📝 Log de Manutenção
 - 2026-05-13: Projeto inicializado.
+- 2026-06-27: Mocks erradicados e validação rigorosa de tipagem TypeScript estabelecida como requisito obrigatório para builds na Vercel.
+
+## 🚫 Regra de Ouro (Erros de Compilação / Vercel)
+Se a Vercel travar no build e mostrar uma versão antiga do site, o problema **NÃO** é cache de banco de dados nem falha do Supabase. O problema é que modificações recentes introduziram **erros de tipagem do TypeScript** (ex: `Implicit Any`, `Cannot find name`). O agente DEVE rodar `npx tsc --noEmit` localmente para garantir que não haja erros de tipo ANTES de empurrar grandes refatorações para o repositório principal. Mocks NUNCA devem ser reintegrados sem tipagem.

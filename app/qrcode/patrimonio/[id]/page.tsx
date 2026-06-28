@@ -1,8 +1,20 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Asset } from '../../../../lib/mock-data';
 import { supabase } from '@/lib/supabaseClient';
+
+// Tipo local de ativo (view model camelCase)
+interface Asset {
+  id: string;
+  churchId: string;
+  name: string;
+  category: string;
+  condition: string;
+  location: string;
+  purchaseValue: number;
+  purchaseDate: string;
+  expenseId?: string;
+}
 
 export default function PatrimonioQRView() {
   const params = useParams();

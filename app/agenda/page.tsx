@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
-import { ChurchEvent, Church } from '@/lib/mock-data';
+import { ChurchEvent, Church } from '@/types/database';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 

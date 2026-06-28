@@ -1,13 +1,27 @@
 "use client";
 import { useState, useMemo, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { Member, Church } from '@/types/database';
+
+interface RankingGoal {
+  churchId: string;
+  year: number | string;
+  target: number;
+}
+
+interface RankingVisitor {
+  id: string;
+  churchId: string;
+  integrationDate?: string;
+  status?: string;
+}
 
 export default function RankingAlmas() {
   const [year, setYear] = useState('2026');
-  const [dbMembers, setDbMembers] = useState<any[]>([]);
-  const [dbChurches, setDbChurches] = useState<any[]>([]);
-  const [dbVisitors, setDbVisitors] = useState<any[]>([]);
-  const [goals, setGoals] = useState<any[]>([]);
+  const [dbMembers, setDbMembers] = useState<(Member & { churchId: string; integrationDate?: string })[]>([]);
+  const [dbChurches, setDbChurches] = useState<Church[]>([]);
+  const [dbVisitors, setDbVisitors] = useState<RankingVisitor[]>([]);
+  const [goals, setGoals] = useState<RankingGoal[]>([]);
   const [editingGoal, setEditingGoal] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(0);
   const [chartChurch, setChartChurch] = useState('ALL'); // Filtro de igreja no gráfico
@@ -30,7 +44,7 @@ export default function RankingAlmas() {
 
   // ── Estatísticas ANUAIS por igreja ──
   const churchStats = useMemo(() => {
-    const stats: Record<string, { church: any; almas: number; membros: number; visitantes: number; goal: number }> = {};
+    const stats: Record<string, { church: Church; almas: number; membros: number; visitantes: number; goal: number }> = {};
     dbChurches.forEach(c => {
       const goal = goals.find(g => g.churchId === c.id && g.year.toString() === year)?.target || 0;
       stats[c.id] = { church: c, almas: 0, membros: 0, visitantes: 0, goal };

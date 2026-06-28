@@ -1,9 +1,26 @@
 "use client";
 import { useState, useMemo, useEffect } from 'react';
-import { Transaction } from '../../../lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { useGlobalData } from '@/hooks/useGlobalData';
+
+// Tipo local (view model camelCase)
+interface FinancialTransaction {
+  id: string;
+  churchId: string;
+  type: 'receita' | 'despesa';
+  category: string;
+  description: string;
+  amount: number;
+  paymentMethod: string;
+  memberId?: string;
+  supplierId?: string;
+  status: string;
+  date: string;
+  dueDate?: string;
+  paidDate?: string;
+}
+type Transaction = FinancialTransaction;
 
 export default function ContasReceber() {
   const { currentUser, canSeeAllChurches } = useAuth();

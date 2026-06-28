@@ -1,11 +1,39 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Kid, KidCheckIn, Member } from '@/lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 
+// Tipos locais do módulo Kids (view model — camelCase)
+interface Kid {
+  id: string;
+  name: string;
+  birthDate?: string;
+  parentName: string;
+  parentPhone: string;
+  allergies?: string;
+  churchId: string;
+}
 
+interface KidCheckIn {
+  id: string;
+  kidId: string;
+  kidName: string;
+  room: string;
+  checkInTime: string;
+  securityCode: string;
+  parentName: string;
+  parentPhone: string;
+  status: string;
+}
+
+interface Member {
+  id: string;
+  name: string;
+  phone?: string;
+  function?: string;
+  status?: string;
+}
 
 const KIDS_ROLES = ['Berçário (0-2)', 'Maternal (3-5)', 'Juniores (6-9)', 'Teens (10-12)', 'Apoio'];
 
@@ -236,7 +264,7 @@ export default function InfantilDashboardPage() {
 
   // Efetuar o Check-in
   const handleCheckInKid = async (kid: Kid) => {
-    const age = calculateAge(kid.birthDate);
+    const age = calculateAge(kid.birthDate || '');
     const room = getRoomByAge(age);
     const securityCode = `K-${Math.floor(1000 + Math.random() * 9000)}`;
 
@@ -596,10 +624,10 @@ export default function InfantilDashboardPage() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {kidsList
-                    .filter(k => k.parentPhone === selectedParent.phone || k.parentName === selectedParent.name)
+                    .filter(k => k.parentPhone === (selectedParent.phone || '') || k.parentName === selectedParent.name)
                     .map(k => {
                       const isAlreadyCheckedIn = checkins.some(c => c.kidId === k.id && c.status === 'presente');
-                      const age = calculateAge(k.birthDate);
+                      const age = calculateAge(k.birthDate || '');
                       return (
                         <div key={k.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'rgba(0,0,0,0.1)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.02)' }}>
                           <div>

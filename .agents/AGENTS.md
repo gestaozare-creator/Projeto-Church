@@ -17,3 +17,8 @@
 
 ### 4. PersistÃªncia de Escalas de VoluntÃ¡rios
 * **Regra**: Toda alteraÃ§Ã£o de escala (adicionar ou remover voluntÃ¡rios de Louvor, MÃ­dia ou Obreiros) deve persistir e ler os dados diretamente da tabela `escalas` do Supabase associando `member_id`, `role`, `department` e `date`, evitando armazenar estados cruciais apenas localmente em memÃ³ria.
+
+### 5. Tipagem Rigorosa e Banco de Dados (Supabase)
+* **Regra**: NUNCA utilize ny ou ny[] nos estados de componentes. O projeto agora conta com uma tipagem estrita centralizada em @/types/database.ts (que reflete o schema real snake_case do Supabase).
+* **Regra**: Nas páginas do Frontend (componentes React), utilize View Models locais (interfaces camelCase na própria página) ou faça o mapeamento explícito dos campos de snake_case (banco) para camelCase (frontend) durante o carregamento de dados (ex: churchId: data.church_id). Isso evita quebra de código legado e garante consistência sem conflitos de padrões.
+* **Regra**: O arquivo lib/mock-data.ts foi substituído para produção. Todo carregamento de dados e tipagem não deve mais depender de dados estáticos; devem-se consultar diretamente as tabelas do Supabase.

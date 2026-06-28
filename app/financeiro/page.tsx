@@ -1,10 +1,26 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
-import { Transaction } from '@/lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
 import { useGlobalData } from '@/hooks/useGlobalData';
 import { supabase } from '@/lib/supabaseClient';
+
+// Tipo local de transação (view model — camelCase)
+interface FinancialTransaction {
+  id: string;
+  churchId: string;
+  type: 'receita' | 'despesa';
+  category: string;
+  description: string;
+  amount: number;
+  paymentMethod: string;
+  memberId?: string;
+  supplierId?: string;
+  status: string;
+  date: string;
+  dueDate?: string;
+  paidDate?: string;
+}
 
 // Componente Reutilizável de Gráfico de Rosca (Donut)
 function DonutChart({ 
@@ -153,7 +169,7 @@ const { firstDayStr, lastDayStr } = getMonthBounds();
 export default function FinanceiroDashboardPage() {
   const { currentUser, canSeeAllChurches } = useAuth();
   const { churches, churchServices } = useGlobalData();
-  const [dbTransactions, setDbTransactions] = useState<Transaction[]>([]);
+  const [dbTransactions, setDbTransactions] = useState<FinancialTransaction[]>([]);
 
   useEffect(() => {
     async function loadAllTransactions() {

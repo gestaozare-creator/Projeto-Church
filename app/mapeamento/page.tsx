@@ -1,15 +1,15 @@
 "use client";
 import { useState, useMemo, useEffect } from 'react';
-import { supabase } from '../../lib/supabaseClient';
-import { BRAZIL_STATES } from '../../lib/brazil-map-data';
+import { supabase } from '@/lib/supabaseClient';
+import { BRAZIL_STATES } from '@/lib/brazil-map-data';
+import { Member, Church } from '@/types/database';
 
+type Person = { id: string; name: string; phone?: string; address?: string; state?: string; type: 'membro' | 'visitante'; photoUrl?: string; function?: string; ministry?: string; status?: string };
 
-
-type Person = { id:string; name:string; phone:string; address:string; state:string; type:'membro'|'visitante'; photoUrl?:string; function?:string; ministry?:string; status?:string };
 
 export default function Mapeamento() {
-  const [dbMembers, setDbMembers] = useState<any[]>([]);
-  const [dbChurches, setDbChurches] = useState<any[]>([]);
+  const [dbMembers, setDbMembers] = useState<Member[]>([]);
+  const [dbChurches, setDbChurches] = useState<Church[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -46,10 +46,11 @@ export default function Mapeamento() {
   const stateCounts = useMemo(() => {
     const counts: Record<string, { total:number; membros:number; visitantes:number }> = {};
     filteredPeople.forEach(p => {
-      if (!counts[p.state]) counts[p.state] = { total:0, membros:0, visitantes:0 };
-      counts[p.state].total++;
-      if (p.type === 'membro') counts[p.state].membros++;
-      else counts[p.state].visitantes++;
+      const stateStr = p.state || 'N/A';
+      if (!counts[stateStr]) counts[stateStr] = { total:0, membros:0, visitantes:0 };
+      counts[stateStr].total++;
+      if (p.type === 'membro') counts[stateStr].membros++;
+      else counts[stateStr].visitantes++;
     });
     return counts;
   }, [filteredPeople]);
@@ -73,7 +74,7 @@ export default function Mapeamento() {
     const nCounts: Record<string, number> = {};
     
     statePeople.forEach(p => {
-      const parts = p.address.split(',').map(s => s.trim());
+      const parts = (p.address || '').split(',').map(s => s.trim());
       const neighborhood = parts[0] || 'Desconhecido';
       const city = parts[1] || 'Desconhecida';
       
@@ -103,8 +104,8 @@ export default function Mapeamento() {
     // Configuração do mapa com rota quando tem uma pessoa selecionada
     const defaultChurchAddress = dbChurches[0]?.address || 'Centro, São Paulo, SP';
     const mapUrl = selectedPerson
-      ? `https://maps.google.com/maps?saddr=${encodeURIComponent(defaultChurchAddress)}&daddr=${encodeURIComponent(selectedPerson.address)}&t=&z=${mapZ}&ie=UTF8&output=embed`
-      : `https://maps.google.com/maps?q=${encodeURIComponent(mapQ)}&t=&z=${mapZ}&ie=UTF8&iwloc=B&output=embed`;
+      ? `https://maps.google.com/maps?saddr=${encodeURIComponent(defaultChurchAddress)}&daddr=${encodeURIComponent(selectedPerson.address || '')}&t=&z=${mapZ}&ie=UTF8&output=embed`
+      : `https://maps.google.com/maps?q=${encodeURIComponent(mapQ || '')}&t=&z=${mapZ}&ie=UTF8&iwloc=B&output=embed`;
 
     return (
       <div style={{ display:'flex', flexDirection:'column', height:'100%', gap:'12px' }}>
@@ -217,7 +218,7 @@ export default function Mapeamento() {
                   {selectedPerson.ministry && <IC label="Ministério" value={selectedPerson.ministry} />}
                 </div>
                 <button className="modal-btn" style={{ margin:'10px 0 0', width:'100%', padding:'8px', fontSize:'0.78rem', backgroundColor:'#25d366' }}
-                  onClick={() => window.open(`https://wa.me/55${selectedPerson.phone.replace(/\D/g,'')}`, '_blank')}>💬 WhatsApp</button>
+                  onClick={() => window.open(`https://wa.me/55${(selectedPerson.phone || '').replace(/\D/g,'')}`, '_blank')}>💬 WhatsApp</button>
               </div>
             ) : (
               <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', gap:'6px' }}>

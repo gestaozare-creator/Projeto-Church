@@ -31,3 +31,8 @@ Protocolo V.L.A.E.G.
 - [x] Integração do filtro de horário dinâmico (baseado no cadastro `MOCK_CHURCHES`) que opera independentemente do filtro de culto estar ou não selecionado.
 - [x] Adição do recurso de gráficos dinâmicos no Dashboard Financeiro para alternância de visualização entre Detalhamento de Entradas, Formas de Pagamento e Detalhamento de Saídas.
 - [x] Correções de interface gráfica (resolução de sobreposição/encavalamento dos campos "De" e "Até" nas páginas de Receber e Pagar) e resolução de erros de renderização (`Unexpected Token`) no Dashboard da Secretaria e Membros.
+
+### 2026-06-27
+
+- [x] **Transição para Produção (Fim dos Mocks):** Erradicação completa de todos os dados falsos (`MOCK_VISITORS`, `MOCK_CHURCHES`, `MOCK_MEMBERS`, dados hardcoded no `app/mapeamento/page.tsx` e `app/ranking/page.tsx`). O sistema inteiro foi conectado e configurado para ler exclusivamente dados reais provindos do Supabase.
+- [x] **Correção Crítica de Deploy (Vercel):** Identificação e resolução de erros do TypeScript que estavam abortando os builds na Vercel silenciosamente. O TypeScript foi perfeitamente tipado com `Church` interface e correções de tipos nulos e "implicit any", permitindo compilações livres de erros e refletindo as mudanças finalmente na interface de produção do usuário final.

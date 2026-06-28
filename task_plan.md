@@ -93,6 +93,7 @@ Protocolo V.L.A.E.G.
 - [x] Implementar UI/UX moderna com Glassmorphism (Cards de membros, Dashboard financeiro com mocks).
 - [ ] Validação visual do MVP.
 
-### Fase 5: Gatilho (G) [ ]
-- [ ] Deploy na Nuvem (Vercel)
-- [ ] Automações e Gatilhos de Banco de Dados
+### Fase 5: Gatilho (G) [Concluída]
+- [x] Deploy na Nuvem (Vercel) finalizado com sucesso.
+- [x] Transição de MVP visual (Mocks) para Sistema de Produção Real (Supabase).
+- [ ] Automações e Gatilhos de Banco de Dados.

@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
+import { Church } from '@/types/database';
 
 type VisitorStatus = 'visitante' | 'em_conversao' | 'membro';
 
@@ -32,7 +33,7 @@ export default function Visitantes() {
   const { currentUser, canSeeAllChurches } = useAuth();
   
   const [visitors, setVisitors] = useState<Visitor[]>([]);
-  const [dbChurches, setDbChurches] = useState<any[]>([]);
+  const [dbChurches, setDbChurches] = useState<Church[]>([]);
   const [cults] = useState(CULTS_DEFAULT);
   const [sel, setSel] = useState<Visitor | null>(null);
 
