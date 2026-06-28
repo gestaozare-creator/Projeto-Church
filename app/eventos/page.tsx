@@ -583,11 +583,11 @@ export default function EventosPage() {
             📅 Agenda Fixa de Cultos Regulares
           </div>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            {activeChurchServices.sort((a, b) => {
+            {activeChurchServices.sort((a: any, b: any) => {
                const days = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
                if (days.indexOf(a.dayOfWeek) !== days.indexOf(b.dayOfWeek)) return days.indexOf(a.dayOfWeek) - days.indexOf(b.dayOfWeek);
                return a.time.localeCompare(b.time);
-            }).map((svc, idx) => (
+            }).map((svc: any, idx: any) => (
               <div key={idx} style={{ background: 'rgba(241, 196, 15, 0.1)', border: '1px solid rgba(241, 196, 15, 0.3)', padding: '8px 14px', borderRadius: '8px', display: 'flex', flexDirection: 'column' }}>
                 <span style={{ fontWeight: 600, color: '#f1c40f', fontSize: '0.85rem' }}>{svc.name}</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>

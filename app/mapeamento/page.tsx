@@ -32,7 +32,7 @@ export default function Mapeamento() {
   const allPeople: Person[] = useMemo(() => {
     const members = dbMembers.map(m => ({
       id: m.id, name: m.name, phone: m.phone, address: m.address, state: m.state,
-      type: m.status === 'visitante' ? 'visitante' : 'membro' as const, photoUrl: m.photoUrl, function: m.function, ministry: m.ministry, status: m.status
+      type: (m.status === 'visitante' ? 'visitante' : 'membro') as 'visitante' | 'membro', photoUrl: m.photoUrl, function: m.function, ministry: m.ministry, status: m.status
     }));
     return members;
   }, [dbMembers]);

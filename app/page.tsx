@@ -382,7 +382,7 @@ export default function Home() {
                 <img src={sel.photoUrl} alt={sel.name} className="modal-photo" style={{ width:'85px', height:'85px', border:'3px solid var(--primary-light)', display:'block', margin:'0 auto 12px' }} />
                 <h3 style={{ fontSize:'1.2rem', marginBottom:'4px' }}>{sel.name}</h3>
                 <div style={{ display:'flex', justifyContent:'center', gap:'4px', flexWrap:'wrap' }}>
-                  <span className="badge" style={{ padding:'3px 8px', fontSize:'0.6rem', margin:0 }}>{MOCK_CHURCHES.find(c => c.id === sel.churchId)?.name || 'Igreja'}</span>
+                  <span className="badge" style={{ padding:'3px 8px', fontSize:'0.6rem', margin:0 }}>{dbChurches.find((c: any) => c.id === sel.churchId)?.name || 'Igreja'}</span>
                   {sel.status === 'pendente' && <span className="badge" style={{ background:'#f39c12', padding:'3px 8px', fontSize:'0.6rem', margin:0, color:'#fff' }}>PENDENTE</span>}
                   {sel.status === 'ativo' && (isExp(sel.integrationDate) ? <span className="badge-expired" style={{ padding:'3px 8px' }}>VENCIDA</span> : <span className="badge-valid" style={{ padding:'3px 8px' }}>ATIVA</span>)}
                   {sel.status === 'inativo' && <span className="badge" style={{ background:'#95a5a6', padding:'3px 8px', fontSize:'0.6rem', margin:0, color:'#fff' }}>INATIVO</span>}
@@ -573,7 +573,7 @@ export default function Home() {
                       </div>
                     ) : (
                       <select name="churchId" value={editForm.churchId} onChange={e => { if (e.target.value === '__new__') { setCustomChurch(true); } else { onChange(e); }}} className="search-input glass-input" style={{ width:'100%', padding:'8px' }}>
-                        {MOCK_CHURCHES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        {dbChurches.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                         {customChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         <option value="__new__">➕ Cadastrar nova igreja...</option>
                       </select>

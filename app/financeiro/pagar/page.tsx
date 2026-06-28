@@ -884,7 +884,7 @@ export default function ContasPagar() {
                       <html>
                         <body style="font-family: sans-serif; display: flex; flex-direction: column; alignItems: center; text-align: center; padding: 20px;">
                           <h2 style="margin-bottom: 5px;">Patrimônio da Igreja</h2>
-                          <h4 style="margin-top: 0; color: #555;">${MOCK_CHURCHES.find(c => c.id === showAssetLabelModal.churchId)?.name || 'Igreja Local'}</h4>
+                          <h4 style="margin-top: 0; color: #555;">${churches.find((c: any) => c.id === showAssetLabelModal.churchId)?.name || 'Igreja Local'}</h4>
                           <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.origin + '/qrcode/patrimonio/' + showAssetLabelModal.id)}" />
                           <p style="font-size: 14px; margin-top: 15px; font-weight: bold;">${showAssetLabelModal.name}</p>
                           <p style="font-size: 12px; color: #777;">ID: ${showAssetLabelModal.id}</p>

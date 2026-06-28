@@ -3,6 +3,29 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
+export interface Church {
+  id: string;
+  ministryId: string;
+  name: string;
+  isHeadquarters: boolean;
+  city: string;
+  neighborhood: string;
+  state: string;
+  address: string;
+  phone: string;
+  pastorName: string;
+  logoUrl?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  status: 'ativa' | 'inativa';
+  plan: 'Basic' | 'Pro' | 'Premium';
+  memberLimit?: number;
+  userLimit?: number;
+  subscriptionStatus: 'Ativa' | 'Atrasada' | 'Inadimplente' | 'Trial';
+  departments: string[];
+  coverPhotoUrl?: string;
+  services?: any[];
+}
 
 export default function IgrejasPage() {
   const [churches, setChurches] = useState<any[]>([]);
@@ -101,7 +124,7 @@ export default function IgrejasPage() {
     loadLiveStats();
   }, [churches]);
   
-  const [formData, setFormData] = useState<any>({
+  const [formData, setFormData] = useState<Partial<Church & { activeModules: string[]; userLimit?: number }>>({
     ministryId: ministryGroups[0]?.id || '',
     name: '',
     isHeadquarters: false,
@@ -166,7 +189,7 @@ export default function IgrejasPage() {
     setShowModal(true);
   };
 
-  const handleOpenEdit = (c: Church) => {
+  const handleOpenEdit = (c: any) => {
     setEditingId(c.id);
     setFormData({ 
       userLimit: 3,
@@ -253,7 +276,7 @@ export default function IgrejasPage() {
   };
 
   const handleRemoveDepartment = (dep: string) => {
-    setFormData({ ...formData, departments: formData.departments?.filter(d => d !== dep) });
+    setFormData({ ...formData, departments: formData.departments?.filter((d: any) => d !== dep) });
   };
 
   const handleCreateMinistry = () => {
@@ -842,7 +865,7 @@ export default function IgrejasPage() {
                       <div style={{ display: 'flex', gap: '12px' }}>
                         <div style={{ flex: 1 }}>
                           <label className="input-label">Trava / Limite de Membros Manuais</label>
-                          <input type="number" className="search-input glass-input" style={{ width: '100%' }} placeholder="Deixe em branco para ilimitado" value={formData.memberLimit || ''} onChange={e => setFormData({...formData, memberLimit: e.target.value ? parseInt(e.target.value) : null})} />
+                          <input type="number" className="search-input glass-input" style={{ width: '100%' }} placeholder="Deixe em branco para ilimitado" value={formData.memberLimit || ''} onChange={e => setFormData({...formData, memberLimit: e.target.value ? parseInt(e.target.value) : undefined})} />
                           <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>O sistema bloqueará novos cadastros caso a igreja atinja este limite.</span>
                         </div>
                         <div style={{ flex: 1 }}>

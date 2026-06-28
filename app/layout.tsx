@@ -97,7 +97,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
               <>
                 {/* SECRETARIA — visível para todos */}
                 {/* SECRETARIA — Oculto para Líder Kids */}
-                {currentUser.role !== 'kids_leader' && (
+                {(currentUser as any).role !== 'kids_leader' && (
                   <div className="nav-item">
                     <div 
                       className={`nav-link ${activeMenu === 'secretaria' ? 'active' : ''}`} 
