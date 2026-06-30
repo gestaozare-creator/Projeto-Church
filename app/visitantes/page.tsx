@@ -274,7 +274,7 @@ export default function Visitantes() {
     
     setVisitors(p => [newVisitor, ...p]);
     setShowNewModal(false);
-    setNewForm({ name: '', phone: '', email: '', region: '', source: '', wantsVisit: false, address: '', notes: '', date: new Date().toISOString().split('T')[0], culto: '', horario: '', churchId: '' });
+    setNewForm({ name: '', phone: '', email: '', region: '', source: 'Amigos / Parentes', wantsVisit: false, address: '', notes: '', date: new Date().toISOString().split('T')[0], culto: '', horario: '', churchId: '' });
   };
 
   const fmtDate = (d: string) => new Date(d + 'T12:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
