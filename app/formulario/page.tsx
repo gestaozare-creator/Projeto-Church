@@ -64,6 +64,7 @@ export default function FormularioVisitante() {
     const { error } = await supabase
       .from('members')
       .insert({
+        id: 'm_' + Date.now().toString(), // Adiciona geração explícita de ID único
         name: finalForm.name,
         phone: finalForm.phone,
         state: finalForm.region,
@@ -71,7 +72,8 @@ export default function FormularioVisitante() {
         function: 'Visitante',
         status: 'pendente', // Pendente de aprovação (fluxo de visitantes)
         address: finalForm.address || '',
-        church_id: finalForm.churchId
+        church_id: finalForm.churchId,
+        integration_date: new Date().toISOString().split('T')[0] // Mapeia data padrão de cadastro
       });
 
     if (error) {
