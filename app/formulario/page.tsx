@@ -17,7 +17,8 @@ export default function FormularioVisitante() {
     wantsVisit: '',
     address: '',
     churchId: '',
-    serviceId: '' // Guardará o ID do culto selecionado pelo visitante
+    cultoName: '', // Armazenará o nome do culto selecionado (ex: Culto do Milagre)
+    horarioSelected: '' // Armazenará o dia e horário selecionado (ex: Quinta-feira às 15:00)
   });
 
   const [isLocked, setIsLocked] = useState(false);
@@ -65,25 +66,41 @@ export default function FormularioVisitante() {
     return services.filter(s => s.church_id === form.churchId);
   }, [services, form.churchId]);
 
-  // Sincroniza o primeiro culto da lista caso mude a igreja
-  useEffect(() => {
-    if (availableServices.length > 0) {
-      setForm(prev => ({ ...prev, serviceId: availableServices[0].id }));
-    } else {
-      setForm(prev => ({ ...prev, serviceId: '' }));
-    }
+  // Lista dinâmica de nomes de cultos únicos da igreja selecionada
+  const uniqueCultoNames = useMemo(() => {
+    const names = new Set(availableServices.map(s => s.name));
+    return Array.from(names).sort();
   }, [availableServices]);
+
+  // Filtra os horários disponíveis para o nome do culto selecionado
+  const availableHorarios = useMemo(() => {
+    if (!form.cultoName) return [];
+    return availableServices.filter(s => s.name === form.cultoName).map(s => `${s.day_of_week} às ${s.time}`);
+  }, [availableServices, form.cultoName]);
+
+  // Sincroniza o primeiro nome de culto e o primeiro horário caso a igreja mude
+  useEffect(() => {
+    if (uniqueCultoNames.length > 0) {
+      setForm(prev => ({ ...prev, cultoName: uniqueCultoNames[0] }));
+    } else {
+      setForm(prev => ({ ...prev, cultoName: '', horarioSelected: '' }));
+    }
+  }, [uniqueCultoNames]);
+
+  // Sincroniza o primeiro horário quando o nome do culto mudar
+  useEffect(() => {
+    if (availableHorarios.length > 0) {
+      setForm(prev => ({ ...prev, horarioSelected: availableHorarios[0] }));
+    } else {
+      setForm(prev => ({ ...prev, horarioSelected: '' }));
+    }
+  }, [availableHorarios]);
 
   const saveVisitorToDb = async (finalForm: typeof form) => {
     if (!finalForm.churchId) {
       alert('Nenhuma igreja selecionada ou disponível.');
       return;
     }
-
-    // Busca o culto selecionado para salvar o nome e o horário nas colunas correspondentes
-    const selectedService = services.find(s => s.id === finalForm.serviceId);
-    const cultoNome = selectedService ? selectedService.name : '';
-    const cultoHorario = selectedService ? `${selectedService.day_of_week} às ${selectedService.time}` : '';
 
     const { error } = await supabase
       .from('members')
@@ -97,8 +114,8 @@ export default function FormularioVisitante() {
         status: 'pendente',
         address: finalForm.address || '',
         church_id: finalForm.churchId,
-        culto: cultoNome, // Salva o culto
-        horario: cultoHorario, // Salva o horário formatado (ex: Domingo às 19:30)
+        culto: finalForm.cultoName, // Salva o nome do culto escolhido
+        horario: finalForm.horarioSelected, // Salva o dia/horário escolhido
         integration_date: new Date().toISOString().split('T')[0]
       });
 
@@ -167,32 +184,33 @@ export default function FormularioVisitante() {
               </div>
             )}
 
-            {/* Seleção do Culto e Horário */}
-            {availableServices.length > 0 && (
+            {/* Seleção do Culto e Horário Manuais */}
+            {uniqueCultoNames.length > 0 && (
               <div style={{ display: 'flex', gap: '12px' }}>
-                <div style={{ flex: 1.2 }}>
+                <div style={{ flex: 1 }}>
                   <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Culto da Visita *</label>
                   <select 
-                    name="serviceId" value={form.serviceId} onChange={handleChange} required
+                    name="cultoName" value={form.cultoName} onChange={handleChange} required
                     style={{ width: '100%', padding: '12px 15px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none', backgroundColor: '#fff', cursor: 'pointer', boxSizing: 'border-box' }}
                   >
-                    {availableServices.map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
+                    {uniqueCultoNames.map(name => (
+                      <option key={name} value={name}>{name}</option>
                     ))}
                   </select>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Dia e Hora Autogerados</label>
-                  <input 
-                    type="text" 
-                    value={(() => {
-                      const selected = availableServices.find(s => s.id === form.serviceId);
-                      return selected ? `${selected.day_of_week} às ${selected.time}` : 'Escolha o culto';
-                    })()} 
-                    readOnly 
-                    style={{ width: '100%', padding: '12px 15px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none', backgroundColor: '#f8fafc', color: '#64748b', boxSizing: 'border-box' }}
-                  />
-                </div>
+                {availableHorarios.length > 0 && (
+                  <div style={{ flex: 1.2 }}>
+                    <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Horário do Culto *</label>
+                    <select 
+                      name="horarioSelected" value={form.horarioSelected} onChange={handleChange} required
+                      style={{ width: '100%', padding: '12px 15px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none', backgroundColor: '#fff', cursor: 'pointer', boxSizing: 'border-box' }}
+                    >
+                      {availableHorarios.map(h => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             )}
 

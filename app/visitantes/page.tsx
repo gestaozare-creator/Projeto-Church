@@ -663,7 +663,7 @@ export default function Visitantes() {
               </div>
             </div>
 
-            {/* Culto e Horário Dinâmicos para a Modal */}
+            {/* Culto e Horário Manuais para a Modal */}
             {(() => {
               const targetChurchId = newForm.churchId || (churchF !== 'all' && churchF !== 'ALL' ? churchF : (dbChurches[0]?.id || ''));
               const modalAvailableServices = dbChurches.find(c => c.id === targetChurchId)?.services || [];
@@ -671,21 +671,28 @@ export default function Visitantes() {
 
               if (modalAvailableCultos.length === 0) return null;
 
+              // Filtra os horários disponíveis para o culto selecionado na modal
+              const modalAvailableHorarios = newForm.culto 
+                ? modalAvailableServices.filter(s => s.name === newForm.culto).map(s => `${s.dayOfWeek} às ${s.time}`)
+                : [];
+
               return (
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <div style={{ flex: 1 }}>
-                    <label className="input-label">Culto da Visita</label>
+                    <label className="input-label">Culto da Visita *</label>
                     <select 
                       value={newForm.culto || ''} 
                       onChange={e => {
                         const selectedVal = e.target.value;
-                        const relatedSvc = modalAvailableServices.find(s => s.name === selectedVal);
+                        const relatedSvcs = modalAvailableServices.filter(s => s.name === selectedVal);
+                        const initialHorario = relatedSvcs.length > 0 ? `${relatedSvcs[0].dayOfWeek} às ${relatedSvcs[0].time}` : '';
                         setNewForm(p => ({ 
                           ...p, 
                           culto: selectedVal,
-                          horario: relatedSvc ? `${relatedSvc.dayOfWeek} às ${relatedSvc.time}` : '' 
+                          horario: initialHorario
                         }));
                       }}
+                      required
                       className="search-input glass-input" 
                       style={{ width: '100%', padding: '8px' }}
                     >
@@ -693,10 +700,20 @@ export default function Visitantes() {
                       {modalAvailableCultos.map(name => <option key={name} value={name}>{name}</option>)}
                     </select>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <label className="input-label">Horário Autogerado</label>
-                    <input type="text" value={newForm.horario || ''} readOnly className="search-input glass-input" style={{ width: '100%', padding: '8px', opacity: 0.7, background: 'rgba(255,255,255,0.02)' }} placeholder="Selecione o culto acima" />
-                  </div>
+                  {modalAvailableHorarios.length > 0 && (
+                    <div style={{ flex: 1 }}>
+                      <label className="input-label">Horário do Culto *</label>
+                      <select 
+                        value={newForm.horario || ''} 
+                        onChange={e => setNewForm(p => ({ ...p, horario: e.target.value }))}
+                        required
+                        className="search-input glass-input" 
+                        style={{ width: '100%', padding: '8px' }}
+                      >
+                        {modalAvailableHorarios.map(h => <option key={h} value={h}>{h}</option>)}
+                      </select>
+                    </div>
+                  )}
                 </div>
               );
             })()}
