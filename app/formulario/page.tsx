@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function FormularioVisitante() {
   const [step, setStep] = useState<'form' | 'visit' | 'success'>('form');
   const [churches, setChurches] = useState<{ id: string; name: string }[]>([]);
-  const [loadingChurches, setLoadingChurches] = useState(true);
+  const [services, setServices] = useState<{ id: string; church_id: string; name: string; day_of_week: string; time: string }[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const [form, setForm] = useState({
     name: '',
@@ -15,45 +16,63 @@ export default function FormularioVisitante() {
     howKnew: '',
     wantsVisit: '',
     address: '',
-    churchId: ''
+    churchId: '',
+    serviceId: '' // Guardará o ID do culto selecionado pelo visitante
   });
 
   const [isLocked, setIsLocked] = useState(false);
 
-  // Carrega as igrejas reais do banco de dados
+  // Carrega as igrejas e os cultos do banco de dados
   useEffect(() => {
-    async function loadChurches() {
-      const { data, error } = await supabase
-        .from('churches')
-        .select('id, name');
+    async function loadData() {
+      const { data: churchesDb } = await supabase.from('churches').select('id, name');
+      const { data: servicesDb } = await supabase.from('church_services').select('*');
       
-      if (!error && data) {
-        setChurches(data);
+      if (churchesDb) {
+        setChurches(churchesDb);
         
         // Verifica se há o parâmetro ?church=ID na URL
         const params = new URLSearchParams(window.location.search);
         const churchParam = params.get('church');
         
         if (churchParam) {
-          const exists = data.find(c => c.id === churchParam);
+          const exists = churchesDb.find(c => c.id === churchParam);
           if (exists) {
             setForm(prev => ({ ...prev, churchId: churchParam }));
             setIsLocked(true);
-          } else if (data.length > 0) {
-            setForm(prev => ({ ...prev, churchId: data[0].id }));
+          } else if (churchesDb.length > 0) {
+            setForm(prev => ({ ...prev, churchId: churchesDb[0].id }));
           }
-        } else if (data.length > 0) {
-          setForm(prev => ({ ...prev, churchId: data[0].id }));
+        } else if (churchesDb.length > 0) {
+          setForm(prev => ({ ...prev, churchId: churchesDb[0].id }));
         }
       }
-      setLoadingChurches(false);
+
+      if (servicesDb) {
+        setServices(servicesDb);
+      }
+      setLoading(false);
     }
-    loadChurches();
+    loadData();
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
+
+  // Filtra os cultos disponíveis para a igreja selecionada
+  const availableServices = useMemo(() => {
+    return services.filter(s => s.church_id === form.churchId);
+  }, [services, form.churchId]);
+
+  // Sincroniza o primeiro culto da lista caso mude a igreja
+  useEffect(() => {
+    if (availableServices.length > 0) {
+      setForm(prev => ({ ...prev, serviceId: availableServices[0].id }));
+    } else {
+      setForm(prev => ({ ...prev, serviceId: '' }));
+    }
+  }, [availableServices]);
 
   const saveVisitorToDb = async (finalForm: typeof form) => {
     if (!finalForm.churchId) {
@@ -61,19 +80,26 @@ export default function FormularioVisitante() {
       return;
     }
 
+    // Busca o culto selecionado para salvar o nome e o horário nas colunas correspondentes
+    const selectedService = services.find(s => s.id === finalForm.serviceId);
+    const cultoNome = selectedService ? selectedService.name : '';
+    const cultoHorario = selectedService ? `${selectedService.day_of_week} às ${selectedService.time}` : '';
+
     const { error } = await supabase
       .from('members')
       .insert({
-        id: 'm_' + Date.now().toString(), // Adiciona geração explícita de ID único
+        id: 'm_' + Date.now().toString(),
         name: finalForm.name,
         phone: finalForm.phone,
         state: finalForm.region,
         ministry: finalForm.howKnew,
         function: 'Visitante',
-        status: 'pendente', // Pendente de aprovação (fluxo de visitantes)
+        status: 'pendente',
         address: finalForm.address || '',
         church_id: finalForm.churchId,
-        integration_date: new Date().toISOString().split('T')[0] // Mapeia data padrão de cadastro
+        culto: cultoNome, // Salva o culto
+        horario: cultoHorario, // Salva o horário formatado (ex: Domingo às 19:30)
+        integration_date: new Date().toISOString().split('T')[0]
       });
 
     if (error) {
@@ -121,7 +147,7 @@ export default function FormularioVisitante() {
           <div style={{ width: '50px', height: '3px', background: '#3b82f6', margin: '15px auto 0', borderRadius: '2px' }}></div>
         </div>
 
-        {loadingChurches ? (
+        {loading ? (
           <div style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>Carregando opções...</div>
         ) : step === 'form' ? (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -138,6 +164,21 @@ export default function FormularioVisitante() {
             ) : (
               <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px 14px', fontSize: '0.9rem', color: '#475569', marginBottom: '10px' }}>
                 <strong>Igreja que Visita:</strong> {churches.find(c => c.id === form.churchId)?.name}
+              </div>
+            )}
+
+            {/* Seleção do Culto e Horário */}
+            {availableServices.length > 0 && (
+              <div>
+                <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Culto que está Visitando *</label>
+                <select 
+                  name="serviceId" value={form.serviceId} onChange={handleChange} required
+                  style={{ width: '100%', padding: '12px 15px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none', backgroundColor: '#fff', cursor: 'pointer', boxSizing: 'border-box' }}
+                >
+                  {availableServices.map(s => (
+                    <option key={s.id} value={s.id}>{s.name} ({s.day_of_week} às {s.time})</option>
+                  ))}
+                </select>
               </div>
             )}
 

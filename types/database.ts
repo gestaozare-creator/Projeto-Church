@@ -39,6 +39,8 @@ export interface Member {
   integrationDate?: string;
   photoUrl?: string;
   cardValidity?: string;
+  culto?: string;
+  horario?: string;
 }
 
 export interface Visitor {

@@ -125,6 +125,11 @@ export default function Home() {
     const c = church === 'ALL' || church === 'all' || m.church_id === church;
     const isNotVisitor = m.function !== 'Visitante (Kids)' && m.function !== 'Visitante';
     
+    // Filtro por Culto selecionado
+    if (cultoFilter !== 'ALL' && m.culto !== cultoFilter) return false;
+    // Filtro por Horário selecionado
+    if (horarioFilter !== 'ALL' && m.horario && !m.horario.includes(horarioFilter)) return false;
+
     let d = true;
     const mDate = (m.integrationDate || '').split('T')[0] || '2026-01-01';
     if (startDate && mDate < startDate) d = false;
