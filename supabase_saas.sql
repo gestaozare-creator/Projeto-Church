@@ -14,6 +14,11 @@ ADD COLUMN IF NOT EXISTS departments TEXT[], -- Ex: '{Louvor, Mídia, Kids}'
 ADD COLUMN IF NOT EXISTS logo_url TEXT,
 ADD COLUMN IF NOT EXISTS cover_photo_url TEXT;
 
+-- Adiciona campos de controle de culto e horário na tabela de membros/visitantes
+ALTER TABLE public.members
+ADD COLUMN IF NOT EXISTS culto TEXT,
+ADD COLUMN IF NOT EXISTS horario TEXT;
+
 -- 2. CRIAR TABELA: AGENDA DE CULTOS (SERVICES)
 -- Substituirá a lógica local para que todos os dashboards puxem daqui
 CREATE TABLE IF NOT EXISTS public.church_services (
@@ -79,3 +84,32 @@ ON CONFLICT DO NOTHING;
 UPDATE public.churches SET ministry_id = 'min1', plan = 'Premium', subscription_status = 'Ativa', departments = '{Louvor, Mídia, Kids, Obreiros}' WHERE id = '1';
 UPDATE public.churches SET ministry_id = 'min1', plan = 'Pro', member_limit = 500, subscription_status = 'Ativa', departments = '{Louvor, Kids}' WHERE id = '2';
 UPDATE public.churches SET ministry_id = 'min2', plan = 'Basic', member_limit = 150, subscription_status = 'Inadimplente' WHERE id = '3';
+
+-- 7. POLÍTICAS DE SEGURANÇA (RLS) PARA A AGENDA DE CULTOS
+ALTER TABLE public.church_services ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Permitir leitura de cultos para todos" ON public.church_services;
+CREATE POLICY "Permitir leitura de cultos para todos"
+ON public.church_services FOR SELECT
+USING (true);
+
+DROP POLICY IF EXISTS "Permitir escrita de cultos para todos" ON public.church_services;
+CREATE POLICY "Permitir escrita de cultos para todos"
+ON public.church_services FOR INSERT
+WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Permitir atualização de cultos para todos" ON public.church_services;
+CREATE POLICY "Permitir atualização de cultos para todos"
+ON public.church_services FOR UPDATE
+USING (true);
+
+DROP POLICY IF EXISTS "Permitir deleção de cultos para todos" ON public.church_services;
+CREATE POLICY "Permitir deleção de cultos para todos"
+ON public.church_services FOR DELETE
+USING (true);
+-- 8. POLÍTICAS DE SEGURANÇA (RLS) PARA A TABELA MEMBERS (ONLINE REGISTRATION)
+-- Permite que o formulário público faça o INSERT mesmo sem estar logado
+DROP POLICY IF EXISTS "Permitir inserção pública na tabela members" ON public.members;
+CREATE POLICY "Permitir inserção pública na tabela members"
+ON public.members FOR INSERT
+WITH CHECK (true);
