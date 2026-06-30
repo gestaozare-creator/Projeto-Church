@@ -531,10 +531,19 @@ export default function Home() {
                         <button type="button" onClick={() => { setCustomChurch(false); setNewChurchName(''); }} style={{ padding:'6px 8px', borderRadius:'6px', border:'none', background:'#e74c3c', color:'#fff', cursor:'pointer', fontSize:'0.7rem' }}>✕</button>
                       </div>
                     ) : (
-                      <select name="churchId" value={editForm.churchId} onChange={e => { if (e.target.value === '__new__') { setCustomChurch(true); } else { onChange(e); }}} className="search-input glass-input" style={{ width:'100%', padding:'8px' }}>
+                      <select 
+                        name="churchId" 
+                        value={editForm.churchId} 
+                        onChange={e => { if (e.target.value === '__new__') { setCustomChurch(true); } else { onChange(e); }}} 
+                        className="search-input glass-input" 
+                        style={{ width:'100%', padding:'8px' }}
+                        disabled={!canSeeAllChurches} // Trava o select para usuários locais
+                      >
                         {dbChurches.map((c: Church) => <option key={c.id} value={c.id}>{c.name}</option>)}
                         {customChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        <option value="__new__">➕ Cadastrar nova igreja...</option>
+                        {canSeeAllChurches && (
+                          <option value="__new__">➕ Cadastrar nova igreja...</option>
+                        )}
                       </select>
                     )}
                   </div>
