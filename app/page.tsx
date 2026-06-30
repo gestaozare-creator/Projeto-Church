@@ -512,14 +512,9 @@ export default function Home() {
                     ) : (
                       <select name="ministry" value={editForm.ministry} onChange={e => { if (e.target.value === '__new__') { setCustomMinistry(true); setEditForm((p:any) => ({...p, ministry: ''})); } else { onChange(e); }}} className="search-input glass-input" style={{ width:'100%', padding:'8px' }}>
                         <option value="">Selecione...</option>
-                        <option value="Louvor">Louvor</option>
-                        <option value="Obreiros">Obreiros</option>
-                        <option value="Infantil">Infantil</option>
-                        <option value="Mídia">Mídia</option>
-                        <option value="Pastoral">Pastoral</option>
-                        <option value="Intercessão">Intercessão</option>
-                        <option value="Evangelismo">Evangelismo</option>
-                        <option value="Diaconia">Diaconia</option>
+                        {(dbChurches.find(c => c.id === editForm.churchId)?.departments || ['Louvor', 'Obreiros', 'Infantil', 'Mídia', 'Pastoral', 'Intercessão', 'Evangelismo', 'Diaconia']).map((d: string) => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
                         {customMinistries.map(m => <option key={m} value={m}>{m}</option>)}
                         <option value="__new__">➕ Criar novo ministério...</option>
                       </select>
