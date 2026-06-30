@@ -167,7 +167,7 @@ export default function Home() {
   const calcExp = (d?: string) => { if (!d) return '—'; const e = new Date(d); e.setFullYear(e.getFullYear()+2); return e.toLocaleDateString('pt-BR'); };
 
   const openEdit = (m: Member) => { setEditForm({...m}); setPhotoPreview(m.photoUrl||null); setIsCreating(false); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomChurch(false); setIsEditing(true); };
-  const openCreate = () => { setEditForm({ id:'', name:'', function:'Membro', ministry:'Louvor', phone:'', email:'', address:'', integrationDate: new Date().toISOString().split('T')[0], cardValidity: '', churchId: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', photoUrl:'', status:'ativo' }); setPhotoPreview(null); setIsCreating(true); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomChurch(false); setIsEditing(true); };
+  const openCreate = () => { setEditForm({ id:'', name:'', function:'Membro', ministry:'Louvor', phone:'', email:'', address:'', integrationDate: new Date().toISOString().split('T')[0], cardValidity: '', churchId: (church && church !== 'ALL') ? church : (currentUser?.churchId || dbChurches[0]?.id || ''), photoUrl:'', status:'ativo' }); setPhotoPreview(null); setIsCreating(true); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomChurch(false); setIsEditing(true); };
 
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -186,7 +186,7 @@ export default function Home() {
       email: editForm.email,
       address: editForm.address,
       status: editForm.status,
-      church_id: editForm.churchId && editForm.churchId.length > 5 ? editForm.churchId : (currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d'),
+      church_id: editForm.churchId && editForm.churchId.length > 5 ? editForm.churchId : ((church && church !== 'ALL') ? church : (currentUser?.churchId || dbChurches[0]?.id || '')),
       integration_date: editForm.integrationDate,
       photo_url: finalPhoto,
       card_validity: editForm.cardValidity
