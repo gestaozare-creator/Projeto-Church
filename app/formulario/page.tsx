@@ -130,14 +130,14 @@ export default function FormularioVisitante() {
       setStep('visit');
       return;
     }
-    await saveVisitorToDb(form);
-    setStep('success');
+    saveVisitorToDb(form); // Dispara inserção em segundo plano (background)
+    setStep('success'); // Muda a tela instantaneamente
   };
 
   const handleVisitSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await saveVisitorToDb(form);
-    setStep('success');
+    saveVisitorToDb(form); // Dispara inserção em segundo plano (background)
+    setStep('success'); // Muda a tela instantaneamente
   };
 
   if (step === 'success') {
