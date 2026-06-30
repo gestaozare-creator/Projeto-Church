@@ -76,6 +76,11 @@ export default function ContasReceber() {
   const [selectedMember, setSelectedMember] = useState('');
   const [selectedNewCulto, setSelectedNewCulto] = useState('');
 
+  // Config dinâmica da igreja selecionada
+  const selectedChurchConfig = churches?.find((c: any) => c.id === church)?.config || null;
+  const receitasCats: string[] = selectedChurchConfig?.receitas || ['Dízimo', 'Oferta', 'Oferta Oficial', 'Campanha', 'Doação', 'Aluguel de Espaço'];
+  const pagamentosCats: string[] = selectedChurchConfig?.pagamentos || ['PIX', 'Dinheiro', 'Cartão de Débito', 'Cartão de Crédito', 'Transferência', 'Boleto', 'Cheque'];
+
   const availableNewHorarios = useMemo(() => {
     if (!selectedNewCulto || selectedNewCulto === 'Fora de Culto') return [];
     
@@ -561,11 +566,11 @@ export default function ContasReceber() {
                   {selectedCategory === 'NOVA' ? (
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <input name="customCategory" type="text" placeholder="Nova categoria..." required autoFocus className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box', border: '1px solid #f1c40f' }} />
-                      <button type="button" onClick={() => setSelectedCategory('Dízimo')} style={{ background: 'transparent', border: 'none', color: '#e74c3c', cursor: 'pointer', fontSize: '1.2rem', padding: '0 8px' }}>×</button>
+                      <button type="button" onClick={() => setSelectedCategory(receitasCats[0] || 'Dízimo')} style={{ background: 'transparent', border: 'none', color: '#e74c3c', cursor: 'pointer', fontSize: '1.2rem', padding: '0 8px' }}>×</button>
                     </div>
                   ) : (
                     <select name="category" required value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
-                      <option value="Dízimo">Dízimo</option><option value="Oferta">Oferta</option><option value="Oferta Oficial">Oferta Oficial</option><option value="Campanha">Campanha</option><option value="Doação">Doação</option><option value="Aluguel de Espaço">Aluguel de Espaço</option>
+                      {receitasCats.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                       <option value="NOVA">➕ Adicionar Nova Categoria...</option>
                     </select>
                   )}
@@ -577,7 +582,7 @@ export default function ContasReceber() {
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Forma de Pagamento</label>
                   <select name="paymentMethod" required className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
-                    <option>PIX</option><option>Dinheiro</option><option>Cartão de Débito</option><option>Cartão de Crédito</option><option>Transferência</option><option>Boleto</option><option>Cheque</option>
+                    {pagamentosCats.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>

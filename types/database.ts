@@ -36,6 +36,7 @@ export interface Member {
   status?: 'ativo' | 'inativo' | 'visitante' | 'em_conversao' | 'pendente';
   integrationDate?: string;
   photoUrl?: string;
+  cardValidity?: string;
 }
 
 export interface Visitor {

@@ -3,11 +3,13 @@ import { useState, useMemo, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { BRAZIL_STATES } from '@/lib/brazil-map-data';
 import { Member, Church } from '@/types/database';
+import { useAuth } from '@/context/AuthContext';
 
 type Person = { id: string; name: string; phone?: string; address?: string; state?: string; type: 'membro' | 'visitante'; photoUrl?: string; function?: string; ministry?: string; status?: string };
 
 
 export default function Mapeamento() {
+  const { currentUser, canSeeAllChurches } = useAuth();
   const [dbMembers, setDbMembers] = useState<Member[]>([]);
   const [dbChurches, setDbChurches] = useState<Church[]>([]);
 
@@ -24,43 +26,72 @@ export default function Mapeamento() {
 
   const [selectedState, setSelectedState] = useState<string|null>(null);
   const [selectedPerson, setSelectedPerson] = useState<Person|null>(null);
-  const [filter, setFilter] = useState<'todos'|'membro'|'visitante'>('todos');
+  const [selectedChurch, setSelectedChurch] = useState<Church|null>(null);
+  const [filter, setFilter] = useState<'igrejas'|'todos'|'membro'|'visitante'>('todos');
   const [hover, setHover] = useState<string|null>(null);
-  const [detailTab, setDetailTab] = useState<'pessoas'|'cidades'|'bairros'>('pessoas');
+  const [detailTab, setDetailTab] = useState<'igrejas'|'pessoas'|'cidades'|'bairros'>('pessoas');
 
-  // Unificar membros ativos + visitantes
+  // ====== SEGURANÇA E HIERARQUIA ======
+  const allowedChurches = useMemo(() => {
+    if (canSeeAllChurches) {
+      if (currentUser?.role === 'pastor_diretor') {
+        const myChurch = dbChurches.find(c => c.id === currentUser?.churchId);
+        if (myChurch?.ministryId) {
+          return dbChurches.filter(c => c.ministryId === myChurch.ministryId);
+        }
+        return dbChurches.filter(c => c.id === currentUser?.churchId);
+      }
+      return dbChurches;
+    }
+    return dbChurches.filter(c => c.id === currentUser?.churchId);
+  }, [dbChurches, canSeeAllChurches, currentUser]);
+
+  const allowedChurchIds = useMemo(() => allowedChurches.map(c => c.id), [allowedChurches]);
+
+  // Unificar membros ativos + visitantes respeitando a segurança
   const allPeople: Person[] = useMemo(() => {
-    const members = dbMembers.map(m => ({
+    const safeMembers = dbMembers.filter(m => allowedChurchIds.includes(m.church_id));
+    return safeMembers.map(m => ({
       id: m.id, name: m.name, phone: m.phone, address: m.address, state: m.state,
       type: (m.status === 'visitante' ? 'visitante' : 'membro') as 'visitante' | 'membro', photoUrl: m.photoUrl, function: m.function, ministry: m.ministry, status: m.status
     }));
-    return members;
-  }, [dbMembers]);
+  }, [dbMembers, allowedChurchIds]);
 
   const filteredPeople = useMemo(() => {
-    if (filter === 'todos') return allPeople;
+    if (filter === 'todos' || filter === 'igrejas') return allPeople;
     return allPeople.filter(p => p.type === filter);
   }, [allPeople, filter]);
 
-  // Contagem por estado
+  // Contagem por estado (Dinâmica baseada no filtro de Igrejas vs Pessoas)
   const stateCounts = useMemo(() => {
-    const counts: Record<string, { total:number; membros:number; visitantes:number }> = {};
+    const counts: Record<string, { total:number; membros:number; visitantes:number; igrejas:number }> = {};
+    
+    // Inicia contadores
     filteredPeople.forEach(p => {
       const stateStr = p.state || 'N/A';
-      if (!counts[stateStr]) counts[stateStr] = { total:0, membros:0, visitantes:0 };
-      counts[stateStr].total++;
+      if (!counts[stateStr]) counts[stateStr] = { total:0, membros:0, visitantes:0, igrejas:0 };
+      if (filter !== 'igrejas') counts[stateStr].total++;
       if (p.type === 'membro') counts[stateStr].membros++;
       else counts[stateStr].visitantes++;
     });
+
+    allowedChurches.forEach(c => {
+      const stateStr = c.state || 'N/A';
+      if (!counts[stateStr]) counts[stateStr] = { total:0, membros:0, visitantes:0, igrejas:0 };
+      counts[stateStr].igrejas++;
+      if (filter === 'igrejas') counts[stateStr].total++;
+    });
+
     return counts;
-  }, [filteredPeople]);
+  }, [filteredPeople, allowedChurches, filter]);
 
   const maxCount = Math.max(...Object.values(stateCounts).map(c => c.total), 1);
 
   const getStateColor = (uf: string) => {
     const c = stateCounts[uf];
-    if (!c) return 'var(--table-border)';
+    if (!c || c.total === 0) return 'var(--table-border)';
     const intensity = c.total / maxCount;
+    if (filter === 'igrejas') return `hsla(280, 70%, ${30 + (1-intensity)*35}%, ${0.6 + intensity*0.4})`;
     return `hsla(217, 80%, ${25 + (1-intensity)*35}%, ${0.5 + intensity*0.5})`;
   };
 
@@ -68,6 +99,11 @@ export default function Mapeamento() {
     if (!selectedState) return [];
     return filteredPeople.filter(p => p.state === selectedState);
   }, [filteredPeople, selectedState]);
+
+  const stateChurches = useMemo(() => {
+    if (!selectedState) return [];
+    return allowedChurches.filter(c => c.state === selectedState);
+  }, [allowedChurches, selectedState]);
 
   const { cityCounts, neighborhoodCounts } = useMemo(() => {
     const cCounts: Record<string, number> = {};
@@ -89,20 +125,24 @@ export default function Mapeamento() {
   }, [statePeople]);
 
   const topStates = useMemo(() => {
-    return Object.entries(stateCounts).sort((a,b) => b[1].total - a[1].total).slice(0, 8);
+    return Object.entries(stateCounts)
+      .filter(([_, data]) => data.total > 0)
+      .sort((a,b) => b[1].total - a[1].total)
+      .slice(0, 8);
   }, [stateCounts]);
 
   const totalMembros = allPeople.filter(p => p.type === 'membro').length;
   const totalVisitantes = allPeople.filter(p => p.type === 'visitante').length;
+  const totalIgrejas = allowedChurches.length;
 
   // ====== NÍVEL 2: DETALHE DO ESTADO ======
   if (selectedState) {
     const stName = BRAZIL_STATES[selectedState]?.name || selectedState;
-    const mapQ = selectedPerson ? selectedPerson.address : `${stName}, Brasil`;
-    const mapZ = selectedPerson ? 12 : 8; // Zoom levemente menor para caber a rota
+    const mapQ = selectedChurch ? selectedChurch.address || selectedChurch.city : (selectedPerson ? selectedPerson.address : `${stName}, Brasil`);
+    const mapZ = selectedPerson || selectedChurch ? 12 : 8; // Zoom levemente menor para caber a rota
     
-    // Configuração do mapa com rota quando tem uma pessoa selecionada
-    const defaultChurchAddress = dbChurches[0]?.address || 'Centro, São Paulo, SP';
+    // Configuração do mapa com rota quando tem uma pessoa ou igreja selecionada
+    const defaultChurchAddress = allowedChurches[0]?.address || 'Centro, São Paulo, SP';
     const mapUrl = selectedPerson
       ? `https://maps.google.com/maps?saddr=${encodeURIComponent(defaultChurchAddress)}&daddr=${encodeURIComponent(selectedPerson.address || '')}&t=&z=${mapZ}&ie=UTF8&output=embed`
       : `https://maps.google.com/maps?q=${encodeURIComponent(mapQ || '')}&t=&z=${mapZ}&ie=UTF8&iwloc=B&output=embed`;
@@ -110,15 +150,15 @@ export default function Mapeamento() {
     return (
       <div style={{ display:'flex', flexDirection:'column', height:'100%', gap:'12px' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-          <button onClick={() => { setSelectedState(null); setSelectedPerson(null); }} style={{ padding:'7px 14px', borderRadius:'8px', border:'1px solid var(--card-border)', background:'transparent', color:'var(--primary-light)', cursor:'pointer', fontWeight:'600', fontSize:'0.82rem' }}>← Brasil</button>
+          <button onClick={() => { setSelectedState(null); setSelectedPerson(null); setSelectedChurch(null); }} style={{ padding:'7px 14px', borderRadius:'8px', border:'1px solid var(--card-border)', background:'transparent', color:'var(--primary-light)', cursor:'pointer', fontWeight:'600', fontSize:'0.82rem' }}>← Brasil</button>
           <h3 style={{ fontSize:'1.2rem' }}>📍 {stName}</h3>
-          <span style={{ fontSize:'0.82rem', color:'var(--text-secondary)' }}>{statePeople.length} pessoa{statePeople.length!==1?'s':''}</span>
+          <span style={{ fontSize:'0.82rem', color:'var(--text-secondary)' }}>{filter==='igrejas'?`${stateChurches.length} igreja${stateChurches.length!==1?'s':''}`:`${statePeople.length} pessoa${statePeople.length!==1?'s':''}`}</span>
           <div style={{ marginLeft:'auto', display:'flex', gap:'4px' }}>
-            {(['todos','membro','visitante'] as const).map(f => (
-              <button key={f} onClick={() => setFilter(f)} style={{ padding:'5px 10px', borderRadius:'6px', fontSize:'0.72rem', fontWeight:'600', cursor:'pointer', border:'none',
-                background: filter===f ? (f==='membro'?'#3b82f6':f==='visitante'?'#f39c12':'var(--primary-color)') : 'rgba(255,255,255,0.05)',
+            {(['igrejas','todos','membro','visitante'] as const).map(f => (
+              <button key={f} onClick={() => { setFilter(f); setDetailTab(f==='igrejas'?'igrejas':'pessoas'); setSelectedPerson(null); setSelectedChurch(null); }} style={{ padding:'5px 10px', borderRadius:'6px', fontSize:'0.72rem', fontWeight:'600', cursor:'pointer', border:'none',
+                background: filter===f ? (f==='membro'?'#3b82f6':f==='visitante'?'#f39c12':f==='igrejas'?'#9b59b6':'var(--primary-color)') : 'rgba(255,255,255,0.05)',
                 color: filter===f ? '#fff' : 'var(--text-secondary)' }}>
-                {f==='todos'?'Todos':f==='membro'?'🔵 Membros':'🟡 Visitantes'}
+                {f==='igrejas'?'⛪ Igrejas':f==='todos'?'Todos':f==='membro'?'🔵 Membros':'🟡 Visitantes'}
               </button>
             ))}
           </div>
@@ -128,11 +168,30 @@ export default function Mapeamento() {
           {/* Lista e Divisões */}
           <div className="glass" style={{ display:'flex', flexDirection:'column', padding:'12px', overflow:'hidden' }}>
             <div style={{ display:'flex', gap:'4px', marginBottom:'10px' }}>
+              <button onClick={() => setDetailTab('igrejas')} style={{ flex:1, padding:'6px', fontSize:'0.75rem', borderRadius:'6px', border:'none', cursor:'pointer', background: detailTab==='igrejas'?'#9b59b6':'rgba(255,255,255,0.05)', color: detailTab==='igrejas'?'#fff':'var(--text-secondary)' }}>Igrejas</button>
               <button onClick={() => setDetailTab('pessoas')} style={{ flex:1, padding:'6px', fontSize:'0.75rem', borderRadius:'6px', border:'none', cursor:'pointer', background: detailTab==='pessoas'?'var(--primary-color)':'rgba(255,255,255,0.05)', color: detailTab==='pessoas'?'#fff':'var(--text-secondary)' }}>Pessoas</button>
               <button onClick={() => setDetailTab('cidades')} style={{ flex:1, padding:'6px', fontSize:'0.75rem', borderRadius:'6px', border:'none', cursor:'pointer', background: detailTab==='cidades'?'var(--primary-color)':'rgba(255,255,255,0.05)', color: detailTab==='cidades'?'#fff':'var(--text-secondary)' }}>Cidades</button>
               <button onClick={() => setDetailTab('bairros')} style={{ flex:1, padding:'6px', fontSize:'0.75rem', borderRadius:'6px', border:'none', cursor:'pointer', background: detailTab==='bairros'?'var(--primary-color)':'rgba(255,255,255,0.05)', color: detailTab==='bairros'?'#fff':'var(--text-secondary)' }}>Bairros</button>
             </div>
             <div className="scroll-container" style={{ flex:1 }}>
+              {detailTab === 'igrejas' && (
+                <>
+                  {stateChurches.map(c => (
+                    <div key={c.id} className={`glass member-card ${selectedChurch?.id===c.id?'card-selected':''}`}
+                      style={{ padding:'8px 10px', flexDirection:'row', alignItems:'center', gap:'8px', marginBottom:'5px', cursor:'pointer' }}
+                      onClick={() => { setSelectedChurch(c); setSelectedPerson(null); }}>
+                      <div style={{ width:'32px', height:'32px', borderRadius:'50%', background:'linear-gradient(135deg,#9b59b6,#8e44ad)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:'700', fontSize:'0.8rem', flexShrink:0 }}>
+                        {c.name.substring(0,2).toUpperCase()}
+                      </div>
+                      <div style={{ flex:1, overflow:'hidden' }}>
+                        <div style={{ fontWeight:'600', fontSize:'0.82rem', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', color:'var(--text-primary)' }}>{c.name}</div>
+                        <div style={{ fontSize:'0.65rem', color:'var(--text-secondary)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{c.city} - {c.neighborhood}</div>
+                      </div>
+                    </div>
+                  ))}
+                  {stateChurches.length === 0 && <div style={{ fontSize:'0.75rem', color:'var(--text-secondary)', textAlign:'center', marginTop:'20px' }}>Nenhuma igreja neste estado.</div>}
+                </>
+              )}
               {detailTab === 'pessoas' && (
                 <>
                   {statePeople.map(p => (
@@ -202,7 +261,7 @@ export default function Mapeamento() {
                     background: selectedPerson.type==='membro'?'linear-gradient(135deg,#3b82f6,#2563eb)':'linear-gradient(135deg,#f39c12,#e67e22)',
                     display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:'700', fontSize:'1.3rem',
                     boxShadow: `0 4px 15px ${selectedPerson.type==='membro'?'rgba(59,130,246,0.4)':'rgba(243,156,18,0.4)'}` }}>
-                    {selectedPerson.name.split(' ').map(n=>n[0]).join('').slice(0,2)}
+                    {selectedPerson.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}
                   </div>
                   <h3 style={{ fontSize:'0.92rem', marginBottom:'4px' }}>{selectedPerson.name}</h3>
                   <span style={{ fontSize:'0.6rem', padding:'3px 8px', borderRadius:'6px', fontWeight:'700',
@@ -220,10 +279,33 @@ export default function Mapeamento() {
                 <button className="modal-btn" style={{ margin:'10px 0 0', width:'100%', padding:'8px', fontSize:'0.78rem', backgroundColor:'#25d366' }}
                   onClick={() => window.open(`https://wa.me/55${(selectedPerson.phone || '').replace(/\D/g,'')}`, '_blank')}>💬 WhatsApp</button>
               </div>
+            ) : selectedChurch ? (
+              <div style={{ animation:'fadeIn 0.3s ease' }}>
+                <div style={{ textAlign:'center', marginBottom:'12px' }}>
+                  <div style={{ width:'65px', height:'65px', borderRadius:'50%', margin:'0 auto 8px',
+                    background: 'linear-gradient(135deg,#9b59b6,#8e44ad)',
+                    display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:'700', fontSize:'1.3rem',
+                    boxShadow: '0 4px 15px rgba(155,89,182,0.4)' }}>
+                    {selectedChurch.name.substring(0,2).toUpperCase()}
+                  </div>
+                  <h3 style={{ fontSize:'0.92rem', marginBottom:'4px' }}>{selectedChurch.name}</h3>
+                  <span style={{ fontSize:'0.6rem', padding:'3px 8px', borderRadius:'6px', fontWeight:'700',
+                    background: 'rgba(155,89,182,0.15)',
+                    color: '#9b59b6' }}>
+                    ⛪ Igreja
+                  </span>
+                </div>
+                <div style={{ display:'flex', flexDirection:'column', gap:'5px' }}>
+                  <IC label="Pastor Responsável" value={`👤 ${selectedChurch.pastorName || 'Não informado'}`} />
+                  <IC label="Endereço" value={`📍 ${selectedChurch.address || selectedChurch.city}`} />
+                  <IC label="Contato" value={`📞 ${selectedChurch.phone || 'Não informado'}`} />
+                  {selectedChurch.isHeadquarters && <IC label="Tipo" value="Sede da Rede" />}
+                </div>
+              </div>
             ) : (
               <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', gap:'6px' }}>
-                <div style={{ fontSize:'2rem', opacity:0.3 }}>👤</div>
-                <p style={{ color:'var(--text-secondary)', fontSize:'0.78rem', textAlign:'center' }}>Selecione uma pessoa</p>
+                <div style={{ fontSize:'2rem', opacity:0.3 }}>📍</div>
+                <p style={{ color:'var(--text-secondary)', fontSize:'0.78rem', textAlign:'center' }}>Selecione na lista para detalhar</p>
               </div>
             )}
           </div>
@@ -245,22 +327,28 @@ export default function Mapeamento() {
         <div className="glass" style={{ padding:'20px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', overflow:'hidden', position:'relative' }}>
           {/* Filtros sobre o mapa */}
           <div style={{ position:'absolute', top:'15px', left:'15px', display:'flex', gap:'4px', zIndex:5 }}>
-            {(['todos','membro','visitante'] as const).map(f => (
-              <button key={f} onClick={() => setFilter(f)} style={{ padding:'6px 12px', borderRadius:'8px', fontSize:'0.75rem', fontWeight:'600', cursor:'pointer', border:'none',
-                background: filter===f ? (f==='membro'?'#3b82f6':f==='visitante'?'#f39c12':'var(--primary-color)') : 'rgba(255,255,255,0.08)',
+            {(['igrejas', 'todos','membro','visitante'] as const).map(f => (
+              <button key={f} onClick={() => { setFilter(f); setDetailTab(f==='igrejas'?'igrejas':'pessoas'); setSelectedPerson(null); setSelectedChurch(null); }} style={{ padding:'6px 12px', borderRadius:'8px', fontSize:'0.75rem', fontWeight:'600', cursor:'pointer', border:'none',
+                background: filter===f ? (f==='membro'?'#3b82f6':f==='visitante'?'#f39c12':f==='igrejas'?'#9b59b6':'var(--primary-color)') : 'rgba(255,255,255,0.08)',
                 color: filter===f ? '#fff' : 'var(--text-secondary)', transition:'all 0.2s' }}>
-                {f==='todos'?`Todos (${totalMembros+totalVisitantes})`:f==='membro'?`🔵 Membros (${totalMembros})`:`🟡 Visitantes (${totalVisitantes})`}
+                {f==='igrejas'?`⛪ Igrejas (${totalIgrejas})`:f==='todos'?`Todos (${totalMembros+totalVisitantes})`:f==='membro'?`🔵 Membros (${totalMembros})`:`🟡 Visitantes (${totalVisitantes})`}
               </button>
             ))}
           </div>
 
           {/* Legenda */}
           <div style={{ position:'absolute', bottom:'15px', left:'15px', display:'flex', gap:'12px', fontSize:'0.7rem', color:'var(--text-secondary)' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:'4px' }}><div style={{ width:'10px', height:'10px', borderRadius:'50%', background:'#3b82f6' }} />Membro (efetivo)</div>
-            <div style={{ display:'flex', alignItems:'center', gap:'4px' }}><div style={{ width:'10px', height:'10px', borderRadius:'50%', background:'#f39c12' }} />Visitante (potencial)</div>
+            {filter === 'igrejas' ? (
+              <div style={{ display:'flex', alignItems:'center', gap:'4px' }}><div style={{ width:'10px', height:'10px', borderRadius:'50%', background:'#9b59b6' }} />Igreja cadastrada</div>
+            ) : (
+              <>
+                <div style={{ display:'flex', alignItems:'center', gap:'4px' }}><div style={{ width:'10px', height:'10px', borderRadius:'50%', background:'#3b82f6' }} />Membro (efetivo)</div>
+                <div style={{ display:'flex', alignItems:'center', gap:'4px' }}><div style={{ width:'10px', height:'10px', borderRadius:'50%', background:'#f39c12' }} />Visitante (potencial)</div>
+              </>
+            )}
           </div>
 
-          <svg viewBox="20 140 560 580" style={{ width:'100%', maxHeight:'100%', maxWidth:'550px' }}>
+          <svg viewBox="0 0 500 500" style={{ width:'100%', maxHeight:'100%', maxWidth:'550px' }}>
             {Object.entries(BRAZIL_STATES).map(([uf, data]) => {
               const count = stateCounts[uf];
               const isHover = hover === uf;
@@ -269,9 +357,9 @@ export default function Mapeamento() {
                   <path d={data.path} fill={getStateColor(uf)} stroke="var(--text-primary)" strokeOpacity={0.15} strokeWidth={isHover ? 2 : 0.8}
                     style={{ transition:'all 0.2s', filter: isHover ? 'brightness(1.2)' : 'none' }} />
                   <text x={data.labelX} y={data.labelY-6} textAnchor="middle" fill="var(--text-primary)" opacity="0.5" fontSize="8" fontWeight="600" style={{ pointerEvents:'none' }}>{uf}</text>
-                  {count && (
+                  {count && count.total > 0 && (
                     <g style={{ pointerEvents:'none' }}>
-                      <circle cx={data.labelX} cy={data.labelY+6} r={10 + Math.min(count.total * 2, 8)} fill="var(--primary-color)" opacity="0.9" />
+                      <circle cx={data.labelX} cy={data.labelY+6} r={10 + Math.min(count.total * 2, 8)} fill={filter==='igrejas'?'#9b59b6':'var(--primary-color)'} opacity="0.9" />
                       <text x={data.labelX} y={data.labelY+10} textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">{count.total}</text>
                     </g>
                   )}
@@ -284,10 +372,16 @@ export default function Mapeamento() {
           {hover && stateCounts[hover] && (
             <div style={{ position:'absolute', top:'15px', right:'15px', padding:'10px 14px', borderRadius:'10px', background:'var(--card-bg)', border:'1px solid var(--card-border)', backdropFilter:'blur(10px)', fontSize:'0.82rem', zIndex:10, animation:'fadeIn 0.15s ease' }}>
               <div style={{ fontWeight:'700', marginBottom:'4px' }}>{BRAZIL_STATES[hover]?.name}</div>
-              <div style={{ display:'flex', gap:'10px', fontSize:'0.72rem', color:'var(--text-secondary)' }}>
-                <span>🔵 {stateCounts[hover].membros} membros</span>
-                <span>🟡 {stateCounts[hover].visitantes} visitantes</span>
-              </div>
+              {filter === 'igrejas' ? (
+                <div style={{ display:'flex', gap:'10px', fontSize:'0.72rem', color:'var(--text-secondary)' }}>
+                  <span>⛪ {stateCounts[hover].igrejas} igrejas</span>
+                </div>
+              ) : (
+                <div style={{ display:'flex', gap:'10px', fontSize:'0.72rem', color:'var(--text-secondary)' }}>
+                  <span>🔵 {stateCounts[hover].membros} membros</span>
+                  <span>🟡 {stateCounts[hover].visitantes} visitantes</span>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -297,12 +391,12 @@ export default function Mapeamento() {
           {/* KPIs */}
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
             <div className="glass" style={{ padding:'10px', textAlign:'center', borderRadius:'10px' }}>
-              <div style={{ fontSize:'1.5rem', fontWeight:'700', color:'#3b82f6' }}>{totalMembros}</div>
-              <div style={{ fontSize:'0.62rem', color:'var(--text-secondary)' }}>Membros</div>
+              <div style={{ fontSize:'1.5rem', fontWeight:'700', color: filter==='igrejas'?'#9b59b6':'#3b82f6' }}>{filter==='igrejas'?totalIgrejas:totalMembros}</div>
+              <div style={{ fontSize:'0.62rem', color:'var(--text-secondary)' }}>{filter==='igrejas'?'Igrejas Locais':'Membros'}</div>
             </div>
             <div className="glass" style={{ padding:'10px', textAlign:'center', borderRadius:'10px' }}>
-              <div style={{ fontSize:'1.5rem', fontWeight:'700', color:'#f39c12' }}>{totalVisitantes}</div>
-              <div style={{ fontSize:'0.62rem', color:'var(--text-secondary)' }}>Visitantes</div>
+              <div style={{ fontSize:'1.5rem', fontWeight:'700', color: filter==='igrejas'?'var(--primary-light)':'#f39c12' }}>{filter==='igrejas'?totalMembros+totalVisitantes:totalVisitantes}</div>
+              <div style={{ fontSize:'0.62rem', color:'var(--text-secondary)' }}>{filter==='igrejas'?'Total de Pessoas':'Visitantes'}</div>
             </div>
           </div>
           <div className="glass" style={{ padding:'10px', textAlign:'center', borderRadius:'10px' }}>
@@ -315,16 +409,23 @@ export default function Mapeamento() {
             <h4 style={{ fontSize:'0.82rem', marginBottom:'8px', color:'var(--primary-light)' }}>🏆 Ranking por Estado</h4>
             {topStates.map(([uf, data], i) => (
               <div key={uf} className="glass" style={{ padding:'8px 10px', marginBottom:'4px', borderRadius:'8px', display:'flex', alignItems:'center', gap:'8px', cursor:'pointer' }}
-                onClick={() => { setSelectedState(uf); setSelectedPerson(null); }}>
+                onClick={() => { setSelectedState(uf); setSelectedPerson(null); setSelectedChurch(null); }}>
                 <span style={{ fontSize:'0.75rem', fontWeight:'700', color: i<3 ? '#f39c12' : 'var(--text-secondary)', width:'18px' }}>#{i+1}</span>
                 <span style={{ flex:1, fontSize:'0.78rem', fontWeight:'600' }}>{BRAZIL_STATES[uf]?.name}</span>
-                <div style={{ display:'flex', gap:'6px', fontSize:'0.65rem' }}>
-                  <span style={{ color:'#3b82f6' }}>🔵{data.membros}</span>
-                  <span style={{ color:'#f39c12' }}>🟡{data.visitantes}</span>
-                </div>
+                {filter === 'igrejas' ? (
+                  <div style={{ display:'flex', gap:'6px', fontSize:'0.65rem' }}>
+                    <span style={{ color:'#9b59b6' }}>⛪{data.igrejas}</span>
+                  </div>
+                ) : (
+                  <div style={{ display:'flex', gap:'6px', fontSize:'0.65rem' }}>
+                    <span style={{ color:'#3b82f6' }}>🔵{data.membros}</span>
+                    <span style={{ color:'#f39c12' }}>🟡{data.visitantes}</span>
+                  </div>
+                )}
                 <span style={{ fontSize:'0.82rem', fontWeight:'700', color:'var(--primary-light)' }}>{data.total}</span>
               </div>
             ))}
+            {topStates.length === 0 && <div style={{ fontSize:'0.7rem', color:'var(--text-secondary)', textAlign:'center' }}>Nenhum dado encontrado.</div>}
           </div>
 
           <div style={{ fontSize:'0.7rem', color:'var(--text-secondary)', textAlign:'center', marginTop:'auto', padding:'8px', opacity:0.6 }}>

@@ -7,6 +7,8 @@ export interface DbChurch {
   is_headquarters: boolean;
   city: string;
   state: string;
+  config?: any;
+  card_config?: any;
   ministry_id?: string;
   plan?: string;
   member_limit?: number;

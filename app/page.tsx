@@ -6,6 +6,23 @@ import { Member, Church } from '@/types/database';
 import { useChurches } from '@/hooks/useChurches';
 import { useMembers } from '@/hooks/useMembers';
 
+const getFunctionColor = (func?: string, cardConfig?: any) => {
+  const f = (func || '').toLowerCase();
+  
+  // Regra padrão de cores solicitada:
+  if (f.includes('presb')) return '#f4d03f'; // Dourado clarinho
+  if (f.includes('diác') || f.includes('diac')) return '#f5b041'; // Laranja claro
+  if (f.includes('obreiro')) return '#5dade2'; // Azul claro
+  if (f.includes('membro')) return '#58d68d'; // Verde limão/claro
+  
+  // Outras funções (mantendo um padrão bonito)
+  if (f.includes('pastor')) return '#8e44ad';
+  if (f.includes('evangelista')) return '#d35400';
+  if (f.includes('lider') || f.includes('líder')) return '#f39c12';
+  
+  return cardConfig?.primaryColor || '#cda136';
+};
+
 export default function Home() {
   const { currentUser, canSeeAllChurches } = useAuth();
   const [search, setSearch] = useState('');
@@ -150,7 +167,7 @@ export default function Home() {
   const calcExp = (d?: string) => { if (!d) return '—'; const e = new Date(d); e.setFullYear(e.getFullYear()+2); return e.toLocaleDateString('pt-BR'); };
 
   const openEdit = (m: Member) => { setEditForm({...m}); setPhotoPreview(m.photoUrl||null); setIsCreating(false); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomChurch(false); setIsEditing(true); };
-  const openCreate = () => { setEditForm({ id:'', name:'', function:'', ministry:'Louvor', phone:'', email:'', address:'', integrationDate: new Date().toISOString().split('T')[0], churchId: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', photoUrl:'', status:'ativo' }); setPhotoPreview(null); setIsCreating(true); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomChurch(false); setIsEditing(true); };
+  const openCreate = () => { setEditForm({ id:'', name:'', function:'Membro', ministry:'Louvor', phone:'', email:'', address:'', integrationDate: new Date().toISOString().split('T')[0], cardValidity: '', churchId: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', photoUrl:'', status:'ativo' }); setPhotoPreview(null); setIsCreating(true); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomChurch(false); setIsEditing(true); };
 
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -169,7 +186,10 @@ export default function Home() {
       email: editForm.email,
       address: editForm.address,
       status: editForm.status,
-      church_id: editForm.churchId && editForm.churchId.length > 5 ? editForm.churchId : (currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d')
+      church_id: editForm.churchId && editForm.churchId.length > 5 ? editForm.churchId : (currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d'),
+      integration_date: editForm.integrationDate,
+      photo_url: finalPhoto,
+      card_validity: editForm.cardValidity
     };
 
     if (isCreating) {
@@ -196,7 +216,8 @@ export default function Home() {
           function: data.function || 'Ainda não definida',
           ministry: data.ministry || '',
           photoUrl: finalPhoto,
-          integrationDate: data.created_at ? new Date(data.created_at).toISOString().split('T')[0] : '',
+          integrationDate: data.integration_date || (data.created_at ? new Date(data.created_at).toISOString().split('T')[0] : ''),
+          cardValidity: data.card_validity || '',
           status: data.status as any
         };
         setMembers(p => [...p, newM]);
@@ -390,55 +411,44 @@ export default function Home() {
           <div style={{ animation:'slideUp 0.3s ease' }} onClick={e => e.stopPropagation()}>
             {/* Carteirinha visual */}
             <div ref={cardRef} style={{
-              width: '420px', height: '260px', borderRadius: '16px', overflow: 'hidden',
-              background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%)',
+              width: '420px', height: '265px', borderRadius: '12px', overflow: 'hidden',
+              background: selectedChurchObj?.cardConfig?.backgroundUrl 
+                ? `url(${selectedChurchObj.cardConfig.backgroundUrl}) center/cover no-repeat` 
+                : `linear-gradient(135deg, ${selectedChurchObj?.cardConfig?.primaryColor || '#0f172a'}, #2c3e50)`,
               color: '#fff', fontFamily: "'Inter', sans-serif", position: 'relative',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.5)', padding: '24px'
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
             }}>
-              {/* Decoração */}
-              <div style={{ position:'absolute', top:'-30px', right:'-30px', width:'120px', height:'120px', borderRadius:'50%', background:'rgba(59,130,246,0.15)' }} />
-              <div style={{ position:'absolute', bottom:'-40px', left:'-40px', width:'150px', height:'150px', borderRadius:'50%', background:'rgba(59,130,246,0.1)' }} />
-
-              {/* Header */}
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'18px', position:'relative', zIndex:1 }}>
-                <div>
-                  <div style={{ fontSize:'1.1rem', fontWeight:'700', letterSpacing:'1px' }}>CHURCHFLOW</div>
-                  <div style={{ fontSize:'0.65rem', opacity:0.6, marginTop:'2px' }}>Carteirinha de Membro</div>
-                </div>
-                <div style={{ fontSize:'0.6rem', textAlign:'right', opacity:0.7 }}>
-                  <div>{selectedChurchObj?.name}</div>
-                  <div>{selectedChurchObj?.city}</div>
-                </div>
+              
+              {/* Photo */}
+              <div style={{ 
+                position: 'absolute', top: '40px', left: '40px', width: '120px', height: '175px', 
+                borderRadius: '12px', background: 'rgba(255,255,255,0.2)', 
+                boxShadow: '0 4px 15px rgba(0,0,0,0.3)', border: '2px solid rgba(255,255,255,0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
+              }}>
+                <img src={sel.photoUrl || 'https://via.placeholder.com/150'} alt={sel.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
 
-              {/* Body */}
-              <div style={{ display:'flex', gap:'18px', alignItems:'center', position:'relative', zIndex:1 }}>
-                <img src={sel.photoUrl} alt={sel.name} style={{
-                  width: '85px', height: '85px', borderRadius: '12px', objectFit: 'cover',
-                  border: '2px solid rgba(255,255,255,0.3)', boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
-                }} />
-                <div>
-                  <div style={{ fontSize:'1.15rem', fontWeight:'700', marginBottom:'4px' }}>{sel.name}</div>
-                  <div style={{ fontSize:'0.8rem', opacity:0.8, marginBottom:'2px' }}>{sel.function}</div>
-                  {sel.ministry && <div style={{ fontSize:'0.7rem', opacity:0.6 }}>Ministério: {sel.ministry}</div>}
-                </div>
+              {/* Function Band */}
+              <div style={{ 
+                position: 'absolute', top: '110px', left: '175px', right: '15px', height: '40px',
+                background: getFunctionColor(sel.function, selectedChurchObj?.cardConfig), 
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 800, letterSpacing: '1.5px', fontSize: '1.1rem',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.2)', color: '#fff', 
+                borderRadius: '4px', zIndex: 1
+              }}>
+                {(sel.function || 'MEMBRO').toUpperCase()}
               </div>
 
-              {/* Footer */}
-              <div style={{ position:'absolute', bottom:'16px', left:'24px', right:'24px', display:'flex', justifyContent:'space-between', fontSize:'0.65rem', opacity:0.7, borderTop:'1px solid rgba(255,255,255,0.15)', paddingTop:'10px' }}>
-                <div>
-                  <div style={{ fontWeight:'600' }}>Integração</div>
-                  <div>{fmt(sel.integrationDate)}</div>
-                </div>
-                <div style={{ textAlign:'center' }}>
-                  <div style={{ fontWeight:'600' }}>Validade</div>
-                  <div style={{ color: isExp(sel.integrationDate) ? '#ff6b6b' : '#69db7c' }}>{calcExp(sel.integrationDate)}</div>
-                </div>
-                <div style={{ textAlign:'right' }}>
-                  <div style={{ fontWeight:'600' }}>ID</div>
-                  <div>{sel.id.toUpperCase()}</div>
-                </div>
+              {/* Member Details */}
+              <div style={{ position: 'absolute', top: '165px', left: '175px', right: '15px', fontSize: '0.7rem', display: 'flex', flexDirection: 'column', gap: '3px', zIndex: 1 }}>
+                <div><span style={{ opacity: 0.9, fontWeight: 500 }}>NOME:</span> <span style={{ fontWeight: 800, letterSpacing: '0.5px' }}>{sel.name?.toUpperCase()}</span></div>
+                <div><span style={{ opacity: 0.9, fontWeight: 500 }}>DATA DE BATISMO:</span> <span style={{ fontWeight: 800, letterSpacing: '0.5px' }}>{fmt(sel.integrationDate)}</span></div>
+                <div><span style={{ opacity: 0.9, fontWeight: 500 }}>CONGREGAÇÃO:</span> <span style={{ fontWeight: 800, letterSpacing: '0.5px' }}>{selectedChurchObj?.name?.toUpperCase()}</span></div>
+                <div><span style={{ opacity: 0.9, fontWeight: 500 }}>VALIDADE:</span> <span style={{ fontWeight: 800, letterSpacing: '0.5px', color: isExp(sel.cardValidity || sel.integrationDate) ? '#ff6b6b' : '#fff' }}>{sel.cardValidity || calcExp(sel.integrationDate)}</span></div>
               </div>
+
             </div>
 
             {/* Botões abaixo da carteirinha */}
@@ -483,27 +493,9 @@ export default function Home() {
                     ) : (
                       <select name="function" value={editForm.function} onChange={e => { if (e.target.value === '__new__') { setCustomFunction(true); setEditForm((p:any) => ({...p, function: ''})); } else { onChange(e); }}} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required>
                         <option value="">Selecione...</option>
-                        <option value="Membro">Membro (sem função)</option>
-                        <option value="Líder de Louvor">Líder de Louvor</option>
-                        <option value="Vocalista">Vocalista</option>
-                        <option value="Guitarrista">Guitarrista</option>
-                        <option value="Baterista">Baterista</option>
-                        <option value="Tecladista">Tecladista</option>
-                        <option value="Baixista">Baixista</option>
-                        <option value="Sonoplasta">Sonoplasta</option>
-                        <option value="Fotógrafo">Fotógrafo</option>
-                        <option value="Cinegrafista">Cinegrafista</option>
-                        <option value="Designer">Designer</option>
-                        <option value="Operador de Mídia">Operador de Mídia</option>
-                        <option value="Obreiro (Porta)">Obreiro (Porta)</option>
-                        <option value="Obreiro (Altar)">Obreiro (Altar)</option>
-                        <option value="Recepcionista">Recepcionista</option>
-                        <option value="Professor(a) Kids">Professor(a) Kids</option>
-                        <option value="Auxiliar Kids">Auxiliar Kids</option>
-                        <option value="Líder de Célula">Líder de Célula</option>
-                        <option value="Intercessor(a)">Intercessor(a)</option>
-                        <option value="Secretário(a)">Secretário(a)</option>
-                        <option value="Tesoureiro(a)">Tesoureiro(a)</option>
+                        {(selectedChurchObj?.config?.funcoes || ['Membro', 'Obreiro(a)', 'Diácono(a)', 'Presbítero', 'Pastor']).map((f: string) => (
+                          <option key={f} value={f}>{f}</option>
+                        ))}
                         {customFunctions.map(f => <option key={f} value={f}>{f}</option>)}
                         <option value="__new__">➕ Criar nova função...</option>
                       </select>
@@ -553,7 +545,10 @@ export default function Home() {
                   </div>
                 </div>
                 <div><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Endereço</label><input type="text" name="address" value={editForm.address} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required /></div>
-                <div><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Integração</label><input type="date" name="integrationDate" value={editForm.integrationDate} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} /></div>
+                <div style={{ display:'flex', gap:'10px' }}>
+                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Data de Batismo / Integração</label><input type="date" name="integrationDate" value={editForm.integrationDate} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} /></div>
+                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Validade da Carteirinha</label><input type="text" name="cardValidity" value={editForm.cardValidity || ''} onChange={onChange} placeholder="Ex: 12/2026" className="search-input glass-input" style={{ width:'100%', padding:'8px' }} /></div>
+                </div>
               </div>
               <div style={{ display:'flex', gap:'10px', marginTop:'12px' }}>
                 <button type="button" className="modal-btn" style={{ flex:1, backgroundColor:'#7f8c8d' }} onClick={() => { setIsEditing(false); setIsCreating(false); setIsApproving(false); }}>Cancelar</button>

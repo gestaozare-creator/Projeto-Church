@@ -27,7 +27,7 @@ export default function LoginPage() {
       setErrorMsg(error.message);
       setLoading(false);
     } else {
-      router.push('/');
+      router.push('/mapeamento');
     }
   };
 

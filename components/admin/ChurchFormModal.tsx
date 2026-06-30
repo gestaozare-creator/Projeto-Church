@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { Church } from '@/types/database';
+import { ChurchUsersTab } from './ChurchUsersTab';
+import { ChurchControlTab } from './ChurchControlTab';
+import { ChurchIdCardTab } from './ChurchIdCardTab';
 
 interface DatabaseUsage {
   members: number;
@@ -23,7 +26,7 @@ interface ChurchFormModalProps {
   ministryGroups: Ministry[];
   getDatabaseUsage: (churchId: string) => DatabaseUsage;
   onClose: () => void;
-  onSave: (churchData: any, isNewMinistry?: boolean, newMinistryName?: string) => Promise<void>;
+  onSave: (churchData: any) => Promise<void>;
   editingId: string | null;
 }
 
@@ -36,10 +39,7 @@ export function ChurchFormModal({
   editingId 
 }: ChurchFormModalProps) {
   const [formData, setFormData] = useState<any>(initialData);
-  const [activeTab, setActiveTab] = useState<'geral' | 'assinatura' | 'whitelabel' | 'departamentos' | 'faturamento' | 'cultos'>('geral');
-  const [newDepartment, setNewDepartment] = useState('');
-  const [newMinistryName, setNewMinistryName] = useState('');
-  const [isCreatingMinistry, setIsCreatingMinistry] = useState(false);
+    const [newDepartment, setNewDepartment] = useState('');
   const [newCulto, setNewCulto] = useState({ name: '', dayOfWeek: 'Domingo', time: '19:30' });
 
   // Preço por módulo
@@ -83,23 +83,27 @@ export function ChurchFormModal({
     setFormData({ ...formData, departments: formData.departments?.filter((d: any) => d !== dep) });
   };
 
-  const handleCreateMinistry = () => {
-    if(newMinistryName.trim()) {
-      const newMinId = `min${Date.now()}`;
-      setFormData({ ...formData, ministryId: newMinId });
-      setIsCreatingMinistry(false);
-      // Let the parent know we created a new ministry on save
+  const handleCoverPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (f) {
+      const r = new FileReader();
+      r.onloadend = () => {
+        const res = r.result as string;
+        setFormData({ ...formData, coverPhotoUrl: res });
+      };
+      r.readAsDataURL(f);
     }
   };
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSave(formData, !!newMinistryName && formData.ministryId.startsWith('min') && !ministryGroups.find(m => m.id === formData.ministryId), newMinistryName);
+    await onSave(formData);
   };
 
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <div className="glass" style={{ borderRadius: '16px', width: '100%', maxWidth: '850px', display: 'flex', flexDirection: 'column', maxHeight: '90vh', overflow: 'hidden' }}>
+      <div className="glass" style={{ borderRadius: '16px', width: '100%', maxWidth: '1000px', display: 'flex', flexDirection: 'column', maxHeight: '90vh', overflow: 'hidden' }}>
         
         {/* Modal Header */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)' }}>
@@ -111,45 +115,28 @@ export function ChurchFormModal({
         </div>
 
         {/* Modal Body with Sidebar Tabs */}
-        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', flex: 1, overflow: 'hidden', background: 'rgba(0,0,0,0.1)' }}>
           
-          {/* Tabs Sidebar */}
-          <div style={{ width: '220px', background: 'rgba(0,0,0,0.3)', borderRight: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', padding: '10px 0' }}>
-            <button type="button" onClick={() => setActiveTab('geral')} style={{ textAlign: 'left', padding: '12px 20px', background: activeTab === 'geral' ? 'rgba(52, 152, 219, 0.2)' : 'transparent', border: 'none', borderRight: activeTab === 'geral' ? '3px solid #3498db' : '3px solid transparent', color: activeTab === 'geral' ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>📋 Estrutura & Sede</button>
-            <button type="button" onClick={() => setActiveTab('assinatura')} style={{ textAlign: 'left', padding: '12px 20px', background: activeTab === 'assinatura' ? 'rgba(46, 204, 113, 0.2)' : 'transparent', border: 'none', borderRight: activeTab === 'assinatura' ? '3px solid #2ecc71' : '3px solid transparent', color: activeTab === 'assinatura' ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>💳 Limites do Plano</button>
-            <button type="button" onClick={() => setActiveTab('faturamento')} style={{ textAlign: 'left', padding: '12px 20px', background: activeTab === 'faturamento' ? 'rgba(230, 126, 34, 0.2)' : 'transparent', border: 'none', borderRight: activeTab === 'faturamento' ? '3px solid #e67e22' : '3px solid transparent', color: activeTab === 'faturamento' ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>💰 Faturamento Módulos & Infra</button>
-            <button type="button" onClick={() => setActiveTab('whitelabel')} style={{ textAlign: 'left', padding: '12px 20px', background: activeTab === 'whitelabel' ? 'rgba(155, 89, 182, 0.2)' : 'transparent', border: 'none', borderRight: activeTab === 'whitelabel' ? '3px solid #9b59b6' : '3px solid transparent', color: activeTab === 'whitelabel' ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>🎨 White Label (App)</button>
-            <button type="button" onClick={() => setActiveTab('departamentos')} style={{ textAlign: 'left', padding: '12px 20px', background: activeTab === 'departamentos' ? 'rgba(149, 165, 166, 0.2)' : 'transparent', border: 'none', borderRight: activeTab === 'departamentos' ? '3px solid #95a5a6' : '3px solid transparent', color: activeTab === 'departamentos' ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>👥 Departamentos Internos</button>
-            <button type="button" onClick={() => setActiveTab('cultos')} style={{ textAlign: 'left', padding: '12px 20px', background: activeTab === 'cultos' ? 'rgba(241, 196, 15, 0.2)' : 'transparent', border: 'none', borderRight: activeTab === 'cultos' ? '3px solid #f1c40f' : '3px solid transparent', color: activeTab === 'cultos' ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>📅 Agenda de Cultos</button>
-          </div>
-
           {/* Tab Content */}
-          <div style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
+          <div style={{ flex: 1, padding: '32px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+            
+            
             <form id="saas-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               
-              {activeTab === 'geral' && (
-                <>
-                  <div style={{ background: 'rgba(52, 152, 219, 0.05)', border: '1px solid rgba(52, 152, 219, 0.2)', padding: '16px', borderRadius: '12px' }}>
+              
+              {/* SESSÃO 1: ESTRUTURA E SEDE */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <h4 style={{ margin: 0, color: '#3498db', borderBottom: '1px solid rgba(52, 152, 219, 0.3)', paddingBottom: '8px' }}>📋 Estrutura & Sede</h4>
+<div style={{ background: 'rgba(52, 152, 219, 0.05)', border: '1px solid rgba(52, 152, 219, 0.2)', padding: '16px', borderRadius: '12px' }}>
                     <label className="input-label" style={{ color: '#3498db' }}>Rede / Denominação (Ministério)</label>
-                    {!isCreatingMinistry ? (
                       <div style={{ display: 'flex', gap: '10px' }}>
                         <select required className="search-input glass-input" style={{ flex: 1 }} value={formData.ministryId} onChange={e => setFormData({...formData, ministryId: e.target.value})}>
+                          <option value="">Selecione uma Rede...</option>
                           {ministryGroups.map(m => (
                             <option key={m.id} value={m.id}>{m.name}</option>
                           ))}
-                          {formData.ministryId.startsWith('min') && !ministryGroups.find(m => m.id === formData.ministryId) && (
-                            <option value={formData.ministryId}>{newMinistryName}</option>
-                          )}
                         </select>
-                        <button type="button" onClick={() => setIsCreatingMinistry(true)} style={{ background: 'rgba(52, 152, 219, 0.2)', color: '#3498db', border: 'none', padding: '0 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>+ Criar Rede</button>
                       </div>
-                    ) : (
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        <input type="text" className="search-input glass-input" placeholder="Ex: Ministério Batista da Graça" style={{ flex: 1 }} value={newMinistryName} onChange={e => setNewMinistryName(e.target.value)} autoFocus />
-                        <button type="button" onClick={handleCreateMinistry} style={{ background: '#3498db', color: '#fff', border: 'none', padding: '0 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Ok</button>
-                        <button type="button" onClick={() => setIsCreatingMinistry(false)} style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', padding: '0 16px', borderRadius: '8px', cursor: 'pointer' }}>Cancelar</button>
-                      </div>
-                    )}
                     <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', margin: '8px 0 0 0' }}>Todas as sedes e filiais criadas sob esta rede compartilharão relatórios globais da denominação.</p>
                   </div>
 
@@ -176,8 +163,17 @@ export function ChurchFormModal({
                     </div>
                     <div style={{ width: '80px' }}>
                       <label className="input-label">UF</label>
-                      <select className="search-input glass-input" style={{ width: '100%' }} value={formData.state || 'SP'} onChange={e => setFormData({...formData, state: e.target.value})}>
-                        <option value="SP">SP</option><option value="RJ">RJ</option><option value="MG">MG</option><option value="RS">RS</option>
+                      <select className="search-input glass-input" style={{ width: '100%' }} value={formData.state || ''} onChange={e => setFormData({...formData, state: e.target.value})}>
+                        <option value="">--</option>
+                        <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option>
+                        <option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option>
+                        <option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option>
+                        <option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
+                        <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option>
+                        <option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option>
+                        <option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option>
+                        <option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
+                        <option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
                       </select>
                     </div>
                   </div>
@@ -204,12 +200,137 @@ export function ChurchFormModal({
                         <option value="inativa">Inativa (Bloqueada)</option>
                       </select>
                     </div>
-                  </div>
-                </>
-              )}
+                  
+              </div>
+              </div>
+              
+              {/* SESSÃO 5: DEPARTAMENTOS */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <h4 style={{ margin: 0, color: '#95a5a6', borderBottom: '1px solid rgba(149, 165, 166, 0.3)', paddingBottom: '8px' }}>👥 Departamentos</h4>
 
-              {activeTab === 'assinatura' && (
-                <>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+                    <div style={{ flex: 1 }}>
+                      <label className="input-label">Adicionar Novo Departamento / Setor Interno</label>
+                      <input type="text" className="search-input glass-input" placeholder="Ex: Ministério Infantil, Louvor, Jovens..." style={{ width: '100%' }} value={newDepartment} onChange={e => setNewDepartment(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddDepartment())} />
+                    </div>
+                    <button type="button" onClick={handleAddDepartment} style={{ background: '#e67e22', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>+ Add</button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+                    <label className="input-label">Departamentos / Grupos Ativos nesta Igreja</label>
+                    {formData.departments?.length === 0 ? (
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>Nenhum departamento cadastrado.</div>
+                    ) : (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {formData.departments?.map((d: string) => (
+                          <div key={d} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem' }}>
+                            {d}
+                            <button type="button" onClick={() => handleRemoveDepartment(d)} style={{ background: 'transparent', border: 'none', color: '#e74c3c', cursor: 'pointer', fontSize: '1rem', padding: 0, display: 'flex', alignItems: 'center' }}>&times;</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  
+              </div>
+              </div>
+              
+              {/* SESSÃO 6: AGENDA DE CULTOS */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <h4 style={{ margin: 0, color: '#f1c40f', borderBottom: '1px solid rgba(241, 196, 15, 0.3)', paddingBottom: '8px' }}>📅 Agenda de Cultos</h4>
+
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ flex: 2 }}>
+                      <label className="input-label">Nome do Culto</label>
+                      <input type="text" className="search-input glass-input" placeholder="Ex: Culto da Família" style={{ width: '100%' }} value={newCulto.name} onChange={e => setNewCulto({...newCulto, name: e.target.value})} />
+                    </div>
+                    <div style={{ flex: 1.5 }}>
+                      <label className="input-label">Dia da Semana</label>
+                      <select className="search-input glass-input" style={{ width: '100%' }} value={newCulto.dayOfWeek} onChange={e => setNewCulto({...newCulto, dayOfWeek: e.target.value})}>
+                        <option value="Domingo">Domingo</option>
+                        <option value="Segunda-feira">Segunda-feira</option>
+                        <option value="Terça-feira">Terça-feira</option>
+                        <option value="Quarta-feira">Quarta-feira</option>
+                        <option value="Quinta-feira">Quinta-feira</option>
+                        <option value="Sexta-feira">Sexta-feira</option>
+                        <option value="Sábado">Sábado</option>
+                      </select>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label className="input-label">Horário</label>
+                      <input type="time" className="search-input glass-input" style={{ width: '100%', colorScheme: 'dark' }} value={newCulto.time} onChange={e => setNewCulto({...newCulto, time: e.target.value})} />
+                    </div>
+                    <button type="button" onClick={handleAddCulto} style={{ background: '#f1c40f', color: '#000', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>+ Add</button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+                    <label className="input-label">Cultos Regulares Cadastrados</label>
+                    {(!formData.services || formData.services.length === 0) ? (
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>Nenhum culto cadastrado na grade fixa.</div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {formData.services?.sort((a: any, b: any) => {
+                          const days = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+                          if (days.indexOf(a.dayOfWeek) !== days.indexOf(b.dayOfWeek)) return days.indexOf(a.dayOfWeek) - days.indexOf(b.dayOfWeek);
+                          return a.time.localeCompare(b.time);
+                        }).map((svc: any) => (
+                          <div key={svc.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '8px' }}>
+                            <div>
+                              <div style={{ fontWeight: 'bold', color: '#f1c40f' }}>{svc.name}</div>
+                              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{svc.dayOfWeek} às {svc.time}</div>
+                            </div>
+                            <button type="button" onClick={() => handleRemoveCulto(svc.id)} style={{ background: 'rgba(231, 76, 60, 0.1)', border: '1px solid rgba(231, 76, 60, 0.3)', color: '#e74c3c', cursor: 'pointer', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold' }}>Remover</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+              </div>
+            {/* SESSÃO 3: WHITE LABEL */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <h4 style={{ margin: 0, color: '#9b59b6', borderBottom: '1px solid rgba(155, 89, 182, 0.3)', paddingBottom: '8px' }}>🎨 White Label (App)</h4>
+
+                  <div style={{ display: 'flex', gap: '16px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ flex: 1 }}>
+                      <label className="input-label">Cor Primária do App</label>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <input type="color" style={{ width: '50px', height: '40px', cursor: 'pointer', background: 'transparent', border: 'none', padding: 0 }} value={formData.primaryColor || '#3498db'} onChange={e => setFormData({...formData, primaryColor: e.target.value})} />
+                        <span style={{ fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{formData.primaryColor || '#3498db'}</span>
+                      </div>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label className="input-label">Cor Secundária (Gradients)</label>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <input type="color" style={{ width: '50px', height: '40px', cursor: 'pointer', background: 'transparent', border: 'none', padding: 0 }} value={formData.secondaryColor || '#2c3e50'} onChange={e => setFormData({...formData, secondaryColor: e.target.value})} />
+                        <span style={{ fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{formData.secondaryColor || '#2c3e50'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="input-label">Foto de Capa (Header do App)</label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input type="text" className="search-input glass-input" placeholder="Cole a URL ou faça upload..." style={{ flex: 1 }} value={formData.coverPhotoUrl || ''} onChange={e => setFormData({...formData, coverPhotoUrl: e.target.value})} />
+                      <label style={{ cursor: 'pointer', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', padding: '0 16px', display: 'flex', alignItems: 'center', borderRadius: '8px', fontSize: '0.8rem', color: '#fff', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}>
+                        📁 Selecionar Arquivo
+                        <input type="file" accept="image/*" onChange={handleCoverPhoto} style={{ display: 'none' }} />
+                      </label>
+                    </div>
+                    {formData.coverPhotoUrl && (
+                      <div style={{ height: '100px', borderRadius: '8px', marginTop: '10px', background: `url(${formData.coverPhotoUrl}) center/cover`, border: '1px solid rgba(255,255,255,0.1)', backgroundRepeat: 'no-repeat' }}></div>
+                    )}
+                  </div>
+
+                  <div style={{ padding: '16px', borderRadius: '12px', background: `linear-gradient(135deg, ${formData.primaryColor || '#3498db'}, ${formData.secondaryColor || '#2c3e50'})`, color: '#fff', textAlign: 'center', marginTop: '10px', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
+                    <h4 style={{ margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>Pré-visualização do App do Cliente</h4>
+                    <p style={{ margin: '5px 0 0 0', fontSize: '0.8rem', opacity: 0.9 }}>Assim ficará o painel para a {formData.name || 'Igreja'}</p>
+                  
+              </div>
+              </div>
+              
+              {/* SESSÃO 2: LIMITES DO PLANO */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <h4 style={{ margin: 0, color: '#2ecc71', borderBottom: '1px solid rgba(46, 204, 113, 0.3)', paddingBottom: '8px' }}>💳 Limites do Plano</h4>
+
                   <div style={{ display: 'flex', gap: '12px' }}>
                     <div style={{ flex: 1 }}>
                       <label className="input-label">Plano Contratado</label>
@@ -240,46 +361,14 @@ export function ChurchFormModal({
                       <input type="number" className="search-input glass-input" style={{ width: '100%' }} placeholder="Deixe em branco para ilimitado (Ex: 3)" value={formData.userLimit || ''} onChange={e => setFormData({...formData, userLimit: e.target.value ? parseInt(e.target.value) : null} as any)} />
                       <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>Bloqueia a criação de novas contas administrativas acima do limite.</span>
                     </div>
-                  </div>
-                </>
-              )}
-
-              {activeTab === 'whitelabel' && (
-                <>
-                  <div style={{ display: 'flex', gap: '16px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div style={{ flex: 1 }}>
-                      <label className="input-label">Cor Primária do App</label>
-                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                        <input type="color" style={{ width: '50px', height: '40px', cursor: 'pointer', background: 'transparent', border: 'none', padding: 0 }} value={formData.primaryColor || '#3498db'} onChange={e => setFormData({...formData, primaryColor: e.target.value})} />
-                        <span style={{ fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{formData.primaryColor || '#3498db'}</span>
-                      </div>
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <label className="input-label">Cor Secundária (Gradients)</label>
-                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                        <input type="color" style={{ width: '50px', height: '40px', cursor: 'pointer', background: 'transparent', border: 'none', padding: 0 }} value={formData.secondaryColor || '#2c3e50'} onChange={e => setFormData({...formData, secondaryColor: e.target.value})} />
-                        <span style={{ fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{formData.secondaryColor || '#2c3e50'}</span>
-                      </div>
-                    </div>
-                  </div>
                   
-                  <div>
-                    <label className="input-label">URL da Foto de Capa (Header do App)</label>
-                    <input type="text" className="search-input glass-input" placeholder="https://..." style={{ width: '100%' }} value={formData.coverPhotoUrl || ''} onChange={e => setFormData({...formData, coverPhotoUrl: e.target.value})} />
-                    {formData.coverPhotoUrl && (
-                      <div style={{ height: '100px', borderRadius: '8px', marginTop: '10px', background: `url(${formData.coverPhotoUrl}) center/cover`, border: '1px solid rgba(255,255,255,0.1)' }}></div>
-                    )}
-                  </div>
+              </div>
+              </div>
+              
+              {/* SESSÃO 4: FATURAMENTO */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <h4 style={{ margin: 0, color: '#e67e22', borderBottom: '1px solid rgba(230, 126, 34, 0.3)', paddingBottom: '8px' }}>💰 Faturamento</h4>
 
-                  <div style={{ padding: '16px', borderRadius: '12px', background: `linear-gradient(135deg, ${formData.primaryColor || '#3498db'}, ${formData.secondaryColor || '#2c3e50'})`, color: '#fff', textAlign: 'center', marginTop: '10px', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
-                    <h4 style={{ margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>Pré-visualização do App do Cliente</h4>
-                    <p style={{ margin: '5px 0 0 0', fontSize: '0.8rem', opacity: 0.9 }}>Assim ficará o painel para a {formData.name || 'Igreja'}</p>
-                  </div>
-                </>
-              )}
-
-              {activeTab === 'faturamento' && (
-                <>
                   <div style={{ background: 'rgba(230, 126, 34, 0.05)', border: '1px solid rgba(230, 126, 34, 0.2)', padding: '16px', borderRadius: '12px', marginBottom: '14px' }}>
                     <h4 style={{ margin: '0 0 8px 0', color: '#e67e22' }}>📦 Precificação Modular (SaaS)</h4>
                     <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>Selecione quais módulos esta igreja contratou. A mensalidade será recalculada automaticamente.</p>
@@ -414,91 +503,44 @@ export function ChurchFormModal({
                         </div>
                       );
                     })()}
-                  </div>
-                </>
-              )}
+                  
+              </div>
+              </div>
+              
+              </form>
 
-              {activeTab === 'departamentos' && (
-                <>
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
-                    <div style={{ flex: 1 }}>
-                      <label className="input-label">Adicionar Novo Departamento / Setor Interno</label>
-                      <input type="text" className="search-input glass-input" placeholder="Ex: Ministério Infantil, Louvor, Jovens..." style={{ width: '100%' }} value={newDepartment} onChange={e => setNewDepartment(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddDepartment())} />
-                    </div>
-                    <button type="button" onClick={handleAddDepartment} style={{ background: '#e67e22', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>+ Add</button>
-                  </div>
+            {/* SEÇÕES AVANÇADAS (Só aparecem se a igreja já estiver salva) */}
+            {editingId ? (
+              <>
+                {/* SESSÃO 7: USUÁRIOS E ACESSOS */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'rgba(52, 152, 219, 0.05)', padding: '24px', borderRadius: '12px', border: '1px solid rgba(52, 152, 219, 0.1)' }}>
+                  <h4 style={{ margin: 0, color: '#3498db', borderBottom: '1px solid rgba(52, 152, 219, 0.3)', paddingBottom: '12px', fontSize: '1.1rem' }}>👥 Usuários e Acessos</h4>
+                  <ChurchUsersTab churchId={editingId} />
+                </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
-                    <label className="input-label">Departamentos / Grupos Ativos nesta Igreja</label>
-                    {formData.departments?.length === 0 ? (
-                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>Nenhum departamento cadastrado.</div>
-                    ) : (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                        {formData.departments?.map((d: string) => (
-                          <div key={d} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem' }}>
-                            {d}
-                            <button type="button" onClick={() => handleRemoveDepartment(d)} style={{ background: 'transparent', border: 'none', color: '#e74c3c', cursor: 'pointer', fontSize: '1rem', padding: 0, display: 'flex', alignItems: 'center' }}>&times;</button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
+                {/* SESSÃO 8: CONTROLE E CATEGORIAS */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'rgba(155, 89, 182, 0.05)', padding: '24px', borderRadius: '12px', border: '1px solid rgba(155, 89, 182, 0.1)' }}>
+                  <h4 style={{ margin: 0, color: '#9b59b6', borderBottom: '1px solid rgba(155, 89, 182, 0.3)', paddingBottom: '12px', fontSize: '1.1rem' }}>🔧 Categorias e Controle</h4>
+                  <ChurchControlTab formData={formData} setFormData={setFormData} />
+                </div>
 
-              {activeTab === 'cultos' && (
-                <>
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <div style={{ flex: 2 }}>
-                      <label className="input-label">Nome do Culto</label>
-                      <input type="text" className="search-input glass-input" placeholder="Ex: Culto da Família" style={{ width: '100%' }} value={newCulto.name} onChange={e => setNewCulto({...newCulto, name: e.target.value})} />
-                    </div>
-                    <div style={{ flex: 1.5 }}>
-                      <label className="input-label">Dia da Semana</label>
-                      <select className="search-input glass-input" style={{ width: '100%' }} value={newCulto.dayOfWeek} onChange={e => setNewCulto({...newCulto, dayOfWeek: e.target.value})}>
-                        <option value="Domingo">Domingo</option>
-                        <option value="Segunda-feira">Segunda-feira</option>
-                        <option value="Terça-feira">Terça-feira</option>
-                        <option value="Quarta-feira">Quarta-feira</option>
-                        <option value="Quinta-feira">Quinta-feira</option>
-                        <option value="Sexta-feira">Sexta-feira</option>
-                        <option value="Sábado">Sábado</option>
-                      </select>
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <label className="input-label">Horário</label>
-                      <input type="time" className="search-input glass-input" style={{ width: '100%', colorScheme: 'dark' }} value={newCulto.time} onChange={e => setNewCulto({...newCulto, time: e.target.value})} />
-                    </div>
-                    <button type="button" onClick={handleAddCulto} style={{ background: '#f1c40f', color: '#000', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>+ Add</button>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
-                    <label className="input-label">Cultos Regulares Cadastrados</label>
-                    {(!formData.services || formData.services.length === 0) ? (
-                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>Nenhum culto cadastrado na grade fixa.</div>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {formData.services?.sort((a: any, b: any) => {
-                          const days = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-                          if (days.indexOf(a.dayOfWeek) !== days.indexOf(b.dayOfWeek)) return days.indexOf(a.dayOfWeek) - days.indexOf(b.dayOfWeek);
-                          return a.time.localeCompare(b.time);
-                        }).map((svc: any) => (
-                          <div key={svc.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '8px' }}>
-                            <div>
-                              <div style={{ fontWeight: 'bold', color: '#f1c40f' }}>{svc.name}</div>
-                              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{svc.dayOfWeek} às {svc.time}</div>
-                            </div>
-                            <button type="button" onClick={() => handleRemoveCulto(svc.id)} style={{ background: 'rgba(231, 76, 60, 0.1)', border: '1px solid rgba(231, 76, 60, 0.3)', color: '#e74c3c', cursor: 'pointer', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold' }}>Remover</button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-
-            </form>
+                {/* SESSÃO 9: CARTEIRINHA DE MEMBRO */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'rgba(230, 126, 34, 0.05)', padding: '24px', borderRadius: '12px', border: '1px solid rgba(230, 126, 34, 0.1)' }}>
+                  <h4 style={{ margin: 0, color: '#e67e22', borderBottom: '1px solid rgba(230, 126, 34, 0.3)', paddingBottom: '12px', fontSize: '1.1rem' }}>🪪 Carteirinha de Membro</h4>
+                  <ChurchIdCardTab formData={formData} setFormData={setFormData} />
+                </div>
+              </>
+            ) : (
+              <div style={{ padding: '30px 20px', textAlign: 'center', background: 'rgba(46, 204, 113, 0.05)', borderRadius: '12px', border: '1px dashed rgba(46, 204, 113, 0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '2rem' }}>🔒</span>
+                <h4 style={{ margin: 0, color: '#2ecc71' }}>Opções Avançadas Bloqueadas</h4>
+                <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem', maxWidth: '400px' }}>
+                  As seções de <strong>Usuários, Controle e Carteirinha</strong> ficarão disponíveis automaticamente assim que você salvar os dados básicos acima e a igreja for criada no banco.
+                </p>
+              </div>
+            )}
           </div>
+
         </div>
 
         {/* Modal Footer */}

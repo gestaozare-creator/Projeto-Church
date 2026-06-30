@@ -5,12 +5,17 @@ import { supabase } from '@/lib/supabaseClient';
 import { Church } from '@/types/database';
 import { ChurchCard } from '@/components/admin/ChurchCard';
 import { ChurchFormModal } from '@/components/admin/ChurchFormModal';
+import { MinistryFormModal } from '@/components/admin/MinistryFormModal';
+import { useAuth } from '@/context/AuthContext';
 
 export default function IgrejasPage() {
+  const { canManageSystem } = useAuth();
+  
   const [churches, setChurches] = useState<Church[]>([]);
   const [ministryGroups, setMinistryGroups] = useState<{id: string, name: string}[]>([]);
   
   const [showModal, setShowModal] = useState(false);
+  const [showMinistryModal, setShowMinistryModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [initialData, setInitialData] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
@@ -22,6 +27,11 @@ export default function IgrejasPage() {
     async function loadChurches() {
       const { data: churchesDb } = await supabase.from('churches').select('*');
       const { data: servicesDb } = await supabase.from('church_services').select('*');
+      const { data: ministriesDb } = await supabase.from('ministries').select('*');
+      
+      if (ministriesDb) {
+        setMinistryGroups(ministriesDb);
+      }
       
       if (churchesDb) {
         const formatted = churchesDb.map(c => {
@@ -37,11 +47,11 @@ export default function IgrejasPage() {
             name: c.name,
             isHeadquarters: c.is_headquarters,
             city: c.city || '',
-            neighborhood: '',
+            neighborhood: c.neighborhood || '',
             state: c.state || '',
-            address: '',
-            phone: '',
-            pastorName: '',
+            address: c.address || '',
+            phone: c.phone || '',
+            pastorName: c.pastor_name || '',
             logoUrl: c.logo_url || '',
             primaryColor: '#3498db',
             secondaryColor: '#2c3e50',
@@ -50,9 +60,15 @@ export default function IgrejasPage() {
             memberLimit: c.member_limit,
             userLimit: 3,
             subscriptionStatus: c.subscription_status || 'Trial',
-            departments: c.departments || ['Louvor', 'Infantil'],
+            departments: c.departments || ['Louvor', 'Obreiros', 'Infantil'],
             coverPhotoUrl: c.cover_photo_url || '',
-            activeModules: ['secretaria', 'financeiro', 'departamentos'],
+            activeModules: c.active_modules || ['secretaria', 'financeiro', 'departamentos'],
+            cardConfig: c.card_config 
+              ? (typeof c.card_config === 'string' ? JSON.parse(c.card_config) : c.card_config)
+              : { primaryColor: '#3498db', showLogo: true, showSignature: false, customDisclaimer: 'Este documento é de uso exclusivo do membro.' },
+            config: c.config
+              ? (typeof c.config === 'string' ? JSON.parse(c.config) : c.config)
+              : { receitas: ['Dízimo', 'Oferta', 'Doação'], despesas: ['Aluguel', 'Energia', 'Água'], pagamentos: ['PIX', 'Dinheiro', 'Cartão'], funcoes: ['Membro', 'Obreiro(a)', 'Diácono(a)', 'Presbítero', 'Pastor'] },
             services: svcs
           };
         });
@@ -103,6 +119,15 @@ export default function IgrejasPage() {
     loadLiveStats();
   }, [churches]);
 
+  if (!canManageSystem) {
+    return (
+      <div style={{ padding: '60px 20px', textAlign: 'center', background: '#0d0e15', height: '100vh', color: '#fff' }}>
+        <h2 style={{ color: '#e74c3c' }}>Acesso Restrito</h2>
+        <p style={{ color: 'var(--text-secondary)' }}>Apenas o Administrador Master tem permissão para visualizar, editar ou excluir Redes e Igrejas.</p>
+      </div>
+    );
+  }
+
   const total = churches.length;
   const ativas = churches.filter(c => c.status === 'ativa').length;
   const inadimplentes = churches.filter(c => c.subscriptionStatus === 'Inadimplente').length;
@@ -150,23 +175,26 @@ export default function IgrejasPage() {
       targetId = Date.now().toString();
     }
 
-    if (isNewMinistry && newMinistryName) {
-      setMinistryGroups([...ministryGroups, { id: churchData.ministryId, name: newMinistryName }]);
-    }
-
     const churchToSave = {
       id: targetId,
       name: churchData.name,
       is_headquarters: churchData.isHeadquarters || false,
       city: churchData.city || '',
       state: churchData.state || 'SP',
+      neighborhood: churchData.neighborhood || null,
+      address: churchData.address || null,
+      phone: churchData.phone || null,
+      pastor_name: churchData.pastorName || null,
       ministry_id: churchData.ministryId || null,
       plan: churchData.plan || 'Basic',
       member_limit: churchData.memberLimit || null,
       subscription_status: churchData.subscriptionStatus || 'Trial',
       departments: churchData.departments || [],
       logo_url: churchData.logoUrl || null,
-      cover_photo_url: churchData.coverPhotoUrl || null
+      cover_photo_url: churchData.coverPhotoUrl || null,
+      active_modules: churchData.activeModules || [],
+      card_config: churchData.cardConfig ? JSON.stringify(churchData.cardConfig) : null,
+      config: churchData.config ? JSON.stringify(churchData.config) : null
     };
 
     const { error: churchError } = await supabase.from('churches').upsert(churchToSave);
@@ -307,6 +335,16 @@ export default function IgrejasPage() {
             </button>
           </div>
 
+          <button 
+            onClick={() => setShowMinistryModal(true)}
+            style={{ 
+              background: '#9b59b6', color: '#fff', border: 'none', padding: '10px 20px', 
+              borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(155, 89, 182, 0.3)'
+            }}>
+            + Nova Rede
+          </button>
+          
           <button 
             onClick={handleOpenNew}
             style={{ 
@@ -466,39 +504,48 @@ export default function IgrejasPage() {
         </div>
       </div>
 
-      {/* GRID OU LISTA DE IGREJAS */}
-      {viewMode === 'grid' ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px' }}>
-          {churches.map(c => {
-            const usage = getDatabaseUsage(c.id);
-            return (
-              <ChurchCard 
-                key={c.id} 
-                church={c as any} 
-                usage={usage} 
-                ministryName={getMinistryName(c.ministryId || '')} 
-                onEdit={handleOpenEdit} 
-                viewMode="grid" 
-              />
-            );
-          })}
-        </div>
-      ) : (
-        /* VISUALIZAÇÃO EM LISTA */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {churches.map(c => {
-            const usage = getDatabaseUsage(c.id);
-            return (
-              <ChurchCard 
-                key={c.id} 
-                church={c as any} 
-                usage={usage} 
-                ministryName={getMinistryName(c.ministryId || '')} 
-                onEdit={handleOpenEdit} 
-                viewMode="list" 
-              />
-            );
-          })}
+      {/* AGRUPAMENTO DE IGREJAS POR REDE (MINISTÉRIO) */}
+      {ministryGroups.map(ministry => {
+        const networkChurches = churches.filter(c => c.ministryId === ministry.id);
+        
+        return (
+          <div key={ministry.id} style={{ marginBottom: '30px' }}>
+            <div style={{ padding: '12px 20px', background: 'rgba(155, 89, 182, 0.1)', borderLeft: '4px solid #9b59b6', borderRadius: '8px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h4 style={{ margin: 0, color: '#fff', fontSize: '1.2rem' }}>{ministry.name}</h4>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Pastor Diretor: {(ministry as any).director_pastor_name || 'Não informado'}</span>
+              </div>
+              <span style={{ background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', color: '#fff' }}>
+                {networkChurches.length} igrejas
+              </span>
+            </div>
+
+            {networkChurches.length === 0 ? (
+              <div style={{ padding: '20px', textAlign: 'center', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Nenhuma igreja cadastrada nesta rede ainda.</p>
+              </div>
+            ) : viewMode === 'grid' ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px' }}>
+                {networkChurches.map(c => (
+                  <ChurchCard key={c.id} church={c as any} usage={getDatabaseUsage(c.id)} ministryName={ministry.name} onEdit={handleOpenEdit} viewMode="grid" />
+                ))}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {networkChurches.map(c => (
+                  <ChurchCard key={c.id} church={c as any} usage={getDatabaseUsage(c.id)} ministryName={ministry.name} onEdit={handleOpenEdit} viewMode="list" />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {ministryGroups.length === 0 && (
+        <div style={{ padding: '40px', textAlign: 'center', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.1)', marginTop: '20px' }}>
+          <h3 style={{ color: '#fff', marginBottom: '10px' }}>Nenhuma Rede Cadastrada</h3>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '20px' }}>Para começar, crie sua primeira Rede (Ministério) no botão acima.</p>
+          <button onClick={() => setShowMinistryModal(true)} style={{ background: '#9b59b6', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>+ Nova Rede</button>
         </div>
       )}
 
@@ -511,6 +558,16 @@ export default function IgrejasPage() {
           onClose={() => setShowModal(false)}
           onSave={handleSaveChurch}
           editingId={editingId}
+        />
+      )}
+
+      {showMinistryModal && (
+        <MinistryFormModal 
+          onClose={() => setShowMinistryModal(false)}
+          onSave={(newMinistry) => {
+            setMinistryGroups([...ministryGroups, newMinistry]);
+            setShowMinistryModal(false);
+          }}
         />
       )}
       

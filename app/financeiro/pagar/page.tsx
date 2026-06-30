@@ -114,9 +114,15 @@ export default function ContasPagar() {
   
   // Patrimônio State
   const [isAsset, setIsAsset] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('Aluguel');
   const [selectedSupplier, setSelectedSupplier] = useState('');
   const [showAssetLabelModal, setShowAssetLabelModal] = useState<any | null>(null);
+
+  // Config dinâmica da igreja selecionada
+  const selectedChurchConfig = churches?.find((c: any) => c.id === church)?.config || null;
+  const despesasCats: string[] = selectedChurchConfig?.despesas || ['Aluguel', 'Energia', 'Água', 'Internet/Telefone', 'Manutenção', 'Material de Escritório', 'Salários/Ajudas'];
+  const pagamentosCats: string[] = selectedChurchConfig?.pagamentos || ['PIX', 'Dinheiro', 'Boleto', 'Transferência', 'Cartão de Crédito', 'Débito Automático'];
+
+  const [selectedCategory, setSelectedCategory] = useState(() => despesasCats[0] || 'Aluguel');
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -605,11 +611,11 @@ export default function ContasPagar() {
                   {selectedCategory === 'NOVA' ? (
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <input name="customCategory" type="text" placeholder="Nova categoria..." required autoFocus className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box', border: '1px solid #f1c40f' }} />
-                      <button type="button" onClick={() => setSelectedCategory('Aluguel')} style={{ background: 'transparent', border: 'none', color: '#e74c3c', cursor: 'pointer', fontSize: '1.2rem', padding: '0 8px' }}>×</button>
+                      <button type="button" onClick={() => setSelectedCategory(despesasCats[0] || 'Aluguel')} style={{ background: 'transparent', border: 'none', color: '#e74c3c', cursor: 'pointer', fontSize: '1.2rem', padding: '0 8px' }}>×</button>
                     </div>
                   ) : (
                     <select name="category" required value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
-                      <option value="Aluguel">Aluguel</option><option value="Energia">Energia</option><option value="Água">Água</option><option value="Internet/Telefone">Internet/Telefone</option><option value="Manutenção">Manutenção</option><option value="Material de Escritório">Material de Escritório</option><option value="Salários/Ajudas">Salários/Ajudas</option>
+                      {despesasCats.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                       <option value="NOVA">➕ Adicionar Nova Categoria...</option>
                     </select>
                   )}
@@ -621,7 +627,7 @@ export default function ContasPagar() {
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Forma de Pagamento</label>
                   <select name="paymentMethod" required className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
-                    <option>Boleto</option><option>PIX</option><option>Transferência</option><option>Débito Automático</option><option>Dinheiro</option><option>Cartão de Crédito</option>
+                    {pagamentosCats.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
