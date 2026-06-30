@@ -118,7 +118,10 @@ export default function ContasPagar() {
   const [showAssetLabelModal, setShowAssetLabelModal] = useState<any | null>(null);
 
   // Config dinâmica da igreja selecionada
-  const selectedChurchConfig = churches?.find((c: any) => c.id === church)?.config || null;
+  const rawConfig = churches?.find((c: any) => c.id === church)?.config;
+  const selectedChurchConfig = rawConfig
+    ? (typeof rawConfig === 'string' ? JSON.parse(rawConfig) : rawConfig)
+    : null;
   const despesasCats: string[] = selectedChurchConfig?.despesas || ['Aluguel', 'Energia', 'Água', 'Internet/Telefone', 'Manutenção', 'Material de Escritório', 'Salários/Ajudas'];
   const pagamentosCats: string[] = selectedChurchConfig?.pagamentos || ['PIX', 'Dinheiro', 'Boleto', 'Transferência', 'Cartão de Crédito', 'Débito Automático'];
 

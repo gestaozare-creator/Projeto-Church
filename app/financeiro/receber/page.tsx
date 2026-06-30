@@ -77,7 +77,10 @@ export default function ContasReceber() {
   const [selectedNewCulto, setSelectedNewCulto] = useState('');
 
   // Config dinâmica da igreja selecionada
-  const selectedChurchConfig = churches?.find((c: any) => c.id === church)?.config || null;
+  const rawConfig = churches?.find((c: any) => c.id === church)?.config;
+  const selectedChurchConfig = rawConfig
+    ? (typeof rawConfig === 'string' ? JSON.parse(rawConfig) : rawConfig)
+    : null;
   const receitasCats: string[] = selectedChurchConfig?.receitas || ['Dízimo', 'Oferta', 'Oferta Oficial', 'Campanha', 'Doação', 'Aluguel de Espaço'];
   const pagamentosCats: string[] = selectedChurchConfig?.pagamentos || ['PIX', 'Dinheiro', 'Cartão de Débito', 'Cartão de Crédito', 'Transferência', 'Boleto', 'Cheque'];
 

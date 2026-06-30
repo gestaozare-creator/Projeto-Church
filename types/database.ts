@@ -21,6 +21,8 @@ export interface Church {
   coverPhotoUrl?: string;
   services?: ChurchService[];
   activeModules?: string[];
+  cardConfig?: any;
+  config?: any;
 }
 
 export interface Member {
