@@ -126,7 +126,7 @@ export default function Home() {
     const isNotVisitor = m.function !== 'Visitante (Kids)' && m.function !== 'Visitante';
     
     let d = true;
-    const mDate = m.integrationDate || '2026-01-01';
+    const mDate = (m.integrationDate || '').split('T')[0] || '2026-01-01';
     if (startDate && mDate < startDate) d = false;
     if (endDate && mDate > endDate) d = false;
     

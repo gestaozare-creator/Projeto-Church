@@ -1,15 +1,45 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function Compartilhar() {
+  const { currentUser } = useAuth();
   const [tab, setTab] = useState<'visitantes' | 'membros'>('visitantes');
   const [copiedV, setCopiedV] = useState(false);
   const [copiedM, setCopiedM] = useState(false);
+  const [selectedChurchId, setSelectedChurchId] = useState('');
+  const [churches, setChurches] = useState<{ id: string; name: string }[]>([]);
+
+  // Carrega as igrejas apenas para Superadmins poderem filtrar de qual igreja querem copiar o link
+  useEffect(() => {
+    async function loadChurches() {
+      if (currentUser?.role === 'superadmin' || currentUser?.role === 'pastor_diretor') {
+        const { data } = await supabase.from('churches').select('id, name').eq('status', 'ativa');
+        if (data) {
+          setChurches(data);
+          if (data.length > 0) {
+            setSelectedChurchId(data[0].id);
+          }
+        }
+      } else if (currentUser?.churchId) {
+        setSelectedChurchId(currentUser.churchId);
+      }
+    }
+    loadChurches();
+  }, [currentUser]);
 
   const base = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-  const urlVisitante = `${base}/formulario`;
-  const urlMembro = `${base}/formulario-membro`;
+  
+  // Constrói a URL final anexando o churchId
+  const urlVisitante = selectedChurchId 
+    ? `${base}/formulario?church=${selectedChurchId}` 
+    : `${base}/formulario`;
+    
+  const urlMembro = selectedChurchId 
+    ? `${base}/formulario-membro?church=${selectedChurchId}` 
+    : `${base}/formulario-membro`;
 
   const qrVisitante = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(urlVisitante)}&bgcolor=ffffff&color=0f172a`;
   const qrMembro = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(urlMembro)}&bgcolor=ffffff&color=0f172a`;
@@ -52,7 +82,7 @@ export default function Compartilhar() {
           {tips.map((t: string, i: number) => <li key={i}>{t}</li>)}
         </ul>
 
-        <a href={type === 'v' ? '/formulario' : '/formulario-membro'} target="_blank" className="modal-btn" style={{ margin: 0, fontSize: '0.85rem', textAlign: 'center', textDecoration: 'none', display: 'block', backgroundColor: color }}>
+        <a href={url} target="_blank" className="modal-btn" style={{ margin: 0, fontSize: '0.85rem', textAlign: 'center', textDecoration: 'none', display: 'block', backgroundColor: color }}>
           👁️ Visualizar Formulário
         </a>
       </div>
@@ -61,11 +91,26 @@ export default function Compartilhar() {
 
   return (
     <div className="page-wrapper">
-      <div className="page-header">
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
         <div>
           <h3 style={{ fontSize: '1.6rem', marginBottom: '5px' }}>🔗 Links e QR Codes</h3>
           <p style={{ color: 'var(--text-secondary)' }}>Compartilhe formulários de cadastro para visitantes e membros.</p>
         </div>
+
+        {/* Seletor de igreja apenas para Superadmins/Master */}
+        {(currentUser?.role === 'superadmin' || currentUser?.role === 'pastor_diretor') && churches.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Congregação:</label>
+            <select 
+              value={selectedChurchId} 
+              onChange={e => setSelectedChurchId(e.target.value)} 
+              className="search-input glass-input"
+              style={{ padding: '8px 12px', minWidth: '180px' }}
+            >
+              {churches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}

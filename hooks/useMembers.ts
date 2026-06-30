@@ -30,8 +30,8 @@ export function useMembers(churchId?: string) {
             state: m.state || '',
             function: m.function || '',
             ministry: m.ministry || '',
-            status: m.status || 'ativo',
-            integrationDate: m.created_at, // Map to integrationDate if needed
+            status: m.status || 'pendente',
+            integrationDate: m.integration_date || (m.created_at ? m.created_at.split('T')[0] : ''),
             photoUrl: m.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}&background=random`
           }));
           setMembers(formatted as any);
