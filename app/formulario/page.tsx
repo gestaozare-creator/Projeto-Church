@@ -18,17 +18,31 @@ export default function FormularioVisitante() {
     churchId: ''
   });
 
+  const [isLocked, setIsLocked] = useState(false);
+
   // Carrega as igrejas reais do banco de dados
   useEffect(() => {
     async function loadChurches() {
       const { data, error } = await supabase
         .from('churches')
-        .select('id, name')
-        .eq('status', 'ativa');
+        .select('id, name');
       
       if (!error && data) {
         setChurches(data);
-        if (data.length > 0) {
+        
+        // Verifica se há o parâmetro ?church=ID na URL
+        const params = new URLSearchParams(window.location.search);
+        const churchParam = params.get('church');
+        
+        if (churchParam) {
+          const exists = data.find(c => c.id === churchParam);
+          if (exists) {
+            setForm(prev => ({ ...prev, churchId: churchParam }));
+            setIsLocked(true);
+          } else if (data.length > 0) {
+            setForm(prev => ({ ...prev, churchId: data[0].id }));
+          }
+        } else if (data.length > 0) {
           setForm(prev => ({ ...prev, churchId: data[0].id }));
         }
       }
@@ -109,15 +123,21 @@ export default function FormularioVisitante() {
           <div style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>Carregando opções...</div>
         ) : step === 'form' ? (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div>
-              <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Igreja / Congregação que Visita *</label>
-              <select 
-                name="churchId" value={form.churchId} onChange={handleChange} required
-                style={{ width: '100%', padding: '12px 15px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none', backgroundColor: '#fff', cursor: 'pointer', boxSizing: 'border-box' }}
-              >
-                {churches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </div>
+            {!isLocked ? (
+              <div>
+                <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Igreja / Congregação que Visita *</label>
+                <select 
+                  name="churchId" value={form.churchId} onChange={handleChange} required
+                  style={{ width: '100%', padding: '12px 15px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none', backgroundColor: '#fff', cursor: 'pointer', boxSizing: 'border-box' }}
+                >
+                  {churches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+            ) : (
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px 14px', fontSize: '0.9rem', color: '#475569', marginBottom: '10px' }}>
+                <strong>Igreja que Visita:</strong> {churches.find(c => c.id === form.churchId)?.name}
+              </div>
+            )}
 
             <div>
               <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Nome Completo</label>

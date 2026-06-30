@@ -16,17 +16,31 @@ export default function FormularioMembro() {
     churchId: '' 
   });
 
+  const [isLocked, setIsLocked] = useState(false);
+
   // Carrega as igrejas reais do banco de dados em tempo real
   useEffect(() => {
     async function loadChurches() {
       const { data, error } = await supabase
         .from('churches')
-        .select('id, name')
-        .eq('status', 'ativa');
+        .select('id, name');
       
       if (!error && data) {
         setChurches(data);
-        if (data.length > 0) {
+        
+        // Verifica se há o parâmetro ?church=ID na URL
+        const params = new URLSearchParams(window.location.search);
+        const churchParam = params.get('church');
+        
+        if (churchParam) {
+          const exists = data.find(c => c.id === churchParam);
+          if (exists) {
+            setForm(prev => ({ ...prev, churchId: churchParam }));
+            setIsLocked(true);
+          } else if (data.length > 0) {
+            setForm(prev => ({ ...prev, churchId: data[0].id }));
+          }
+        } else if (data.length > 0) {
           setForm(prev => ({ ...prev, churchId: data[0].id }));
         }
       }
@@ -129,12 +143,18 @@ export default function FormularioMembro() {
               <input type="text" name="address" value={form.address} onChange={onChange} placeholder="Bairro, Cidade" style={fieldStyle} required />
             </div>
 
-            <div>
-              <label style={labelStyle}>Igreja / Congregação *</label>
-              <select name="churchId" value={form.churchId} onChange={onChange} style={fieldStyle} required>
-                {churches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </div>
+            {!isLocked ? (
+              <div>
+                <label style={labelStyle}>Igreja / Congregação *</label>
+                <select name="churchId" value={form.churchId} onChange={onChange} style={fieldStyle} required>
+                  {churches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+            ) : (
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px 14px', fontSize: '0.85rem', color: '#475569' }}>
+                <strong>Igreja / Congregação:</strong> {churches.find(c => c.id === form.churchId)?.name}
+              </div>
+            )}
 
             <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px 14px', fontSize: '0.8rem', color: '#64748b', lineHeight: '1.5' }}>
               ℹ️ Após aprovação, a secretaria da igreja definirá seu <strong>ministério</strong> e <strong>função</strong>.
