@@ -34,9 +34,8 @@ export default function Visitantes() {
   const [showConvertModal, setShowConvertModal] = useState(false);
   const [convertForm, setConvertForm] = useState({ function: 'Membro', department: 'Geral', integrationDate: new Date().toISOString().split('T')[0] });
 
-  const [showNewModal, setShowNewModal] = useState(false);
   const [newForm, setNewForm] = useState<Partial<Visitor & { churchId?: string }>>({
-    name: '', phone: '', email: '', region: '', source: '', wantsVisit: false, address: '', notes: '', date: new Date().toISOString().split('T')[0], culto: '', horario: '', churchId: ''
+    name: '', phone: '', email: '', region: '', source: 'Amigos / Parentes', wantsVisit: false, address: '', notes: '', date: new Date().toISOString().split('T')[0], culto: '', horario: '', churchId: ''
   });
 
   // WhatsApp Modal
@@ -157,7 +156,7 @@ export default function Visitantes() {
           region: v.state || 'Geral',
           source: v.ministry || 'Outro',
           wantsVisit: v.address ? true : false,
-          status: v.status === 'ativo' ? 'membro' : v.status === 'pendente' ? 'em_conversao' : 'visitante',
+          status: v.status === 'ativo' ? 'membro' : v.status === 'em_conversao' ? 'em_conversao' : 'visitante', // Mapeamento correto de status
           address: v.address || '',
           notes: v.function || '',
           culto: v.culto || '',
@@ -171,8 +170,8 @@ export default function Visitantes() {
   }, []);
 
   const changeStatus = async (id: string, ns: VisitorStatus) => {
-    // Atualiza status no Supabase
-    const dbStatus = ns === 'membro' ? 'ativo' : 'pendente';
+    // Mapeamento correto de gravação no banco
+    const dbStatus = ns === 'membro' ? 'ativo' : ns === 'em_conversao' ? 'em_conversao' : 'pendente';
     const dbFunction = ns === 'visitante' ? 'Visitante' : 'Ainda não definida';
 
     const { error } = await supabase
@@ -218,7 +217,10 @@ export default function Visitantes() {
 
   const handleNewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newForm.name || !newForm.phone || !newForm.region || !newForm.source) return;
+    if (!newForm.name || !newForm.phone || !newForm.region || !newForm.source) {
+      alert('Por favor, preencha todos os campos obrigatórios (Nome, Telefone, Bairro e Como Conheceu).');
+      return;
+    }
 
     // Resolve a igreja correta (Superadmin escolhe da lista de congregações da modal)
     const activeChurch = newForm.churchId || (churchF !== 'all' && churchF !== 'ALL' ? churchF : (dbChurches[0]?.id || ''));
