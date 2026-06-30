@@ -169,16 +169,30 @@ export default function FormularioVisitante() {
 
             {/* Seleção do Culto e Horário */}
             {availableServices.length > 0 && (
-              <div>
-                <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Culto que está Visitando *</label>
-                <select 
-                  name="serviceId" value={form.serviceId} onChange={handleChange} required
-                  style={{ width: '100%', padding: '12px 15px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none', backgroundColor: '#fff', cursor: 'pointer', boxSizing: 'border-box' }}
-                >
-                  {availableServices.map(s => (
-                    <option key={s.id} value={s.id}>{s.name} ({s.day_of_week} às {s.time})</option>
-                  ))}
-                </select>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ flex: 1.2 }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Culto da Visita *</label>
+                  <select 
+                    name="serviceId" value={form.serviceId} onChange={handleChange} required
+                    style={{ width: '100%', padding: '12px 15px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none', backgroundColor: '#fff', cursor: 'pointer', boxSizing: 'border-box' }}
+                  >
+                    {availableServices.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Dia e Hora Autogerados</label>
+                  <input 
+                    type="text" 
+                    value={(() => {
+                      const selected = availableServices.find(s => s.id === form.serviceId);
+                      return selected ? `${selected.day_of_week} às ${selected.time}` : 'Escolha o culto';
+                    })()} 
+                    readOnly 
+                    style={{ width: '100%', padding: '12px 15px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none', backgroundColor: '#f8fafc', color: '#64748b', boxSizing: 'border-box' }}
+                  />
+                </div>
               </div>
             )}
 
