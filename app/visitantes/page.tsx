@@ -34,6 +34,7 @@ export default function Visitantes() {
   const [showConvertModal, setShowConvertModal] = useState(false);
   const [convertForm, setConvertForm] = useState({ function: 'Membro', department: 'Geral', integrationDate: new Date().toISOString().split('T')[0] });
 
+  const [showNewModal, setShowNewModal] = useState(false);
   const [newForm, setNewForm] = useState<Partial<Visitor & { churchId?: string }>>({
     name: '', phone: '', email: '', region: '', source: 'Amigos / Parentes', wantsVisit: false, address: '', notes: '', date: new Date().toISOString().split('T')[0], culto: '', horario: '', churchId: ''
   });
