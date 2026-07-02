@@ -155,16 +155,14 @@ function DonutChart({
   );
 }
 
-const getMonthBounds = () => {
+const getYearBounds = () => {
   const today = new Date();
   const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  const firstDayStr = `${yyyy}-${mm}-01`;
-  const lastDay = new Date(yyyy, today.getMonth() + 1, 0).getDate();
-  const lastDayStr = `${yyyy}-${mm}-${lastDay}`;
+  const firstDayStr = `${yyyy}-01-01`;
+  const lastDayStr = `${yyyy}-12-31`;
   return { firstDayStr, lastDayStr };
 };
-const { firstDayStr, lastDayStr } = getMonthBounds();
+const { firstDayStr, lastDayStr } = getYearBounds();
 
 export default function FinanceiroDashboardPage() {
   const { currentUser, canSeeAllChurches } = useAuth();

@@ -32,7 +32,7 @@ export default function Visitantes() {
   const [sel, setSel] = useState<Visitor | null>(null);
 
   const [showConvertModal, setShowConvertModal] = useState(false);
-  const [convertForm, setConvertForm] = useState({ function: 'Membro', department: 'Geral', integrationDate: new Date().toISOString().split('T')[0] });
+  const [convertForm, setConvertForm] = useState<any>({ name: '', phone: '', address: '', churchId: '', function: 'Membro', department: 'Geral', integrationDate: new Date().toISOString().split('T')[0], cardValidity: '' });
 
   const [showNewModal, setShowNewModal] = useState(false);
   const [newForm, setNewForm] = useState<Partial<Visitor & { churchId?: string }>>({
@@ -66,11 +66,11 @@ export default function Visitantes() {
   const [churchF, setChurchF] = useState(canSeeAllChurches ? 'all' : (currentUser?.churchId || ''));
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
-    return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
+    return new Date(d.getFullYear(), 0, 1).toISOString().split('T')[0];
   });
   const [endDate, setEndDate] = useState(() => {
     const d = new Date();
-    return new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().split('T')[0];
+    return new Date(d.getFullYear(), 11, 31).toISOString().split('T')[0];
   });
   const [cultoFilter, setCultoFilter] = useState('ALL');
   const [horarioFilter, setHorarioFilter] = useState('ALL');
@@ -200,9 +200,14 @@ export default function Visitantes() {
       .from('members')
       .update({
         status: 'ativo',
+        name: convertForm.name,
+        phone: convertForm.phone,
+        address: convertForm.address,
+        church_id: convertForm.churchId,
         function: convertForm.function || 'Membro',
         ministry: convertForm.department || 'Geral',
-        integration_date: convertForm.integrationDate
+        integration_date: convertForm.integrationDate,
+        card_validity: convertForm.cardValidity
       })
       .eq('id', sel.id);
 
@@ -548,11 +553,13 @@ export default function Visitantes() {
                       onClick={() => changeStatus(sel.id, 'em_conversao')}
                       style={{ flex: 1, padding: '10px', border: 'none', borderRadius: '8px', background: '#e67e22', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.8rem' }}
                     >
-                      ⚡ Vincular Célula
+                      🔄 Em Conversão
                     </button>
                   )}
                   <button 
-                    onClick={() => setShowConvertModal(true)}
+                    onClick={() => {
+                      window.location.href = '/?integrate=' + sel.id;
+                    }}
                     style={{ flex: 1.2, padding: '10px', border: 'none', borderRadius: '8px', background: '#2ecc71', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.8rem' }}
                   >
                     🎉 Integrar como Membro
@@ -564,40 +571,69 @@ export default function Visitantes() {
         </div>
       )}
 
+      
       {/* CONVERT MODAL */}
       {showConvertModal && sel && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <form onSubmit={handleConvertSubmit} className="glass" style={{ padding: '24px', borderRadius: '16px', width: '100%', maxWidth: '380px', margin: '15px' }}>
-            <h3 style={{ marginTop: 0, fontSize: '1.15rem' }}>🎉 Integrar {sel.name}</h3>
-            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '14px' }}>Defina a função, departamento e a data de batismo/integração.</p>
+          <form onSubmit={handleConvertSubmit} className="glass" style={{ padding: '24px', borderRadius: '16px', width: '100%', maxWidth: '440px', margin: '15px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <h3 style={{ marginTop: 0, fontSize: '1.2rem', borderBottom: '1px solid var(--card-border)', paddingBottom: '10px', marginBottom: '4px' }}>➕ Novo Membro</h3>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
               <div>
-                <label className="input-label">Função / Cargo</label>
-                <select value={convertForm.function} onChange={e => setConvertForm(p => ({ ...p, function: e.target.value }))} className="search-input glass-input" style={{ width: '100%', padding: '8px' }}>
-                  <option value="Membro">Membro</option>
-                  <option value="Obreiro(a)">Obreiro(a)</option>
-                  <option value="Diácono(a)">Diácono(a)</option>
-                  <option value="Presbítero">Presbítero</option>
-                </select>
+                <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Nome</label>
+                <input type="text" value={convertForm.name} onChange={e => setConvertForm((p:any) => ({...p, name: e.target.value}))} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required />
+              </div>
+              <div style={{ display:'flex', gap:'10px' }}>
+                <div style={{ flex:1 }}>
+                  <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Função / Habilidade</label>
+                  <select value={convertForm.function} onChange={e => setConvertForm((p:any) => ({ ...p, function: e.target.value }))} className="search-input glass-input" style={{ width: '100%', padding: '8px' }}>
+                    <option value="Membro">Membro</option>
+                    <option value="Obreiro(a)">Obreiro(a)</option>
+                    <option value="Diácono(a)">Diácono(a)</option>
+                    <option value="Presbítero">Presbítero</option>
+                    <option value="Pastor">Pastor</option>
+                  </select>
+                </div>
+                <div style={{ flex:1 }}>
+                  <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Ministério</label>
+                  <select value={convertForm.department} onChange={e => setConvertForm((p:any) => ({ ...p, department: e.target.value }))} className="search-input glass-input" style={{ width: '100%', padding: '8px' }}>
+                    {(dbChurches.find(c => c.id === sel.churchId)?.departments || ['Louvor', 'Obreiros', 'Infantil', 'Mídia']).map((d:string) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div style={{ display:'flex', gap:'10px' }}>
+                <div style={{ flex:1 }}>
+                  <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Telefone</label>
+                  <input type="text" value={convertForm.phone} onChange={e => setConvertForm((p:any) => ({...p, phone: e.target.value}))} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required />
+                </div>
+                <div style={{ flex:1 }}>
+                  <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Igreja</label>
+                  <select value={convertForm.churchId} onChange={e => setConvertForm((p:any) => ({...p, churchId: e.target.value}))} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required>
+                    {dbChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
               </div>
               <div>
-                <label className="input-label">Ministério Inicial</label>
-                <select value={convertForm.department} onChange={e => setConvertForm(p => ({ ...p, department: e.target.value }))} className="search-input glass-input" style={{ width: '100%', padding: '8px' }}>
-                  {(dbChurches.find(c => c.id === sel.churchId)?.departments || ['Louvor', 'Obreiros', 'Infantil', 'Mídia']).map(d => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </select>
+                <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Endereço</label>
+                <input type="text" value={convertForm.address} onChange={e => setConvertForm((p:any) => ({...p, address: e.target.value}))} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} />
               </div>
-              <div>
-                <label className="input-label">Data de Batismo / Integração</label>
-                <input type="date" value={convertForm.integrationDate} onChange={e => setConvertForm(p => ({ ...p, integrationDate: e.target.value }))} className="search-input glass-input" style={{ width: '100%', padding: '8px', colorScheme: 'dark' }} />
+              <div style={{ display:'flex', gap:'10px' }}>
+                <div style={{ flex:1 }}>
+                  <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Data de Batismo / Integração</label>
+                  <input type="date" value={convertForm.integrationDate} onChange={e => setConvertForm((p:any) => ({...p, integrationDate: e.target.value}))} className="search-input glass-input" style={{ width:'100%', padding:'8px', colorScheme: 'dark' }} />
+                </div>
+                <div style={{ flex:1 }}>
+                  <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Validade da Carteirinha</label>
+                  <input type="text" value={convertForm.cardValidity} onChange={e => setConvertForm((p:any) => ({...p, cardValidity: e.target.value}))} placeholder="Ex: 12/2026" className="search-input glass-input" style={{ width:'100%', padding:'8px' }} />
+                </div>
               </div>
-              
-              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <button type="button" onClick={() => setShowConvertModal(false)} style={{ flex: 1, padding: '10px', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>Cancelar</button>
-                <button type="submit" style={{ flex: 1.5, padding: '10px', border: 'none', background: '#2ecc71', color: '#fff', fontWeight: 'bold', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>Confirmar</button>
-              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+              <button type="button" onClick={() => setShowConvertModal(false)} style={{ flex: 1, padding: '10px', backgroundColor: '#7f8c8d', color: '#fff', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Cancelar</button>
+              <button type="submit" style={{ flex: 1.5, padding: '10px', backgroundColor: '#2ecc71', color: '#fff', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Cadastrar</button>
             </div>
           </form>
         </div>

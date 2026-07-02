@@ -46,6 +46,8 @@ export function useChurches() {
               departments: c.departments || ['Louvor', 'Infantil'],
               coverPhotoUrl: c.cover_photo_url || '',
               activeModules: c.active_modules || ['secretaria', 'financeiro', 'departamentos'],
+              cardConfig: c.card_config ? (typeof c.card_config === 'string' ? JSON.parse(c.card_config) : c.card_config) : { primaryColor: '#3498db', showLogo: true, showSignature: false, customDisclaimer: 'Este documento é de uso exclusivo do membro.' },
+              config: c.config ? (typeof c.config === 'string' ? JSON.parse(c.config) : c.config) : null,
               services: svcs
             };
           });

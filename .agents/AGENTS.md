@@ -20,5 +20,6 @@
 
 ### 5. Tipagem Rigorosa e Banco de Dados (Supabase)
 * **Regra**: NUNCA utilize ny ou ny[] nos estados de componentes. O projeto agora conta com uma tipagem estrita centralizada em @/types/database.ts (que reflete o schema real snake_case do Supabase).
-* **Regra**: Nas páginas do Frontend (componentes React), utilize View Models locais (interfaces camelCase na própria página) ou faça o mapeamento explícito dos campos de snake_case (banco) para camelCase (frontend) durante o carregamento de dados (ex: churchId: data.church_id). Isso evita quebra de código legado e garante consistência sem conflitos de padrões.
-* **Regra**: O arquivo lib/mock-data.ts foi substituído para produção. Todo carregamento de dados e tipagem não deve mais depender de dados estáticos; devem-se consultar diretamente as tabelas do Supabase.
+* **Regra**: Nas pï¿½ginas do Frontend (componentes React), utilize View Models locais (interfaces camelCase na prï¿½pria pï¿½gina) ou faï¿½a o mapeamento explï¿½cito dos campos de snake_case (banco) para camelCase (frontend) durante o carregamento de dados (ex: churchId: data.church_id). Isso evita quebra de cï¿½digo legado e garante consistï¿½ncia sem conflitos de padrï¿½es.
+* **Regra**: O arquivo lib/mock-data.ts foi substituï¿½do para produï¿½ï¿½o. Todo carregamento de dados e tipagem nï¿½o deve mais depender de dados estï¿½ticos; devem-se consultar diretamente as tabelas do Supabase.
+

@@ -39,11 +39,11 @@ export default function Home() {
 
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
-    return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
+    return new Date(d.getFullYear(), 0, 1).toISOString().split('T')[0];
   });
   const [endDate, setEndDate] = useState(() => {
     const d = new Date();
-    return new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().split('T')[0];
+    return new Date(d.getFullYear(), 11, 31).toISOString().split('T')[0];
   });
   const [cultoFilter, setCultoFilter] = useState('ALL');
   const [horarioFilter, setHorarioFilter] = useState('ALL');
@@ -60,14 +60,48 @@ export default function Home() {
       const times = new Set(svcs.map(s => s.time));
       return Array.from(times).sort();
     } else {
-      const dayName = cultoFilter === 'domingo' ? 'Domingo' : 
-                      cultoFilter === 'quarta' ? 'Quarta-feira' : 
-                      cultoFilter === 'sabado' ? 'Sábado' : '';
-      
-      const times = new Set(svcs.filter(s => s.dayOfWeek === dayName).map(s => s.time));
+      const times = new Set(svcs.filter(s => s.name === cultoFilter).map(s => s.time));
       return Array.from(times).sort();
     }
-  }, [church, cultoFilter]);
+  }, [church, cultoFilter, dbChurches]);
+
+  // Lista de cultos únicos cadastrados no banco para preencher o filtro superior
+  const availableCultos = useMemo(() => {
+    let svcs: any[] = [];
+    if (church === 'ALL') {
+      svcs = dbChurches.flatMap(c => c.services || []);
+    } else {
+      const c = dbChurches.find(c => c.id === church);
+      svcs = c?.services || [];
+    }
+    const names = new Set(svcs.map(s => s.name));
+    return Array.from(names).sort();
+  }, [church, dbChurches]);
+
+  
+  // Auto-open integrate modal if redirect from visitantes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && members.length > 0) {
+      const params = new URLSearchParams(window.location.search);
+      const integrateId = params.get('integrate');
+      if (integrateId) {
+        const m = members.find(x => x.id === integrateId);
+        if (m) {
+          setEditForm({ 
+            ...m, 
+            status: 'ativo', 
+            function: m.function && m.function !== 'Visitante' && m.function !== 'Visitante (Kids)' && m.function !== 'Ainda não definida' ? m.function : 'Membro', 
+            integrationDate: new Date().toISOString().split('T')[0] 
+          });
+          setPhotoPreview(m.photoUrl || null);
+          setIsCreating(true);
+          setIsEditing(true);
+          // Limpa a URL
+          window.history.replaceState({}, '', '/');
+        }
+      }
+    }
+  }, [members]);
 
   useEffect(() => {
     setHorarioFilter('ALL');
@@ -317,10 +351,8 @@ export default function Home() {
           </div>
         )}
         <select value={cultoFilter} onChange={e => setCultoFilter(e.target.value)} className="search-input glass-input" style={{ padding: '8px', fontSize: '0.8rem' }}>
-          <option value="ALL">Cultos</option>
-          <option value="domingo">Domingo</option>
-          <option value="quarta">Quarta-feira</option>
-          <option value="sabado">Sábado</option>
+          <option value="ALL">Todos os Cultos</option>
+          {availableCultos.map(name => <option key={name} value={name}>{name}</option>)}
         </select>
         <select value={horarioFilter} onChange={e => setHorarioFilter(e.target.value)} className="search-input glass-input" style={{ padding: '8px', fontSize: '0.8rem' }}>
           <option value="ALL">Horários</option>
