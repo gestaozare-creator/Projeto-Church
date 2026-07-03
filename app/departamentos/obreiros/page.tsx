@@ -62,10 +62,17 @@ export default function ObreirosDashboardPage() {
       const startDate = `${y}-${m}-01`;
       const endDate = `${y}-${m}-31`;
 
+      // Resolve o churchId corretamente (nunca null)
+      let resolvedChurchId = currentUser?.churchId;
+      if (!resolvedChurchId) {
+        const { data: firstChurch } = await supabase.from('churches').select('id').limit(1).single();
+        resolvedChurchId = firstChurch?.id || null;
+      }
+
       const { data: churchDb } = await supabase
         .from("churches")
         .select("config")
-        .eq("id", currentUser?.churchId || "1")
+        .eq("id", resolvedChurchId)
         .single();
       if (
         churchDb &&
@@ -117,16 +124,23 @@ export default function ObreirosDashboardPage() {
   const escala = escalasGlobais[activeDate] || {};
 
   const saveToConfig = async (newEscalas: any) => {
+    let resolvedChurchId = currentUser?.churchId;
+    if (!resolvedChurchId) {
+      const { data: firstChurch } = await supabase.from('churches').select('id').limit(1).single();
+      resolvedChurchId = firstChurch?.id || '1';
+    }
     try {
-      await fetch("/api/save-scale", {
+      const resp = await fetch("/api/save-scale", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          churchId: currentUser?.churchId || "1",
+          churchId: resolvedChurchId,
           deptName: "Obreiros",
           newEscalas,
         }),
       });
+      const result = await resp.json();
+      if (result.error) console.error('Erro na API:', result.error);
     } catch (e) {
       console.error("Failed to save scale via API", e);
     }

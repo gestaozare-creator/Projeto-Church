@@ -74,8 +74,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       let finalRole: UserRole = (data?.role as UserRole) || 'secretaria';
-      if (authUser.email === 'gestaozare@gmail.com' || authUser.email === 'gestaozare@gmail.com') {
+      if (authUser.email === 'gestaozare@gmail.com') {
         finalRole = 'superadmin';
+      }
+
+      // Se não tiver church_id, busca a primeira igreja disponível
+      let resolvedChurchId = data?.church_id || null;
+      if (!resolvedChurchId) {
+        const { data: firstChurch } = await supabase
+          .from('churches')
+          .select('id')
+          .limit(1)
+          .single();
+        resolvedChurchId = firstChurch?.id || null;
       }
 
       setCurrentUser({
@@ -83,7 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário',
         email: authUser.email || '',
         role: finalRole,
-        churchId: data?.church_id || null,
+        churchId: resolvedChurchId,
       });
     } catch (err) {
       console.error(err);
