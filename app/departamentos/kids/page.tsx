@@ -343,13 +343,15 @@ export default function InfantilDashboardPage() {
     }
 
     // 2. Criar a criança vinculada ao responsável no banco
+    const tempKidId = '00000000-0000-0000-0000-' + Math.floor(100000000000 + Math.random() * 900000000000);
     const { data: newKidDb, error: kidError } = await supabase
       .from('kids')
       .insert({
+        id: tempKidId,
         name: visitorData.kidName,
         birth_date: visitorData.birthDate,
-        parent_name: visitorData.parentName,
-        parent_phone: visitorData.parentPhone,
+        parent_id: parentId,
+        emergency_contact: visitorData.parentPhone,
         allergies: visitorData.allergies || 'Sem alergias'
       })
       .select()
@@ -367,7 +369,7 @@ export default function InfantilDashboardPage() {
       parentName: visitorData.parentName,
       parentPhone: visitorData.parentPhone,
       allergies: visitorData.allergies || 'Sem alergias',
-      churchId: '1'
+      churchId: currentUser?.churchId || '1782771173659'
     };
 
     // Salvar na lista local e fazer check-in
