@@ -49,7 +49,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setCurrentUser(null);
         setLoading(false);
-        if (pathname !== '/login') {
+        const isPublic = pathname === '/login' || pathname?.startsWith('/formulario') || pathname?.startsWith('/agenda');
+        if (!isPublic) {
           router.push('/login');
         }
       }
@@ -114,7 +115,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Redirecionamento de proteção de rotas
   useEffect(() => {
-    if (!loading && !currentUser && pathname !== '/login') {
+    const isPublic = pathname === '/login' || pathname?.startsWith('/formulario') || pathname?.startsWith('/agenda');
+    if (!loading && !currentUser && !isPublic) {
       router.push('/login');
     }
   }, [loading, currentUser, pathname, router]);
