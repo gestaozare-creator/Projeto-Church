@@ -1,5 +1,9 @@
 "use client";
 
+import { toPng } from "html-to-image";
+import download from "downloadjs";
+import { useRef } from "react";
+
 import React, { useState, useMemo, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
