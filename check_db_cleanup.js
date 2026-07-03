@@ -3,7 +3,7 @@ const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
 // Ler o .env.local manualmente, pois dotenv estava dando erro no ambiente
-const envPath = path.resolve(process.cwd(), '.env.local');
+const envPath = path.resolve(process.cwd(), '.env.local'); 
 const envContent = fs.readFileSync(envPath, 'utf-8');
 const envVars = {};
 envContent.split('\n').forEach(line => {

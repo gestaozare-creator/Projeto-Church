@@ -31,6 +31,12 @@ const DEPT_CONFIG: Record<string, { label: string; emoji: string; color: string;
     color: "#f39c12",
     roles: { Portaria: "🚪", Recepção: "🤝", Coleta: "💝", Coordenação: "📋" },
   },
+  kids: {
+    label: "Kids (Ministério Infantil)",
+    emoji: "🧸",
+    color: "#fd79a8",
+    roles: { "Berçário (0-2)": "🍼", "Maternal (3-5)": "🧸", "Juniores (6-9)": "👦", "Teens (10-12)": "📱", "Apoio": "🤲" },
+  },
 };
 
 // Map URL param -> DB key used in escalas
@@ -38,6 +44,7 @@ const DEPT_DB_KEY: Record<string, string> = {
   louvor: "Louvor",
   midia: "Mídia",
   obreiros: "Obreiros",
+  kids: "Kids",
 };
 
 export default function AgendaDeptPage() {

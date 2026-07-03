@@ -92,7 +92,6 @@ export default function ObreirosDashboardPage() {
     loadData();
   }, [selectedMonthStr]);
   const bannerRef = useRef<HTMLDivElement>(null);
-  const [showPreview, setShowPreview] = useState<"dia" | "mes" | null>(null);
 
   useEffect(() => {
     const dates = getCultosDoMes(selectedMonthStr);
@@ -213,57 +212,6 @@ export default function ObreirosDashboardPage() {
       .filter((item) => item.member)
       .sort((a, b) => b.count - a.count);
   }, [escalasGlobais, timelineDates]);
-
-  const generateWhatsAppText = (type: "dia" | "mes") => {
-    let text = `*Escala de Obreiros* 🛡️\n\n`;
-
-    if (type === "dia") {
-      text += `📅 Data: ${activeDate.split("-").reverse().join("/")}\n\n`;
-      OBREIROS_ROLES.forEach((role) => {
-        const assigned = escala[role] || [];
-        if (assigned.length > 0) {
-          const names = assigned
-            .map((id) => dbMembers.find((m) => m.id === id)?.name)
-            .join(", ");
-          text += `*${role}:* ${names}\n`;
-        }
-      });
-    } else {
-      text += `🗓️ *Mês: ${selectedMonthStr.split("-").reverse().join("/")}*\n\n`;
-      let hasAnyScale = false;
-      timelineDates.forEach((date) => {
-        const dayScale = escalasGlobais[date];
-        if (dayScale && Object.values(dayScale).some((arr) => arr.length > 0)) {
-          hasAnyScale = true;
-          text += `📅 *${date.split("-").reverse().join("/")}*\n`;
-          OBREIROS_ROLES.forEach((role) => {
-            const assigned = dayScale[role] || [];
-            if (assigned.length > 0) {
-              const names = assigned
-                .map((id) => dbMembers.find((m) => m.id === id)?.name)
-                .join(", ");
-              text += `  - ${role}: ${names}\n`;
-            }
-          });
-          text += `\n`;
-        }
-      });
-      if (!hasAnyScale) text += `Nenhuma escala montada neste mês.\n`;
-    }
-
-    text += `\n_Servindo com excelência!_ 🙏`;
-    return text;
-  };
-
-  const handleCopyWhatsApp = (type: "dia" | "mes") => {
-    navigator.clipboard.writeText(generateWhatsAppText(type));
-  };
-
-  const handleSendWhatsApp = (type: "dia" | "mes") => {
-    const text = generateWhatsAppText(type);
-    const encoded = encodeURIComponent(text);
-    window.open(`https://wa.me/?text=${encoded}`, "_blank");
-  };
 
   const renderAvatar = (roleName: string, id: string) => {
     const m = dbMembers.find((x) => x.id === id);
@@ -1110,126 +1058,6 @@ export default function ObreirosDashboardPage() {
             </button>
           </div>
         </div>
-
-        {/* POPUP DE PREVIEW */}
-        {showPreview && (
-          <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(0,0,0,0.7)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 999,
-              backdropFilter: "blur(4px)",
-            }}
-            onClick={() => setShowPreview(null)}
-          >
-            <div
-              className="glass"
-              style={{
-                maxWidth: "500px",
-                width: "90%",
-                maxHeight: "80vh",
-                borderRadius: "16px",
-                padding: "30px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "20px",
-                animation: "fadeIn 0.3s ease",
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <h3 style={{ margin: 0, fontSize: "1.1rem" }}>
-                  📋 Preview da Escala
-                </h3>
-                <button
-                  onClick={() => setShowPreview(null)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "var(--text-secondary)",
-                    fontSize: "1.2rem",
-                    cursor: "pointer",
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div
-                style={{
-                  background: "rgba(0,0,0,0.2)",
-                  borderRadius: "12px",
-                  padding: "20px",
-                  overflowY: "auto",
-                  maxHeight: "40vh",
-                  whiteSpace: "pre-line",
-                  fontSize: "0.85rem",
-                  lineHeight: "1.6",
-                  border: "1px solid rgba(255,255,255,0.05)",
-                }}
-              >
-                {generateWhatsAppText(showPreview)}
-              </div>
-
-              <div style={{ display: "flex", gap: "10px" }}>
-                <button
-                  onClick={() => {
-                    handleCopyWhatsApp(showPreview);
-                    setShowPreview(null);
-                  }}
-                  style={{
-                    flex: 1,
-                    background: "rgba(255,255,255,0.1)",
-                    color: "#fff",
-                    border: "1px solid rgba(255,255,255,0.2)",
-                    padding: "12px",
-                    borderRadius: "10px",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                    fontSize: "0.85rem",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  📋 Copiar Texto
-                </button>
-                <button
-                  onClick={() => {
-                    handleSendWhatsApp(showPreview);
-                    setShowPreview(null);
-                  }}
-                  style={{
-                    flex: 1,
-                    background: "#25D366",
-                    color: "#fff",
-                    border: "none",
-                    padding: "12px",
-                    borderRadius: "10px",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                    fontSize: "0.85rem",
-                    transition: "all 0.2s",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <span style={{ fontSize: "1.1rem" }}>💬</span> Enviar WhatsApp
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

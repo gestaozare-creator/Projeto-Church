@@ -60,15 +60,7 @@ export default function InfantilDashboardPage() {
   // Estados de Escala (Mantidos do painel anterior)
   const [selectedMonthStr, setSelectedMonthStr] = useState(new Date().toISOString().slice(0, 7)); 
   const [activeDate, setActiveDate] = useState<string>('2026-06-21'); // Domingo de base
-  const [escalasGlobais, setEscalasGlobais] = useState<Record<string, Record<string, string[]>>>({
-    '2026-06-21': {
-      'Berçário (0-2)': ['1'],
-      'Maternal (3-5)': ['2'],
-      'Juniores (6-9)': ['3'],
-      'Teens (10-12)': ['4'],
-      'Apoio': ['5']
-    }
-  });
+  const [escalasGlobais, setEscalasGlobais] = useState<Record<string, Record<string, string[]>>>({});
 
   // Alerta para os pais (WhatsApp / Push)
   const [selectedCheckInForAlert, setSelectedCheckInForAlert] = useState<KidCheckIn | null>(null);
@@ -185,6 +177,10 @@ export default function InfantilDashboardPage() {
         if (data.success) {
           const { kids: kidsDb, checkins: checkinsDb } = data;
           
+          if (data.churchConfig?.escalas?.Kids) {
+            setEscalasGlobais(data.churchConfig.escalas.Kids);
+          }
+          
           if (kidsDb) {
             const kidsFormatadas: Kid[] = kidsDb.map((k: any) => {
               let pName = 'Responsável Não Identificado';
@@ -287,6 +283,29 @@ export default function InfantilDashboardPage() {
 
     return rooms;
   }, [checkins, escalasGlobais, activeDate]);
+
+  const saveToConfig = async (newEscalas: any) => {
+    let resolvedChurchId = currentUser?.churchId;
+    if (!resolvedChurchId) {
+      const { data: firstChurch } = await supabase.from('churches').select('id').limit(1).single();
+      resolvedChurchId = firstChurch?.id || '1';
+    }
+    try {
+      const resp = await fetch("/api/save-scale", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          churchId: resolvedChurchId,
+          deptName: "Kids",
+          newEscalas,
+        }),
+      });
+      const result = await resp.json();
+      if (result.error) console.error('Erro na API:', result.error);
+    } catch (e) {
+      console.error("Failed to save scale via API", e);
+    }
+  };
 
   // Cálculo da idade a partir da data de nascimento
   const calculateAge = (birthDateStr: string) => {
@@ -812,7 +831,57 @@ export default function InfantilDashboardPage() {
 
           {/* Lado Direito: Grid de Professores por Sala */}
           <div className="glass" style={{ padding: '20px', borderRadius: '12px' }}>
-            <h3 style={{ fontSize: '1.1rem', margin: '0 0 15px 0' }}>🛠️ Escala de Monitores ({activeDate.split('-').reverse().join('/')})</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+              <h3 style={{ fontSize: '1.1rem', margin: 0 }}>📅 Escala de Monitores ({activeDate.split('-').reverse().join('/')})</h3>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={async () => {
+                    await saveToConfig(escalasGlobais);
+                    alert("✅ Escala salva com sucesso!");
+                  }}
+                  style={{
+                    background: "linear-gradient(135deg, #27ae60, #1e8449)",
+                    color: "#fff",
+                    border: "none",
+                    padding: "8px 16px",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontWeight: 700,
+                    fontSize: "0.85rem",
+                    boxShadow: "0 4px 12px rgba(39,174,96,0.3)",
+                  }}
+                >
+                  💾 Salvar
+                </button>
+                <button
+                  onClick={async () => {
+                    let resolvedChurchId = currentUser?.churchId;
+                    if (!resolvedChurchId) {
+                      const { data: firstChurch } = await supabase.from('churches').select('id').limit(1).single();
+                      resolvedChurchId = firstChurch?.id || '1';
+                    }
+                    const url = `${window.location.origin}/agenda/${resolvedChurchId}/kids`;
+                    const mes = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+                    const texto = `🧸 *Escala do Ministério Kids*\n📅 ${mes}\n\n👉 Confira a sua escala:\n${url}`;
+                    const waUrl = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+                    window.open(waUrl, '_blank');
+                  }}
+                  style={{
+                    background: "linear-gradient(135deg, #25D366, #128C7E)",
+                    color: "#fff",
+                    border: "none",
+                    padding: "8px 16px",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontWeight: 700,
+                    fontSize: "0.85rem",
+                    boxShadow: "0 4px 12px rgba(37,211,102,0.3)",
+                  }}
+                >
+                  📲 Compartilhar
+                </button>
+              </div>
+            </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
               {KIDS_ROLES.map(role => {
                 const assigned = escalasGlobais[activeDate]?.[role] || [];
