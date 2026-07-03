@@ -320,14 +320,17 @@ export default function InfantilDashboardPage() {
       parentId = existingParent[0].id;
     } else {
       // Criar primeiro o responsável como membro visitante temporário no banco
+      const newParentId = `m_${Date.now()}`;
       const { data: newParentDb, error: parentError } = await supabase
         .from('members')
         .insert({
+          id: newParentId,
           name: visitorData.parentName,
           phone: visitorData.parentPhone,
           status: 'pendente',
           function: 'Visitante (Kids)',
-          ministry: 'Infantil'
+          ministry: 'Infantil',
+          church_id: currentUser?.churchId || '1782771173659'
         })
         .select()
         .single();
