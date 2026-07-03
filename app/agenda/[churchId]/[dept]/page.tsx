@@ -158,25 +158,27 @@ export default function AgendaDeptPage() {
             </div>
 
             {/* Weekdays */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr 1fr 1fr", width: "100%", gap: "4px", marginBottom: "10px" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", width: "100%", marginBottom: "10px" }}>
               {WEEK_DAYS.map((d) => (
-                <div key={d} style={{ textAlign: "center", fontSize: "0.7rem", fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.5px" }}>{d}</div>
+                <div key={d} style={{ width: "14.28%", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.5px", paddingBottom: "8px" }}>{d}</div>
               ))}
             </div>
 
             {/* Day cells */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr 1fr 1fr", width: "100%", gap: "5px" }}>
-              {Array(firstDay).fill(null).map((_, i) => <div key={`e-${i}`} />)}
+            <div style={{ display: "flex", flexWrap: "wrap", width: "100%" }}>
+              {Array(firstDay).fill(null).map((_, i) => <div key={`e-${i}`} style={{ width: "14.28%", padding: "2px" }} />)}
               {Array(daysInMonth).fill(null).map((_, idx) => {
                 const day = idx + 1;
                 const dateStr = `${y}-${String(m + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
                 const hasScale = hasScaleOnDate(dateStr);
                 const isToday = dateStr === today;
                 return (
-                  <button key={dateStr} className={`day-cell${hasScale ? " has-scale" : ""}`} onClick={() => hasScale && setSelectedDate(dateStr)} style={{ aspectRatio: "1", borderRadius: "10px", border: isToday ? `2px solid ${deptConfig.color}` : hasScale ? `1px solid ${deptConfig.color}55` : "1px solid transparent", background: hasScale ? `linear-gradient(135deg, ${deptConfig.color}33, ${deptConfig.color}0a)` : isToday ? `${deptConfig.color}15` : "rgba(255,255,255,0.03)", color: hasScale ? "#fff" : isToday ? deptConfig.color : "rgba(255,255,255,0.25)", fontSize: "0.85rem", fontWeight: hasScale ? 700 : 400, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2px", padding: "2px" }}>
-                    {day}
-                    {hasScale && <div style={{ width: "4px", height: "4px", borderRadius: "50%", background: deptConfig.color, flexShrink: 0 }} />}
-                  </button>
+                  <div key={dateStr} style={{ width: "14.28%", padding: "2px" }}>
+                    <button className={`day-cell${hasScale ? " has-scale" : ""}`} onClick={() => hasScale && setSelectedDate(dateStr)} style={{ width: "100%", aspectRatio: "1", borderRadius: "10px", border: isToday ? `2px solid ${deptConfig.color}` : hasScale ? `1px solid ${deptConfig.color}55` : "1px solid transparent", background: hasScale ? `linear-gradient(135deg, ${deptConfig.color}33, ${deptConfig.color}0a)` : isToday ? `${deptConfig.color}15` : "rgba(255,255,255,0.03)", color: hasScale ? "#fff" : isToday ? deptConfig.color : "rgba(255,255,255,0.25)", fontSize: "0.85rem", fontWeight: hasScale ? 700 : 400, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2px", padding: "2px" }}>
+                      {day}
+                      {hasScale && <div style={{ width: "4px", height: "4px", borderRadius: "50%", background: deptConfig.color, flexShrink: 0 }} />}
+                    </button>
+                  </div>
                 );
               })}
             </div>
