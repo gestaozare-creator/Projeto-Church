@@ -13,11 +13,21 @@ export async function POST(req: Request) {
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
     const { churchId, deptName, newEscalas } = await req.json();
     
+    let targetChurchId = churchId;
+
+    // Se o churchId vier como '1' (fallback) mas não houver igreja com ID 1, pegamos a primeira igreja do banco
+    if (churchId === '1') {
+      const { data: firstChurch } = await supabaseAdmin.from('churches').select('id').limit(1).single();
+      if (firstChurch) {
+        targetChurchId = firstChurch.id;
+      }
+    }
+    
     // Fetch current config
     const { data: churchDb, error: fetchErr } = await supabaseAdmin
       .from('churches')
       .select('config')
-      .eq('id', churchId)
+      .eq('id', targetChurchId)
       .single();
       
     if (fetchErr) throw fetchErr;
@@ -30,11 +40,11 @@ export async function POST(req: Request) {
     const { error: updateErr } = await supabaseAdmin
       .from('churches')
       .update({ config: currentConfig })
-      .eq('id', churchId);
+      .eq('id', targetChurchId);
       
     if (updateErr) throw updateErr;
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, savedTo: targetChurchId });
   } catch (error: any) {
     console.error("API Error saving scale:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
