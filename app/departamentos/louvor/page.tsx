@@ -148,7 +148,7 @@ export default function LouvorDashboardPage() {
   };
 
   const handleAssign = async (role: string, memberId: string) => {
-    setEscalasGlobais((prev) => {
+    setEscalasGlobais((prev: any) => {
       const dayScale = prev[activeDate] || {};
       const currentAssigned = dayScale[role] || [];
       if (currentAssigned.includes(memberId)) return prev;
@@ -162,14 +162,14 @@ export default function LouvorDashboardPage() {
   };
 
   const handleRemove = async (role: string, memberId: string) => {
-    setEscalasGlobais((prev) => {
+    setEscalasGlobais((prev: any) => {
       const dayScale = prev[activeDate] || {};
       const currentAssigned = dayScale[role] || [];
       const newState = {
         ...prev,
         [activeDate]: {
           ...dayScale,
-          [role]: currentAssigned.filter((id) => id !== memberId),
+          [role]: currentAssigned.filter((id: string) => id !== memberId),
         },
       };
       saveToConfig(newState);
@@ -668,6 +668,356 @@ export default function LouvorDashboardPage() {
                 );
               })}
             </div>
+            <button
+              onClick={addCustomDate}
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                color: "var(--text-secondary)",
+                border: "1px dashed rgba(255,255,255,0.2)",
+                padding: "6px 12px",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontSize: "0.75rem",
+                width: "100%",
+                marginTop: "12px",
+              }}
+            >
+              + Dia Extra
+            </button>
+          </div>
+        </div>
+
+        {/* COLUNA 2: OFICINA DE MONTAGEM (45%) */}
+        <div
+          className="glass"
+          style={{
+            padding: "24px",
+            borderRadius: "12px",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <h3
+            style={{
+              fontSize: "1.2rem",
+              margin: "0 0 20px 0",
+              borderBottom: "1px solid rgba(255,255,255,0.1)",
+              paddingBottom: "10px",
+            }}
+          >
+            🛠️ Oficina ({activeDate.split("-").reverse().join("/")})
+          </h3>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+              gap: "14px",
+            }}
+          >
+            {LOUVOR_ROLES.map((role) => {
+              const assignedMembers = escala[role] || [];
+              const suggestedMembers = dbMembers.filter(
+                (m) =>
+                  (m.function === role || role === "Ministro") &&
+                  m.status === "ativo" &&
+                  !assignedMembers.includes(m.id),
+              );
+
+              return (
+                <div
+                  key={role}
+                  style={{
+                    background: "rgba(0,0,0,0.15)",
+                    padding: "12px",
+                    borderRadius: "10px",
+                    border: "1px solid rgba(255,255,255,0.05)",
+                  }}
+                >
+                  <h4
+                    style={{
+                      fontSize: "0.85rem",
+                      color: "#9b59b6",
+                      margin: "0 0 10px 0",
+                      borderBottom: "1px solid rgba(255,255,255,0.1)",
+                      paddingBottom: "6px",
+                    }}
+                  >
+                    {role}
+                  </h4>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "6px",
+                      minHeight: "30px",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    {assignedMembers.length === 0 ? (
+                      <div
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "var(--text-secondary)",
+                          fontStyle: "italic",
+                        }}
+                      >
+                        Vazio.
+                      </div>
+                    ) : (
+                      assignedMembers.map((id) => {
+                        const member = dbMembers.find((m) => m.id === id);
+                        return (
+                          <div
+                            key={id}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              background: "rgba(46, 204, 113, 0.1)",
+                              border: "1px solid #2ecc71",
+                              padding: "4px 8px",
+                              borderRadius: "6px",
+                            }}
+                          >
+                            <span
+                              style={{ fontSize: "0.75rem", color: "#fff" }}
+                            >
+                              {member?.name}
+                            </span>
+                            <button
+                              onClick={() => handleRemove(role, id)}
+                              style={{
+                                background: "transparent",
+                                border: "none",
+                                color: "#e74c3c",
+                                cursor: "pointer",
+                                fontSize: "0.9rem",
+                                lineHeight: 1,
+                              }}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  <select
+                    className="search-input glass-input"
+                    style={{
+                      width: "100%",
+                      padding: "6px",
+                      fontSize: "0.75rem",
+                    }}
+                    value=""
+                    onChange={(e) => {
+                      if (e.target.value) handleAssign(role, e.target.value);
+                    }}
+                  >
+                    <option value="" disabled>
+                      + {role}
+                    </option>
+                    {suggestedMembers.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                    <optgroup label="Outros Músicos">
+                      {dbMembers
+                        .filter(
+                          (m) =>
+                            m.function !== role &&
+                            m.status === "ativo" &&
+                            !assignedMembers.includes(m.id),
+                        )
+                        .map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.name}
+                          </option>
+                        ))}
+                    </optgroup>
+                  </select>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* COLUNA DIREITA: PREVIEW PALCO E COMPARTILHAMENTO */}
+        <div
+          className="glass"
+          style={{
+            flex: "1",
+            padding: "24px",
+            borderRadius: "12px",
+            display: "flex",
+            flexDirection: "column",
+            position: "sticky",
+            top: "20px",
+          }}
+        >
+          <h3
+            style={{
+              fontSize: "1rem",
+              margin: "0 0 16px 0",
+              borderBottom: "1px solid rgba(255,255,255,0.1)",
+              paddingBottom: "10px",
+            }}
+          >
+            🎙️ Palco Virtual ({activeDate.split("-").reverse().join("/")})
+          </h3>
+
+          {/* RENDER DO PALCO */}
+          <div
+            style={{
+              flex: 1,
+              background: "#0b1120",
+              borderRadius: "10px",
+              padding: "20px 10px",
+              marginBottom: "20px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              alignItems: "center",
+              border: "1px solid rgba(255,255,255,0.05)",
+              position: "relative",
+              overflow: "hidden",
+              minHeight: "220px",
+            }}
+          >
+            {/* Luz de palco */}
+            <div
+              style={{
+                position: "absolute",
+                top: "-30px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "200px",
+                height: "120px",
+                background:
+                  "radial-gradient(ellipse at bottom, rgba(52, 152, 219, 0.3) 0%, transparent 70%)",
+                pointerEvents: "none",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                bottom: "0",
+                left: "0",
+                right: "0",
+                height: "40px",
+                background:
+                  "linear-gradient(to top, rgba(52, 152, 219, 0.08), transparent)",
+                pointerEvents: "none",
+              }}
+            />
+
+            {/* FUNDO DO PALCO: Bateria (centro-fundo) */}
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                justifyContent: "center",
+                zIndex: 1,
+                flexWrap: "wrap",
+                opacity: 0.85,
+                transform: "scale(0.85)",
+              }}
+            >
+              <span
+                style={{
+                  position: "absolute",
+                  top: "6px",
+                  left: "10px",
+                  fontSize: "0.5rem",
+                  color: "rgba(255,255,255,0.15)",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
+                }}
+              >
+                Fundo
+              </span>
+              {(escala["Bateria"] || []).map((id) =>
+                renderAvatar("🥁 Bateria", id),
+              )}
+            </div>
+
+            {/* MEIO DO PALCO: Teclado, Guitarra, Baixo */}
+            <div
+              style={{
+                display: "flex",
+                gap: "18px",
+                justifyContent: "center",
+                zIndex: 1,
+                flexWrap: "wrap",
+                opacity: 0.95,
+                transform: "scale(0.9)",
+              }}
+            >
+              {(escala["Teclado"] || []).map((id) =>
+                renderAvatar("🎹 Teclado", id),
+              )}
+              {(escala["Guitarra"] || []).map((id) =>
+                renderAvatar("🎸 Guitarra", id),
+              )}
+              {(escala["Baixo"] || []).map((id) =>
+                renderAvatar("🎸 Baixo", id),
+              )}
+            </div>
+
+            {/* FRENTE DO PALCO: Violão, Ministro, Vocal */}
+            <div
+              style={{
+                display: "flex",
+                gap: "20px",
+                justifyContent: "center",
+                zIndex: 1,
+                flexWrap: "wrap",
+              }}
+            >
+              <span
+                style={{
+                  position: "absolute",
+                  bottom: "6px",
+                  left: "10px",
+                  fontSize: "0.5rem",
+                  color: "rgba(255,255,255,0.15)",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
+                }}
+              >
+                Frente
+              </span>
+              {(escala["Violão"] || []).map((id) =>
+                renderAvatar("🎵 Violão", id),
+              )}
+              {(escala["Ministro"] || []).map((id) =>
+                renderAvatar("🎤 Ministro", id),
+              )}
+              {(escala["Vocal"] || []).map((id) =>
+                renderAvatar("🎤 Vocal", id),
+              )}
+            </div>
+
+            {Object.values(escala).flat().length === 0 && (
+              <div
+                style={{
+                  color: "rgba(255,255,255,0.2)",
+                  fontStyle: "italic",
+                  position: "absolute",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                }}
+              >
+                O altar está vazio.
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             <button
               onClick={() => {
                 saveToConfig(escalasGlobais);
