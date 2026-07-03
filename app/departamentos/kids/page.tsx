@@ -184,21 +184,28 @@ export default function InfantilDashboardPage() {
       if (kidsDb) {
         const kidsFormatadas: Kid[] = kidsDb.map(k => {
           let pName = 'Responsável Não Identificado';
-          let pPhone = '';
-          if (k.emergency_contact && k.emergency_contact.includes(' | ')) {
-            const parts = k.emergency_contact.split(' | ');
-            pName = parts[0];
-            pPhone = parts[1] || '';
-          } else if (k.emergency_contact) {
-            pPhone = k.emergency_contact;
-          }
+          let pPhone = k.emergency_contact || '';
+          let allergiesText = k.allergies || 'Sem alergias';
+
+          try {
+            if (k.allergies && k.allergies.startsWith('{')) {
+              const parsed = JSON.parse(k.allergies);
+              if (parsed.pn) pName = parsed.pn;
+              if (parsed.al) allergiesText = parsed.al;
+            } else if (k.emergency_contact && k.emergency_contact.includes(' | ')) {
+              const parts = k.emergency_contact.split(' | ');
+              pName = parts[0];
+              pPhone = parts[1] || '';
+            }
+          } catch(e) {}
+
           return {
             id: k.id,
             name: k.name,
             birthDate: k.birth_date,
             parentName: pName,
             parentPhone: pPhone,
-            allergies: k.allergies || 'Sem alergias',
+            allergies: allergiesText,
             churchId: k.church_id || '1782771173659'
           };
         });
@@ -366,8 +373,9 @@ export default function InfantilDashboardPage() {
           name: visitorData.kidName,
           birth_date: visitorData.birthDate,
           parent_id: null,
-          emergency_contact: `${visitorData.parentName} | ${visitorData.parentPhone}`,
-          allergies: visitorData.allergies || 'Sem alergias'
+          emergency_contact: visitorData.parentPhone,
+          allergies: visitorData.allergies || 'Sem alergias',
+          parentName: visitorData.parentName
         })
       });
 
