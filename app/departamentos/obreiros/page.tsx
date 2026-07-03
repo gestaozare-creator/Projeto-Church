@@ -116,54 +116,49 @@ export default function ObreirosDashboardPage() {
 
   const escala = escalasGlobais[activeDate] || {};
 
+  const saveToConfig = async (newEscalas: any) => {
+    const { data: churchDb } = await supabase
+      .from("churches")
+      .select("config")
+      .eq("id", currentUser?.churchId || "1")
+      .single();
+    const currentConfig = churchDb?.config || {};
+    if (!currentConfig.escalas) currentConfig.escalas = {};
+    currentConfig.escalas["Obreiros"] = newEscalas;
+    await supabase
+      .from("churches")
+      .update({ config: currentConfig })
+      .eq("id", currentUser?.churchId || "1");
+  };
+
   const handleAssign = async (role: string, memberId: string) => {
     setEscalasGlobais((prev) => {
       const dayScale = prev[activeDate] || {};
       const currentAssigned = dayScale[role] || [];
       if (currentAssigned.includes(memberId)) return prev;
-      return {
+      const newState = {
         ...prev,
         [activeDate]: { ...dayScale, [role]: [...currentAssigned, memberId] },
       };
+      saveToConfig(newState);
+      return newState;
     });
-
-    const { error } = await supabase.from("escalas").insert({
-      date: activeDate,
-      department: "Obreiros",
-      role: role,
-      member_id: memberId,
-      church_id: currentUser?.churchId || null,
-    });
-
-    if (error) {
-      console.error("Erro ao salvar escala no banco:", error.message);
-    }
   };
 
   const handleRemove = async (role: string, memberId: string) => {
     setEscalasGlobais((prev) => {
       const dayScale = prev[activeDate] || {};
       const currentAssigned = dayScale[role] || [];
-      return {
+      const newState = {
         ...prev,
         [activeDate]: {
           ...dayScale,
           [role]: currentAssigned.filter((id) => id !== memberId),
         },
       };
+      saveToConfig(newState);
+      return newState;
     });
-
-    const { error } = await supabase
-      .from("escalas")
-      .delete()
-      .eq("date", activeDate)
-      .eq("department", "Obreiros")
-      .eq("role", role)
-      .eq("member_id", memberId);
-
-    if (error) {
-      console.error("Erro ao remover escala do banco:", error.message);
-    }
   };
 
   const stats = useMemo(() => {
@@ -647,404 +642,25 @@ export default function ObreirosDashboardPage() {
               })}
             </div>
             <button
-              onClick={addCustomDate}
+              onClick={() => {
+                saveToConfig(escalasGlobais);
+                alert("Escala salva no sistema com sucesso!");
+              }}
               style={{
-                background: "rgba(255,255,255,0.05)",
-                color: "var(--text-secondary)",
-                border: "1px dashed rgba(255,255,255,0.2)",
-                padding: "6px 12px",
+                background: "#27ae60",
+                color: "#fff",
+                border: "none",
+                padding: "10px",
                 borderRadius: "8px",
                 cursor: "pointer",
-                fontSize: "0.75rem",
-                width: "100%",
-                marginTop: "12px",
+                fontWeight: 600,
+                fontSize: "0.85rem",
+                transition: "all 0.2s",
+                marginBottom: "8px",
               }}
             >
-              + Dia Extra
+              💾 Salvar Escalas
             </button>
-          </div>
-        </div>
-
-        {/* COLUNA 2 */}
-        <div
-          className="glass"
-          style={{
-            padding: "24px",
-            borderRadius: "12px",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <h3
-            style={{
-              fontSize: "1.2rem",
-              margin: "0 0 20px 0",
-              borderBottom: "1px solid rgba(255,255,255,0.1)",
-              paddingBottom: "10px",
-            }}
-          >
-            🛠️ Direcionamento ({activeDate.split("-").reverse().join("/")})
-          </h3>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              gap: "14px",
-            }}
-          >
-            {OBREIROS_ROLES.map((role) => {
-              const assignedMembers = escala[role] || [];
-              const suggestedMembers = dbMembers.filter(
-                (m) =>
-                  m.function === role &&
-                  m.status === "ativo" &&
-                  !assignedMembers.includes(m.id),
-              );
-
-              return (
-                <div
-                  key={role}
-                  style={{
-                    background: "rgba(0,0,0,0.15)",
-                    padding: "12px",
-                    borderRadius: "10px",
-                    border: "1px solid rgba(255,255,255,0.05)",
-                  }}
-                >
-                  <h4
-                    style={{
-                      fontSize: "0.85rem",
-                      color: "#f39c12",
-                      margin: "0 0 10px 0",
-                      borderBottom: "1px solid rgba(255,255,255,0.1)",
-                      paddingBottom: "6px",
-                    }}
-                  >
-                    {role}
-                  </h4>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "6px",
-                      minHeight: "30px",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    {assignedMembers.length === 0 ? (
-                      <div
-                        style={{
-                          fontSize: "0.75rem",
-                          color: "var(--text-secondary)",
-                          fontStyle: "italic",
-                        }}
-                      >
-                        Ninguém escalado.
-                      </div>
-                    ) : (
-                      assignedMembers.map((id) => {
-                        const member = dbMembers.find((m) => m.id === id);
-                        return (
-                          <div
-                            key={id}
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              background: "rgba(243, 156, 18, 0.1)",
-                              border: "1px solid #f39c12",
-                              padding: "4px 8px",
-                              borderRadius: "6px",
-                            }}
-                          >
-                            <span
-                              style={{ fontSize: "0.75rem", color: "#fff" }}
-                            >
-                              {member?.name}
-                            </span>
-                            <button
-                              onClick={() => handleRemove(role, id)}
-                              style={{
-                                background: "transparent",
-                                border: "none",
-                                color: "#e74c3c",
-                                cursor: "pointer",
-                                fontSize: "0.9rem",
-                                lineHeight: 1,
-                              }}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                  <select
-                    className="search-input glass-input"
-                    style={{
-                      width: "100%",
-                      padding: "6px",
-                      fontSize: "0.75rem",
-                    }}
-                    value=""
-                    onChange={(e) => {
-                      if (e.target.value) handleAssign(role, e.target.value);
-                    }}
-                  >
-                    <option value="" disabled>
-                      + {role}
-                    </option>
-                    {suggestedMembers.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name}
-                      </option>
-                    ))}
-                    <optgroup label="Outros Obreiros">
-                      {dbMembers
-                        .filter(
-                          (m) =>
-                            m.function !== role &&
-                            m.status === "ativo" &&
-                            !assignedMembers.includes(m.id),
-                        )
-                        .map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.name}
-                          </option>
-                        ))}
-                    </optgroup>
-                  </select>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* COLUNA 3 */}
-        <div
-          className="glass"
-          style={{
-            flex: "1",
-            padding: "24px",
-            borderRadius: "12px",
-            display: "flex",
-            flexDirection: "column",
-            position: "sticky",
-            top: "20px",
-          }}
-        >
-          <h3
-            style={{
-              fontSize: "1rem",
-              margin: "0 0 16px 0",
-              borderBottom: "1px solid rgba(255,255,255,0.1)",
-              paddingBottom: "10px",
-            }}
-          >
-            🗺️ Planta do Templo
-          </h3>
-
-          {/* MAPA VISUAL */}
-          <div
-            style={{
-              flex: 1,
-              background: "#1c2833",
-              borderRadius: "10px",
-              padding: "20px",
-              marginBottom: "20px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px",
-              border: "1px solid #2c3e50",
-              position: "relative",
-            }}
-          >
-            {/* Altar */}
-            <div
-              style={{
-                background: "rgba(241, 196, 15, 0.1)",
-                border: "1px solid rgba(241, 196, 15, 0.3)",
-                borderRadius: "10px",
-                padding: "10px",
-                minHeight: "80px",
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "10px",
-                justifyContent: "center",
-                position: "relative",
-              }}
-            >
-              <span
-                style={{
-                  position: "absolute",
-                  top: "4px",
-                  left: "10px",
-                  fontSize: "0.6rem",
-                  color: "#f1c40f",
-                  textTransform: "uppercase",
-                }}
-              >
-                Altar
-              </span>
-              {(escala["Altar"] || []).map((id) => renderAvatar("Altar", id))}
-            </div>
-
-            {/* Corredores */}
-            <div style={{ display: "flex", gap: "15px", minHeight: "100px" }}>
-              <div
-                style={{
-                  flex: 1,
-                  borderRight: "1px dashed rgba(255,255,255,0.1)",
-                }}
-              />
-              <div
-                style={{
-                  width: "80px",
-                  background: "rgba(52, 152, 219, 0.05)",
-                  borderRadius: "4px",
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "5px",
-                  justifyContent: "center",
-                  alignContent: "center",
-                  position: "relative",
-                }}
-              >
-                <span
-                  style={{
-                    position: "absolute",
-                    top: "4px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    fontSize: "0.5rem",
-                    color: "#3498db",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Corredor
-                </span>
-                {(escala["Corredor Central"] || []).map((id) =>
-                  renderAvatar("Corredor", id),
-                )}
-              </div>
-              <div
-                style={{
-                  flex: 1,
-                  borderLeft: "1px dashed rgba(255,255,255,0.1)",
-                }}
-              />
-            </div>
-
-            {/* Portas */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: "10px",
-              }}
-            >
-              <div
-                style={{
-                  flex: 1,
-                  background: "rgba(231, 76, 60, 0.1)",
-                  border: "1px solid rgba(231, 76, 60, 0.3)",
-                  borderRadius: "10px",
-                  padding: "10px",
-                  minHeight: "70px",
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "10px",
-                  justifyContent: "center",
-                  position: "relative",
-                }}
-              >
-                <span
-                  style={{
-                    position: "absolute",
-                    top: "4px",
-                    left: "10px",
-                    fontSize: "0.6rem",
-                    color: "#e74c3c",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Lateral
-                </span>
-                {(escala["Porta Lateral"] || []).map((id) =>
-                  renderAvatar("P. Lateral", id),
-                )}
-              </div>
-
-              <div
-                style={{
-                  flex: 1,
-                  background: "rgba(46, 204, 113, 0.1)",
-                  border: "1px solid rgba(46, 204, 113, 0.3)",
-                  borderRadius: "10px",
-                  padding: "10px",
-                  minHeight: "70px",
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "10px",
-                  justifyContent: "center",
-                  position: "relative",
-                }}
-              >
-                <span
-                  style={{
-                    position: "absolute",
-                    top: "4px",
-                    left: "10px",
-                    fontSize: "0.6rem",
-                    color: "#2ecc71",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Principal
-                </span>
-                {(escala["Porta Principal"] || []).map((id) =>
-                  renderAvatar("P. Principal", id),
-                )}
-              </div>
-            </div>
-
-            {/* Estacionamento */}
-            <div
-              style={{
-                marginTop: "10px",
-                background: "rgba(149, 165, 166, 0.1)",
-                border: "1px solid rgba(149, 165, 166, 0.3)",
-                borderRadius: "10px",
-                padding: "10px",
-                minHeight: "60px",
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "10px",
-                justifyContent: "center",
-                position: "relative",
-              }}
-            >
-              <span
-                style={{
-                  position: "absolute",
-                  top: "4px",
-                  left: "10px",
-                  fontSize: "0.6rem",
-                  color: "#95a5a6",
-                  textTransform: "uppercase",
-                }}
-              >
-                Estacionamento
-              </span>
-              {(escala["Estacionamento"] || []).map((id) =>
-                renderAvatar("Pátio", id),
-              )}
-            </div>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             <button
               onClick={() => setShowPreview("dia")}
               style={{

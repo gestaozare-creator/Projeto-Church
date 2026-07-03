@@ -116,54 +116,49 @@ export default function MidiaDashboardPage() {
 
   const escala = escalasGlobais[activeDate] || {};
 
+  const saveToConfig = async (newEscalas: any) => {
+    const { data: churchDb } = await supabase
+      .from("churches")
+      .select("config")
+      .eq("id", currentUser?.churchId || "1")
+      .single();
+    const currentConfig = churchDb?.config || {};
+    if (!currentConfig.escalas) currentConfig.escalas = {};
+    currentConfig.escalas["Mídia"] = newEscalas;
+    await supabase
+      .from("churches")
+      .update({ config: currentConfig })
+      .eq("id", currentUser?.churchId || "1");
+  };
+
   const handleAssign = async (role: string, memberId: string) => {
     setEscalasGlobais((prev) => {
       const dayScale = prev[activeDate] || {};
       const currentAssigned = dayScale[role] || [];
       if (currentAssigned.includes(memberId)) return prev;
-      return {
+      const newState = {
         ...prev,
         [activeDate]: { ...dayScale, [role]: [...currentAssigned, memberId] },
       };
+      saveToConfig(newState);
+      return newState;
     });
-
-    const { error } = await supabase.from("escalas").insert({
-      date: activeDate,
-      department: "Mídia",
-      role: role,
-      member_id: memberId,
-      church_id: currentUser?.churchId || null,
-    });
-
-    if (error) {
-      console.error("Erro ao salvar escala no banco:", error.message);
-    }
   };
 
   const handleRemove = async (role: string, memberId: string) => {
     setEscalasGlobais((prev) => {
       const dayScale = prev[activeDate] || {};
       const currentAssigned = dayScale[role] || [];
-      return {
+      const newState = {
         ...prev,
         [activeDate]: {
           ...dayScale,
           [role]: currentAssigned.filter((id) => id !== memberId),
         },
       };
+      saveToConfig(newState);
+      return newState;
     });
-
-    const { error } = await supabase
-      .from("escalas")
-      .delete()
-      .eq("date", activeDate)
-      .eq("department", "Mídia")
-      .eq("role", role)
-      .eq("member_id", memberId);
-
-    if (error) {
-      console.error("Erro ao remover escala do banco:", error.message);
-    }
   };
 
   const stats = useMemo(() => {
@@ -647,329 +642,25 @@ export default function MidiaDashboardPage() {
               })}
             </div>
             <button
-              onClick={addCustomDate}
+              onClick={() => {
+                saveToConfig(escalasGlobais);
+                alert("Escala salva no sistema com sucesso!");
+              }}
               style={{
-                background: "rgba(255,255,255,0.05)",
-                color: "var(--text-secondary)",
-                border: "1px dashed rgba(255,255,255,0.2)",
-                padding: "6px 12px",
+                background: "#27ae60",
+                color: "#fff",
+                border: "none",
+                padding: "10px",
                 borderRadius: "8px",
                 cursor: "pointer",
-                fontSize: "0.75rem",
-                width: "100%",
-                marginTop: "12px",
+                fontWeight: 600,
+                fontSize: "0.85rem",
+                transition: "all 0.2s",
+                marginBottom: "8px",
               }}
             >
-              + Dia Extra
+              💾 Salvar Escalas
             </button>
-          </div>
-        </div>
-
-        {/* COLUNA 2 */}
-        <div
-          className="glass"
-          style={{
-            padding: "24px",
-            borderRadius: "12px",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <h3
-            style={{
-              fontSize: "1.2rem",
-              margin: "0 0 20px 0",
-              borderBottom: "1px solid rgba(255,255,255,0.1)",
-              paddingBottom: "10px",
-            }}
-          >
-            🛠️ Alocação ({activeDate.split("-").reverse().join("/")})
-          </h3>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              gap: "14px",
-            }}
-          >
-            {MIDIA_ROLES.map((role) => {
-              const assignedMembers = escala[role] || [];
-              const suggestedMembers = dbMembers.filter(
-                (m) =>
-                  m.function === role &&
-                  m.status === "ativo" &&
-                  !assignedMembers.includes(m.id),
-              );
-
-              return (
-                <div
-                  key={role}
-                  style={{
-                    background: "rgba(0,0,0,0.15)",
-                    padding: "12px",
-                    borderRadius: "10px",
-                    border: "1px solid rgba(255,255,255,0.05)",
-                  }}
-                >
-                  <h4
-                    style={{
-                      fontSize: "0.85rem",
-                      color: "#3498db",
-                      margin: "0 0 10px 0",
-                      borderBottom: "1px solid rgba(255,255,255,0.1)",
-                      paddingBottom: "6px",
-                    }}
-                  >
-                    {role}
-                  </h4>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "6px",
-                      minHeight: "30px",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    {assignedMembers.length === 0 ? (
-                      <div
-                        style={{
-                          fontSize: "0.75rem",
-                          color: "var(--text-secondary)",
-                          fontStyle: "italic",
-                        }}
-                      >
-                        Vazio.
-                      </div>
-                    ) : (
-                      assignedMembers.map((id) => {
-                        const member = dbMembers.find((m) => m.id === id);
-                        return (
-                          <div
-                            key={id}
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              background: "rgba(52, 152, 219, 0.1)",
-                              border: "1px solid #3498db",
-                              padding: "4px 8px",
-                              borderRadius: "6px",
-                            }}
-                          >
-                            <span
-                              style={{ fontSize: "0.75rem", color: "#fff" }}
-                            >
-                              {member?.name}
-                            </span>
-                            <button
-                              onClick={() => handleRemove(role, id)}
-                              style={{
-                                background: "transparent",
-                                border: "none",
-                                color: "#e74c3c",
-                                cursor: "pointer",
-                                fontSize: "0.9rem",
-                                lineHeight: 1,
-                              }}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                  <select
-                    className="search-input glass-input"
-                    style={{
-                      width: "100%",
-                      padding: "6px",
-                      fontSize: "0.75rem",
-                    }}
-                    value=""
-                    onChange={(e) => {
-                      if (e.target.value) handleAssign(role, e.target.value);
-                    }}
-                  >
-                    <option value="" disabled>
-                      + {role}
-                    </option>
-                    {suggestedMembers.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name}
-                      </option>
-                    ))}
-                    <optgroup label="Técnicos de outras áreas">
-                      {dbMembers
-                        .filter(
-                          (m) =>
-                            m.function !== role &&
-                            m.status === "ativo" &&
-                            !assignedMembers.includes(m.id),
-                        )
-                        .map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.name}
-                          </option>
-                        ))}
-                    </optgroup>
-                  </select>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* COLUNA 3 */}
-        <div
-          className="glass"
-          style={{
-            flex: "1",
-            padding: "24px",
-            borderRadius: "12px",
-            display: "flex",
-            flexDirection: "column",
-            position: "sticky",
-            top: "20px",
-          }}
-        >
-          <h3
-            style={{
-              fontSize: "1rem",
-              margin: "0 0 16px 0",
-              borderBottom: "1px solid rgba(255,255,255,0.1)",
-              paddingBottom: "10px",
-            }}
-          >
-            🖥️ Cabine Técnica
-          </h3>
-
-          {/* CABINE VISUAL */}
-          <div
-            style={{
-              flex: 1,
-              background: "#0a0a0a",
-              borderRadius: "10px",
-              padding: "20px",
-              marginBottom: "20px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px",
-              border: "1px solid #222",
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                bottom: "0",
-                left: "0",
-                right: "0",
-                height: "60px",
-                background:
-                  "linear-gradient(to top, rgba(52, 152, 219, 0.1), transparent)",
-              }}
-            />
-
-            {/* Telão de monitoramento fictício no topo */}
-            <div
-              style={{
-                width: "100%",
-                height: "40px",
-                background: "#000",
-                border: "2px solid #333",
-                borderRadius: "8px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <div
-                style={{
-                  width: "8px",
-                  height: "8px",
-                  background: "#e74c3c",
-                  borderRadius: "50%",
-                  boxShadow: "0 0 8px red",
-                }}
-              />
-              <span
-                style={{
-                  fontSize: "0.6rem",
-                  color: "#fff",
-                  marginLeft: "6px",
-                  letterSpacing: "2px",
-                }}
-              >
-                REC
-              </span>
-            </div>
-
-            {/* Fotografia (Frente do palco) */}
-            {escala["Fotografia"] && escala["Fotografia"].length > 0 && (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: "10px",
-                  zIndex: 1,
-                  padding: "10px",
-                  background: "rgba(255,255,255,0.02)",
-                  borderRadius: "8px",
-                  borderStyle: "dashed",
-                  borderWidth: "1px",
-                  borderColor: "rgba(255,255,255,0.1)",
-                }}
-              >
-                {escala["Fotografia"].map((id) =>
-                  renderAvatar("Fotógrafo", id),
-                )}
-              </div>
-            )}
-
-            {/* Mesa principal (Som, Transmissão, Projeção, Iluminação) */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: "15px",
-                zIndex: 1,
-                flexWrap: "wrap",
-                marginTop: "10px",
-              }}
-            >
-              {(escala["Projeção"] || []).map((id) =>
-                renderAvatar("Lyrics", id),
-              )}
-              {(escala["Transmissão"] || []).map((id) =>
-                renderAvatar("Câmeras", id),
-              )}
-              {(escala["Som"] || []).map((id) =>
-                renderAvatar("Mesa de Som", id),
-              )}
-              {(escala["Iluminação"] || []).map((id) =>
-                renderAvatar("Luzes", id),
-              )}
-            </div>
-
-            {Object.values(escala).flat().length === 0 && (
-              <div
-                style={{
-                  color: "#444",
-                  fontStyle: "italic",
-                  textAlign: "center",
-                  marginTop: "20px",
-                }}
-              >
-                Cabine Vazia.
-              </div>
-            )}
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             <button
               onClick={() => setShowPreview("dia")}
               style={{
