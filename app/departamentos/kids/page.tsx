@@ -151,20 +151,57 @@ export default function InfantilDashboardPage() {
         .eq('ministry', 'Infantil');
       if (membersDb) setDbMembers(membersDb);
 
+      // 1.5. Buscar configurações das salas do banco
+      const { data: roomsDb } = await supabase
+        .from('kids_rooms')
+        .select('*');
+      if (roomsDb && roomsDb.length > 0) {
+        const rulesMap: any = {};
+        roomsDb.forEach(r => {
+          // Mapear de volta para as chaves 'Berçário', 'Maternal', 'Juniores', 'Teens'
+          let key = r.name;
+          if (r.name.includes('Berçário') || r.name === 'Berçário') key = 'Berçário';
+          else if (r.name.includes('Maternal') || r.name === 'Maternal') key = 'Maternal';
+          else if (r.name.includes('Juniores') || r.name === 'Juniores') key = 'Juniores';
+          else if (r.name.includes('Teens') || r.name === 'Teens') key = 'Teens';
+          
+          rulesMap[key] = {
+            id: r.id,
+            label: r.name,
+            minAge: r.min_age,
+            maxAge: r.max_age,
+            maxKidsPerTio: r.max_kids_per_tio,
+            capacity: r.capacity
+          };
+        });
+        setRoomRules(prev => ({ ...prev, ...rulesMap }));
+      }
+
       // 2. Buscar crianças cadastradas
       const { data: kidsDb } = await supabase
         .from('kids')
         .select('*');
       if (kidsDb) {
-        const kidsFormatadas: Kid[] = kidsDb.map(k => ({
-          id: k.id,
-          name: k.name,
-          birthDate: k.birth_date,
-          parentName: k.parent_name || 'Responsável Não Identificado',
-          parentPhone: k.parent_phone || '',
-          allergies: k.allergies || 'Sem alergias',
-          churchId: k.church_id || '1'
-        }));
+        const kidsFormatadas: Kid[] = kidsDb.map(k => {
+          let pName = 'Responsável Não Identificado';
+          let pPhone = '';
+          if (k.emergency_contact && k.emergency_contact.includes(' | ')) {
+            const parts = k.emergency_contact.split(' | ');
+            pName = parts[0];
+            pPhone = parts[1] || '';
+          } else if (k.emergency_contact) {
+            pPhone = k.emergency_contact;
+          }
+          return {
+            id: k.id,
+            name: k.name,
+            birthDate: k.birth_date,
+            parentName: pName,
+            parentPhone: pPhone,
+            allergies: k.allergies || 'Sem alergias',
+            churchId: k.church_id || '1782771173659'
+          };
+        });
         setKidsList(kidsFormatadas);
       }
 
@@ -175,17 +212,28 @@ export default function InfantilDashboardPage() {
         .eq('status', 'presente');
       
       if (checkinsDb) {
-        const checkinsFormatados: KidCheckIn[] = checkinsDb.map(c => ({
-          id: c.id,
-          kidId: c.kid_id,
-          kidName: c.kids?.name || 'Criança',
-          room: c.room,
-          checkInTime: new Date(c.checkin_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-          securityCode: c.security_code,
-          parentName: c.kids?.parent_name || 'Responsável',
-          parentPhone: c.kids?.parent_phone || '',
-          status: c.status
-        }));
+        const checkinsFormatados: KidCheckIn[] = checkinsDb.map(c => {
+          let pName = 'Responsável';
+          let pPhone = '';
+          if (c.kids?.emergency_contact && c.kids.emergency_contact.includes(' | ')) {
+            const parts = c.kids.emergency_contact.split(' | ');
+            pName = parts[0];
+            pPhone = parts[1] || '';
+          } else if (c.kids?.emergency_contact) {
+            pPhone = c.kids.emergency_contact;
+          }
+          return {
+            id: c.id,
+            kidId: c.kid_id,
+            kidName: c.kids?.name || 'Criança',
+            room: c.room,
+            checkInTime: new Date(c.checkin_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+            securityCode: c.security_code,
+            parentName: pName,
+            parentPhone: pPhone,
+            status: c.status
+          };
+        });
         setCheckins(checkinsFormatados);
       }
     }
@@ -303,46 +351,10 @@ export default function InfantilDashboardPage() {
     setShowPulseiraModal(newCheckin);
   };
 
-  // Efetuar Check-in de Visitante Rápido
   const handleQuickVisitorCheckin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 1. Verificar se o responsável já existe (evita duplicar ao tentar novamente)
-    let parentId = '';
-    const { data: existingParent } = await supabase
-      .from('members')
-      .select('id')
-      .eq('phone', visitorData.parentPhone)
-      .eq('name', visitorData.parentName)
-      .limit(1);
-
-    if (existingParent && existingParent.length > 0) {
-      parentId = existingParent[0].id;
-    } else {
-      // Criar primeiro o responsável como membro visitante temporário no banco
-      const newParentId = `m_${Date.now()}`;
-      const { data: newParentDb, error: parentError } = await supabase
-        .from('members')
-        .insert({
-          id: newParentId,
-          name: visitorData.parentName,
-          phone: visitorData.parentPhone,
-          status: 'pendente',
-          function: 'Visitante (Kids)',
-          ministry: 'Infantil',
-          church_id: currentUser?.churchId || '1782771173659'
-        })
-        .select()
-        .single();
-
-      if (parentError || !newParentDb) {
-        alert('Erro ao cadastrar responsável temporário: ' + parentError?.message);
-        return;
-      }
-      parentId = newParentDb.id;
-    }
-
-    // 2. Criar a criança vinculada ao responsável no banco
+    // 1. Criar a criança visitante de forma independente no banco
     const tempKidId = '00000000-0000-0000-0000-' + Math.floor(100000000000 + Math.random() * 900000000000);
     const { data: newKidDb, error: kidError } = await supabase
       .from('kids')
@@ -350,8 +362,8 @@ export default function InfantilDashboardPage() {
         id: tempKidId,
         name: visitorData.kidName,
         birth_date: visitorData.birthDate,
-        parent_id: parentId,
-        emergency_contact: visitorData.parentPhone,
+        parent_id: null, // Desvinculado do cadastro de membros para evitar erro de tipo UUID
+        emergency_contact: `${visitorData.parentName} | ${visitorData.parentPhone}`,
         allergies: visitorData.allergies || 'Sem alergias'
       })
       .select()
@@ -1191,24 +1203,34 @@ export default function InfantilDashboardPage() {
               <button 
                 type="button" 
                 onClick={async () => {
-                  // Atualizar cada sala editada no Supabase
-                  for (const [key, room] of Object.entries(tempRoomRules) as any) {
-                    if (room.id) {
-                      await supabase
-                        .from('kids_rooms')
-                        .update({
-                          name: room.label,
-                          min_age: room.minAge,
-                          max_age: room.maxAge,
-                          capacity: room.capacity,
-                          max_kids_per_tio: room.maxKidsPerTio
-                        })
-                        .eq('id', room.id);
+                  try {
+                    const roomsArray = Object.entries(tempRoomRules).map(([key, r]: any) => ({
+                      id: r.id,
+                      label: r.label,
+                      minAge: r.minAge,
+                      maxAge: r.maxAge,
+                      capacity: r.capacity,
+                      maxKidsPerTio: r.maxKidsPerTio
+                    }));
+
+                    const res = await fetch('/api/save-rooms', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ rooms: roomsArray })
+                    });
+
+                    const data = await res.json();
+                    if (data.error) {
+                      throw new Error(data.error);
                     }
+
+                    setRoomRules(tempRoomRules);
+                    setShowConfigModal(false);
+                    alert('Configurações de salas salvas com sucesso no banco de dados!');
+                  } catch (err: any) {
+                    console.error('Erro ao salvar salas:', err);
+                    alert('Erro ao salvar configurações no banco: ' + err.message);
                   }
-                  setRoomRules(tempRoomRules);
-                  setShowConfigModal(false);
-                  alert('Configurações de salas salvas com sucesso no banco de dados!');
                 }}
                 style={{ background: '#00cec9', color: '#000', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
                 Salvar Configurações
