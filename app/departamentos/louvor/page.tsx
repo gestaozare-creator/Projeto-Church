@@ -1015,4 +1015,27 @@ export default function LouvorDashboardPage() {
                 const url = `${window.location.origin}/agenda/${resolvedChurchId}/louvor`;
                 const mes = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
                 const texto = `\uD83C\uDFB5 *Escala do Ministério de Louvor*\n\uD83D\uDCC5 ${mes}\n\n\uD83D\uDC49 Confira a sua escala:\n${url}`;
+                const waUrl = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+                window.open(waUrl, '_blank');
+              }}
+              style={{
+                background: "linear-gradient(135deg, #25D366, #128C7E)",
+                color: "#fff",
+                border: "none",
+                padding: "12px",
+                borderRadius: "10px",
+                cursor: "pointer",
+                fontWeight: 700,
+                fontSize: "0.9rem",
+                transition: "all 0.2s",
+                boxShadow: "0 4px 12px rgba(37,211,102,0.3)",
+              }}
+            >
+              📤 Enviar Escala via WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

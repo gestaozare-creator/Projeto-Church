@@ -863,4 +863,486 @@ export default function InfantilDashboardPage() {
                     const url = `${window.location.origin}/agenda/${resolvedChurchId}/kids`;
                     const mes = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
                     const texto = `\uD83E\uDDF8 *Escala do Ministério Kids*\n\uD83D\uDCC5 ${mes}\n\n\uD83D\uDC49 Confira a sua escala:\n${url}`;
+                    const waUrl = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+                    window.open(waUrl, '_blank');
+                  }}
+                  style={{
+                    background: "linear-gradient(135deg, #25D366, #128C7E)",
+                    color: "#fff",
+                    border: "none",
+                    padding: "8px 16px",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontWeight: 700,
+                    fontSize: "0.85rem",
+                    boxShadow: "0 4px 12px rgba(37,211,102,0.3)",
+                  }}
+                >
+                  📲 Compartilhar
+                </button>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
+              {KIDS_ROLES.map(role => {
+                const assigned = escalasGlobais[activeDate]?.[role] || [];
+                const suggested = dbMembers.filter(m => m.function === role && !assigned.includes(m.id));
+
+                return (
+                  <div key={role} style={{ background: 'rgba(0,0,0,0.15)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <h4 style={{ fontSize: '0.8rem', color: '#fd79a8', margin: '0 0 10px 0' }}>{role}</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', minHeight: '30px', marginBottom: '8px' }}>
+                      {assigned.map(id => (
+                        <div key={id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(253, 121, 168, 0.1)', border: '1px solid #fd79a8', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem' }}>
+                          <span>{dbMembers.find(m => m.id === id)?.name}</span>
+                          <button onClick={() => handleRemove(role, id)} style={{ background: 'transparent', border: 'none', color: '#e74c3c', cursor: 'pointer' }}>×</button>
+                        </div>
+                      ))}
+                    </div>
+                    <select className="search-input glass-input" style={{ width: '100%', padding: '4px', fontSize: '0.7rem' }} value="" onChange={(e) => { if (e.target.value) handleAssign(role, e.target.value); }}>
+                      <option value="" disabled>+ Voluntário</option>
+                      {dbMembers.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                    </select>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* MODAL CADASTRO RÁPIDO DE VISITANTE */}
+      {showQuickVisitorModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(10, 15, 30, 0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px', backdropFilter: 'blur(10px)' }}>
+          <form onSubmit={handleQuickVisitorCheckin} className="glass" style={{ width: '100%', maxWidth: '500px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.15)', background: 'var(--card-bg)' }}>
+            
+            <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)' }}>
+              <h4 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>👋 Cadastro Rápido de Visitante Kids</h4>
+              <button type="button" onClick={() => setShowQuickVisitorModal(false)} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Nome da Criança *</label>
+                <input 
+                  type="text" 
+                  required
+                  value={visitorData.kidName}
+                  onChange={(e) => setVisitorData({ ...visitorData, kidName: e.target.value })}
+                  style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Data de Nascimento *</label>
+                  <input 
+                    type="date" 
+                    required
+                    value={visitorData.birthDate}
+                    onChange={(e) => setVisitorData({ ...visitorData, birthDate: e.target.value })}
+                    style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Telefone Responsável *</label>
+                  <input 
+                    type="text" 
+                    required
+                    placeholder="(11) 99999-9999"
+                    value={visitorData.parentPhone}
+                    onChange={(e) => setVisitorData({ ...visitorData, parentPhone: e.target.value })}
+                    style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Nome do Responsável *</label>
+                <input 
+                  type="text" 
+                  required
+                  value={visitorData.parentName}
+                  onChange={(e) => setVisitorData({ ...visitorData, parentName: e.target.value })}
+                  style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Alergias ou Observações Médicas</label>
+                <input 
+                  type="text" 
+                  value={visitorData.allergies}
+                  placeholder="Ex: Alergia a amendoim, intolerância..."
+                  onChange={(e) => setVisitorData({ ...visitorData, allergies: e.target.value })}
+                  style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ padding: '15px 20px', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button 
+                type="button" 
+                onClick={() => setShowQuickVisitorModal(false)}
+                style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer' }}>
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                style={{ background: '#fd79a8', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+                Confirmar Check-in
+              </button>
+            </div>
+
+          </form>
+        </div>
+      )}
+
+      {/* MODAL DE IMPRESSÃO VISUAL DA PULSEIRA DE SEGURANÇA */}
+      {showPulseiraModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(10, 15, 30, 0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 101, padding: '20px', backdropFilter: 'blur(10px)' }}>
+          <div className="glass" style={{ width: '100%', maxWidth: '580px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.15)', background: 'var(--card-bg)' }}>
+            
+            <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)' }}>
+              <h4 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, color: '#00cec9' }}>🖨️ Prévia da Pulseira de Segurança Kids</h4>
+              <button onClick={() => setShowPulseiraModal(null)} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            <div style={{ padding: '25px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              
+              {/* VIA 1: VIA DA CRIANÇA */}
+              <div style={{ border: '2px dashed #00cec9', background: '#0a0f1d', borderRadius: '12px', padding: '15px', position: 'relative' }}>
+                <span style={{ position: 'absolute', top: '10px', right: '10px', background: '#00cec9', color: '#000', fontSize: '0.6rem', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>VIA DA CRIANÇA</span>
+                
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>DEPARTAMENTO KIDS</div>
+                <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff', marginTop: '4px' }}>{showPulseiraModal.kidName}</div>
+                <div style={{ fontSize: '0.8rem', color: '#fff', marginTop: '4px' }}>
+                  Sala: <strong>{showPulseiraModal.room}</strong> • Entrada: {showPulseiraModal.checkInTime}
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '15px' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    Responsável: {showPulseiraModal.parentName}<br />
+                    Contato: {showPulseiraModal.parentPhone}
+                  </div>
+                  {/* QR Code Simulado e Código */}
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ width: '45px', height: '45px', background: '#fff', padding: '2px', display: 'inline-block', borderRadius: '4px' }}>
+                      {/* Representação visual rápida de QR Code */}
+                      <div style={{ width: '100%', height: '100%', background: 'repeating-conic-gradient(#000 0% 25%, #fff 0% 50%) 50% / 8px 8px' }}></div>
+                    </div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#00cec9', marginTop: '2px' }}>{showPulseiraModal.securityCode}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* VIA 2: CANHOTO DO RESPONSÁVEL */}
+              <div style={{ border: '2px dashed #fd79a8', background: '#0a0f1d', borderRadius: '12px', padding: '15px', position: 'relative' }}>
+                <span style={{ position: 'absolute', top: '10px', right: '10px', background: '#fd79a8', color: '#fff', fontSize: '0.6rem', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>CANHOTO DO RESPONSÁVEL</span>
+                
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>CUPOM DE RETIRADA</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff', marginTop: '4px' }}>Retirada de: {showPulseiraModal.kidName}</div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    ⚠️ Apresente este canhoto de segurança na saída da sala.
+                  </span>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#fd79a8' }}>{showPulseiraModal.securityCode}</div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <button 
+                  onClick={() => setShowPulseiraModal(null)}
+                  style={{ flex: 1, background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer' }}>
+                  Fechar
+                </button>
+                <button 
+                  onClick={() => { alert('Pulseira enviada para a impressora térmica da recepção kids!'); setShowPulseiraModal(null); }}
+                  style={{ flex: 2, background: '#00cec9', color: '#000', border: 'none', padding: '12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+                  🖨️ Imprimir Pulseiras (Térmica)
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE ALERTA AO RESPONSÁVEL */}
+      {selectedCheckInForAlert && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(10, 15, 30, 0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 102, padding: '20px', backdropFilter: 'blur(10px)' }}>
+          <div className="glass" style={{ width: '100%', maxWidth: '850px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.15)', background: 'var(--card-bg)' }}>
+            
+            <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)' }}>
+              <h4 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, color: '#fd79a8' }}>🔔 Disparar Alerta ao Responsável</h4>
+              <button onClick={() => setSelectedCheckInForAlert(null)} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            <div style={{ padding: '25px', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '30px', position: 'relative' }}>
+              
+              {/* Overlay de Simulação de Envio */}
+              {alertSimulation && (
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(10, 15, 30, 0.9)', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
+                  {alertSimulation.status === 'sending' ? (
+                    <>
+                      <div className="loading-spinner" style={{ width: '50px', height: '50px', border: '5px solid rgba(253, 121, 168, 0.2)', borderTop: '5px solid #fd79a8', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                      <span style={{ fontSize: '1rem', fontWeight: 600 }}>
+                        {alertSimulation.type === 'whatsapp' ? '📱 Abrindo WhatsApp e enviando mensagem...' : '⚡ Enviando Push Notification via ChurchFlow App...'}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: '3rem', color: '#2ecc71' }}>✓</div>
+                      <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#2ecc71' }}>Alerta Enviado com Sucesso!</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>O responsável foi notificado.</span>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Lado Esquerdo: Formulário e Opções */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', fontSize: '0.85rem' }}>
+                  <strong>Criança:</strong> 👶 {selectedCheckInForAlert.kidName} ({selectedCheckInForAlert.room})<br />
+                  <strong>Responsável:</strong> {selectedCheckInForAlert.parentName} • 📞 {selectedCheckInForAlert.parentPhone}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Selecione um Modelo de Mensagem:</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {alertTemplates.map((tmpl, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setCustomMessage(tmpl)}
+                        style={{ 
+                          textAlign: 'left', background: customMessage === tmpl ? 'rgba(253, 121, 168, 0.15)' : 'rgba(255,255,255,0.03)',
+                          border: customMessage === tmpl ? '1px solid #fd79a8' : '1px solid rgba(255,255,255,0.05)',
+                          borderRadius: '6px', padding: '8px 12px', fontSize: '0.78rem', color: '#fff', cursor: 'pointer', transition: 'all 0.2s'
+                        }}
+                      >
+                        {tmpl}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Mensagem Personalizada:</label>
+                  <textarea
+                    rows={3}
+                    value={customMessage}
+                    onChange={(e) => setCustomMessage(e.target.value)}
+                    style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', fontSize: '0.85rem', outline: 'none', resize: 'none' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                  <button
+                    onClick={() => handleSendAlert('whatsapp')}
+                    style={{ flex: 1, background: '#25D366', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                  >
+                    💬 Enviar WhatsApp
+                  </button>
+                  <button
+                    onClick={() => handleSendAlert('push')}
+                    style={{ flex: 1, background: '#fd79a8', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                  >
+                    ⚡ Notificação Push (App)
+                  </button>
+                </div>
+              </div>
+
+              {/* Lado Direito: Preview no Celular */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '250px', height: '480px', border: '10px solid #222', borderRadius: '36px', position: 'relative', background: '#111', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' }}>
+                  {/* Speaker do celular */}
+                  <div style={{ width: '60px', height: '6px', background: '#444', borderRadius: '3px', position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', zIndex: 5 }}></div>
+                  
+                  {/* Tela Interna */}
+                  <div style={{ flex: 1, padding: '25px 12px 12px 12px', background: 'radial-gradient(circle, #222 0%, #050505 100%)', position: 'relative', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center', marginTop: '2px' }}>PREVIEW NO TELEFONE DO RESPONSÁVEL</div>
+                    
+                    {/* Exibição de Push */}
+                    <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', display: 'flex', flexDirection: 'column', gap: '4px', backdropFilter: 'blur(10px)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', animation: 'fadeIn 0.3s' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                        <span style={{ fontSize: '0.62rem', color: '#fd79a8', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          ⛪ ChurchFlow App
+                        </span>
+                        <span style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.4)' }}>agora</span>
+                      </div>
+                      <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#fff' }}>Alerta Kids: {selectedCheckInForAlert.kidName}</div>
+                      <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.8)', lineHeight: '1.2' }}>
+                        Olá {selectedCheckInForAlert.parentName}, seu(sua) filho(a) {selectedCheckInForAlert.kidName} {customMessage}
+                      </div>
+                    </div>
+
+                    {/* Exibição de WhatsApp */}
+                    <div style={{ background: '#075E54', borderRadius: '14px', padding: '10px', display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.62rem', color: '#25D366', fontWeight: 'bold' }}>💬 WhatsApp</span>
+                        <span style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.4)' }}>agora</span>
+                      </div>
+                      <div style={{ background: '#dcf8c6', borderRadius: '8px', padding: '8px', color: '#000', fontSize: '0.65rem', alignSelf: 'flex-start', maxWidth: '90%', position: 'relative', marginTop: '4px' }}>
+                        Olá, {selectedCheckInForAlert.parentName}. Seu(sua) filho(a) {selectedCheckInForAlert.kidName} {customMessage}
+                        <div style={{ fontSize: '0.5rem', color: 'rgba(0,0,0,0.4)', textAlign: 'right', marginTop: '3px' }}>19:06 ✓✓</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Home indicator bar */}
+                  <div style={{ width: '90px', height: '4px', background: '#555', borderRadius: '2px', position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)' }}></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE CONFIGURAÇÕES DE SALAS (SUPERVISOR) */}
+      {showConfigModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(10, 15, 30, 0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 103, padding: '20px', backdropFilter: 'blur(10px)' }}>
+          <div className="glass" style={{ width: '100%', maxWidth: '650px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.15)', background: 'var(--card-bg)' }}>
+            
+            <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)' }}>
+              <h4 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, color: '#00cec9' }}>⚙️ Configurações de Salas (Supervisor)</h4>
+              <button onClick={() => setShowConfigModal(false)} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '70vh', overflowY: 'auto' }}>
+              {Object.entries(tempRoomRules).map(([key, room]) => (
+                <div key={key} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '15px', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ fontWeight: 'bold', color: '#fd79a8', fontSize: '0.9rem' }}>{key}</div>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '10px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Nome da Sala</label>
+                      <input 
+                        type="text" 
+                        value={room.label}
+                        onChange={(e) => {
+                          setTempRoomRules({
+                            ...tempRoomRules,
+                            [key]: { ...room, label: e.target.value }
+                          });
+                        }}
+                        style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 10px', borderRadius: '6px', fontSize: '0.8rem', outline: 'none' }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Idade Mínima</label>
+                      <input 
+                        type="number" 
+                        value={room.minAge}
+                        onChange={(e) => {
+                          setTempRoomRules({
+                            ...tempRoomRules,
+                            [key]: { ...room, minAge: parseInt(e.target.value) || 0 }
+                          });
+                        }}
+                        style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 10px', borderRadius: '6px', fontSize: '0.8rem', outline: 'none' }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Idade Máxima</label>
+                      <input 
+                        type="number" 
+                        value={room.maxAge}
+                        onChange={(e) => {
+                          setTempRoomRules({
+                            ...tempRoomRules,
+                            [key]: { ...room, maxAge: parseInt(e.target.value) || 0 }
+                          });
+                        }}
+                        style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 10px', borderRadius: '6px', fontSize: '0.8rem', outline: 'none' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Capacidade Máxima</label>
+                      <input 
+                        type="number" 
+                        value={room.capacity}
+                        onChange={(e) => {
+                          setTempRoomRules({
+                            ...tempRoomRules,
+                            [key]: { ...room, capacity: parseInt(e.target.value) || 0 }
+                          });
+                        }}
+                        style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 10px', borderRadius: '6px', fontSize: '0.8rem', outline: 'none' }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Crianças por Voluntário</label>
+                      <input 
+                        type="number" 
+                        value={room.maxKidsPerTio}
+                        onChange={(e) => {
+                          setTempRoomRules({
+                            ...tempRoomRules,
+                            [key]: { ...room, maxKidsPerTio: parseInt(e.target.value) || 0 }
+                          });
+                        }}
+                        style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 10px', borderRadius: '6px', fontSize: '0.8rem', outline: 'none' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ padding: '15px 20px', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button 
+                type="button" 
+                onClick={() => setShowConfigModal(false)}
+                style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer' }}>
+                Cancelar
+              </button>
+              <button 
+                type="button" 
+                onClick={async () => {
+                  try {
+                    const roomsArray = Object.entries(tempRoomRules).map(([key, r]: any) => ({
+                      id: r.id,
+                      label: r.label,
+                      minAge: r.minAge,
+                      maxAge: r.maxAge,
+                      capacity: r.capacity,
+                      maxKidsPerTio: r.maxKidsPerTio
+                    }));
+
+                    const res = await fetch('/api/save-rooms', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ rooms: roomsArray })
+                    });
+
+                    const data = await res.json();
+                    if (data.error) {
+                      throw new Error(data.error);
+                    }
+
+                    setRoomRules(tempRoomRules);
+                    setShowConfigModal(false);
+                    alert('Configurações de salas salvas com sucesso no banco de dados!');
+                  } catch (err: any) {
+                    console.error('Erro ao salvar salas:', err);
+                    alert('Erro ao salvar configurações no banco: ' + err.message);
+                  }
+                }}
+                style={{ background: '#00cec9', color: '#000', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+                Salvar Configurações
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
 }
