@@ -706,7 +706,7 @@ export default function DashboardSecretariaPage() {
   const totalVisitorsCount = filteredVisitors.length;
 
   return (
-    <div className="page-wrapper" style={{ paddingBottom: "30px" }}>
+    <div className="page-wrapper" style={{ paddingBottom: "10px" }}>
       <div
         className="page-header"
         style={{
@@ -738,7 +738,7 @@ export default function DashboardSecretariaPage() {
           gap: "15px",
           flexWrap: "wrap",
           alignItems: "center",
-          marginBottom: "20px",
+          marginBottom: "12px",
         }}
       >
         {canSeeAllChurches && (
@@ -844,7 +844,7 @@ export default function DashboardSecretariaPage() {
           display: "flex",
           gap: "15px",
           flexWrap: "wrap",
-          marginBottom: "25px",
+          marginBottom: "15px",
         }}
       >
         <div
@@ -852,7 +852,7 @@ export default function DashboardSecretariaPage() {
           style={{
             flex: 1,
             minWidth: "200px",
-            padding: "20px",
+            padding: "12px 16px",
             borderRadius: "14px",
             borderLeft: "4px solid #3498db",
             display: "flex",
@@ -888,7 +888,7 @@ export default function DashboardSecretariaPage() {
           style={{
             flex: 1,
             minWidth: "200px",
-            padding: "20px",
+            padding: "12px 16px",
             borderRadius: "14px",
             borderLeft: "4px solid #2ecc71",
             display: "flex",
@@ -925,7 +925,7 @@ export default function DashboardSecretariaPage() {
           style={{
             flex: 1,
             minWidth: "200px",
-            padding: "20px",
+            padding: "12px 16px",
             borderRadius: "14px",
             borderLeft: "4px solid #f1c40f",
             display: "flex",
@@ -962,7 +962,7 @@ export default function DashboardSecretariaPage() {
           style={{
             flex: 1,
             minWidth: "200px",
-            padding: "20px",
+            padding: "12px 16px",
             borderRadius: "14px",
             borderLeft: "4px solid #e74c3c",
             display: "flex",
