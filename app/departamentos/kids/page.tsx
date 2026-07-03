@@ -252,6 +252,7 @@ export default function InfantilDashboardPage() {
       } catch (err) {
         console.error("Erro ao buscar dados de kids via API:", err);
       }
+    } // Closes carregarDadosIniciais()
 
     carregarDadosIniciais();
 
