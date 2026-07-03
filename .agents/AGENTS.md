@@ -23,3 +23,10 @@
 * **Regra**: Nas p�ginas do Frontend (componentes React), utilize View Models locais (interfaces camelCase na pr�pria p�gina) ou fa�a o mapeamento expl�cito dos campos de snake_case (banco) para camelCase (frontend) durante o carregamento de dados (ex: churchId: data.church_id). Isso evita quebra de c�digo legado e garante consist�ncia sem conflitos de padr�es.
 * **Regra**: O arquivo lib/mock-data.ts foi substitu�do para produ��o. Todo carregamento de dados e tipagem n�o deve mais depender de dados est�ticos; devem-se consultar diretamente as tabelas do Supabase.
 
+
+### 6. Escalas Públicas e Acesso Externo
+* **Regra**: Rotas públicas criadas para acesso sem login (como `/agenda/[churchId]`) devem ser excetuadas tanto no nível mais alto do layout (`app/layout.tsx` em `isPublicRoute`) quanto dentro do provedor de autenticação (`AuthContext.tsx` no `useEffect` de redirecionamento e no `onAuthStateChange`). Caso contrário, o frontend forçará um redirecionamento fantasma para a página `/login` impedindo o acesso do usuário externo.
+* **Regra**: Emojis inseridos dinamicamente por código e enviados via WhatsApp (`wa.me/?text=...`) devem ser encodados usando escapes Unicode explícitos (ex: `\uD83C\uDFB5`) em constantes ou arquivos React para evitar falhas silenciosas de Encoding no momento de parse dos componentes pelo Next.js/Browser (que substituem os emojis por ícones quebrados como o símbolo de interrogação `?`).
+
+### 7. Responsividade em Dispositivos Móveis Antigos (Safari/iOS)
+* **Regra**: Quando precisar construir layouts em grade complexos em inline-styles React que devem renderizar perfeitamente no Mobile (como um calendário de 7 dias ou tabela horizontal), **EVITE** o uso de `display: "grid"` com a sintaxe `gridTemplateColumns: "repeat(7, 1fr)"`. Em vez disso, prefira **sempre** utilizar Flexbox: `display: "flex", flexWrap: "wrap"` onde cada item possui uma largura exata (`width: "14.28%"` para 7 colunas). Isso garante retrocompatibilidade absoluta em dispositivos móveis, sem risco das colunas serem achatadas num único bloco vertical.

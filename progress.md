@@ -36,3 +36,11 @@ Protocolo V.L.A.E.G.
 
 - [x] **Transição para Produção (Fim dos Mocks):** Erradicação completa de todos os dados falsos (`MOCK_VISITORS`, `MOCK_CHURCHES`, `MOCK_MEMBERS`, dados hardcoded no `app/mapeamento/page.tsx` e `app/ranking/page.tsx`). O sistema inteiro foi conectado e configurado para ler exclusivamente dados reais provindos do Supabase.
 - [x] **Correção Crítica de Deploy (Vercel):** Identificação e resolução de erros do TypeScript que estavam abortando os builds na Vercel silenciosamente. O TypeScript foi perfeitamente tipado com `Church` interface e correções de tipos nulos e "implicit any", permitindo compilações livres de erros e refletindo as mudanças finalmente na interface de produção do usuário final.
+
+### 2026-07-03
+
+- [x] Correção de bugs de acesso a dados (Supabase RLS): Utilização de API segura (pp/api/get-kids-data/route.ts) com a Role Key do backend para buscar escalas de Kids bloqueadas pelo Row Level Security, resolvendo a perda de dados no frontend ao recarregar a página.
+- [x] Padronização completa e criação de Rotas Públicas (/agenda/[churchId]/[dept]) para escalas: Louvor, Mídia, Obreiros e Kids (Professores).
+- [x] Limpeza e padronização UX nos botões das escalas, substituindo modais confusos por dois botões inteligentes: Salvar Escala e Compartilhar, que já preparam o envio dinâmico via WhatsApp.
+- [x] Resolução de barreira de Autenticação (AuthContext.tsx e layout.tsx) onde rotas públicas estavam sendo indevidamente redirecionadas para o Login.
+- [x] Compatibilidade Mobile Extrema: Conversão do calendário (CSS Grid) para Flexbox (display: flex; flex-wrap: wrap) com porcentagens matemáticas, erradicando quebras visuais verticais que ocorriam em navegadores de iPhone/Safari antigos.

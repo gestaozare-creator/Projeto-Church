@@ -70,3 +70,7 @@ Como o banco de dados Supabase utiliza colunas padrão SQL em `snake_case` (ex: 
 
 - Foi feita uma mega-refatoração onde removemos todos os resíduos do `lib/mock-data.ts` que sujavam os painéis de finanças, relatórios e controle.
 - Foi implementado 100% de type-safety. O comando `npx tsc --noEmit` tem passagem perfeita. O banco Supabase foi inspecionado, as transações e históricos foram zerados e a aplicação roda unicamente baseada nos fluxos reais e vivos da igreja.
+
+## 6. Escalas Públicas e Persistência
+- **Escalas Públicas (`/agenda/[churchId]/[dept]`)**: A aplicação possui rotas 100% públicas projetadas para visualização de voluntários em celulares (com layout `Flexbox` responsivo). O acesso sem login é garantido adicionando o `/agenda` na verificação `isPublicRoute` do `app/layout.tsx` e também dentro dos redirecionamentos do `AuthContext.tsx`.
+- **Persistência Kids**: O departamento Kids utiliza a `SUPABASE_SERVICE_ROLE_KEY` internamente através da API segura `/api/get-kids-data` para burlar as Row Level Securities (RLS) do Supabase que bloqueavam leituras anônimas, permitindo assim o carregamento confiável da escala ao recarregar a página sem expor chaves no Frontend.
