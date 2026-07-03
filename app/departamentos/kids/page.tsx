@@ -862,5 +862,5 @@ export default function InfantilDashboardPage() {
                     }
                     const url = `${window.location.origin}/agenda/${resolvedChurchId}/kids`;
                     const mes = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-                    const texto = \uD83E\uDDF8 *Escala do Ministério Kids*\n\uD83D\uDCC5 \n\n\uD83D\uDC49 Confira a sua escala:\n;
+                    const texto = `\uD83E\uDDF8 *Escala do Ministério Kids*\n\uD83D\uDCC5 ${mes}\n\n\uD83D\uDC49 Confira a sua escala:\n${url}`;
 }
