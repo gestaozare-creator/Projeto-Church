@@ -74,13 +74,17 @@ export default function ObreirosDashboardPage() {
         .select("config")
         .eq("id", resolvedChurchId)
         .single();
-      if (
-        churchDb &&
-        churchDb.config &&
-        churchDb.config.escalas &&
-        churchDb.config.escalas["Obreiros"]
-      ) {
-        setEscalasGlobais(churchDb.config.escalas["Obreiros"]);
+      // O config pode vir como string JSON - precisamos parsear!
+      let parsedConfig: any = {};
+      if (churchDb?.config) {
+        if (typeof churchDb.config === 'string') {
+          try { parsedConfig = JSON.parse(churchDb.config); } catch { parsedConfig = {}; }
+        } else {
+          parsedConfig = churchDb.config;
+        }
+      }
+      if (parsedConfig?.escalas?.["Obreiros"]) {
+        setEscalasGlobais(parsedConfig.escalas["Obreiros"]);
       } else {
         setEscalasGlobais({});
       }

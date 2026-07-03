@@ -74,13 +74,17 @@ export default function MidiaDashboardPage() {
         .select("config")
         .eq("id", resolvedChurchId)
         .single();
-      if (
-        churchDb &&
-        churchDb.config &&
-        churchDb.config.escalas &&
-        churchDb.config.escalas["Mídia"]
-      ) {
-        setEscalasGlobais(churchDb.config.escalas["Mídia"]);
+      // O config pode vir como string JSON - precisamos parsear!
+      let parsedConfig: any = {};
+      if (churchDb?.config) {
+        if (typeof churchDb.config === 'string') {
+          try { parsedConfig = JSON.parse(churchDb.config); } catch { parsedConfig = {}; }
+        } else {
+          parsedConfig = churchDb.config;
+        }
+      }
+      if (parsedConfig?.escalas?.["Mídia"]) {
+        setEscalasGlobais(parsedConfig.escalas["Mídia"]);
       } else {
         setEscalasGlobais({});
       }

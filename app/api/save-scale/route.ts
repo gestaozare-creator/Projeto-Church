@@ -32,7 +32,15 @@ export async function POST(req: Request) {
       
     if (fetchErr) throw fetchErr;
 
-    const currentConfig = churchDb?.config || {};
+    // O config pode vir como string JSON - precisamos parsear!
+    let currentConfig: any = {};
+    if (churchDb?.config) {
+      if (typeof churchDb.config === 'string') {
+        try { currentConfig = JSON.parse(churchDb.config); } catch { currentConfig = {}; }
+      } else {
+        currentConfig = churchDb.config;
+      }
+    }
     if (!currentConfig.escalas) currentConfig.escalas = {};
     currentConfig.escalas[deptName] = newEscalas;
     
