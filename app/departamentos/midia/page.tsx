@@ -983,59 +983,55 @@ export default function MidiaDashboardPage() {
             )}
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <button
-              onClick={() => {
-                saveToConfig(escalasGlobais);
-                alert("Escala salva no sistema com sucesso!");
+              onClick={async () => {
+                await saveToConfig(escalasGlobais);
+                alert("✅ Escala salva com sucesso!");
               }}
               style={{
-                background: "#27ae60",
+                background: "linear-gradient(135deg, #27ae60, #1e8449)",
                 color: "#fff",
                 border: "none",
-                padding: "10px",
-                borderRadius: "8px",
+                padding: "12px",
+                borderRadius: "10px",
                 cursor: "pointer",
-                fontWeight: 600,
-                fontSize: "0.85rem",
+                fontWeight: 700,
+                fontSize: "0.9rem",
                 transition: "all 0.2s",
-                marginBottom: "8px",
+                boxShadow: "0 4px 12px rgba(39,174,96,0.3)",
               }}
             >
-              💾 Salvar Escalas
+              💾 Salvar Escala
             </button>
             <button
-              onClick={() => setShowPreview("dia")}
+              onClick={async () => {
+                // Resolve churchId
+                let resolvedChurchId = currentUser?.churchId;
+                if (!resolvedChurchId) {
+                  const { data: firstChurch } = await supabase.from('churches').select('id').limit(1).single();
+                  resolvedChurchId = firstChurch?.id || '1';
+                }
+                const url = `${window.location.origin}/agenda/${resolvedChurchId}/midia`;
+                const mes = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+                const texto = `📋 *Escala do Ministério de Mídia*\n🗓️ ${mes}\n\n👇 Confira a sua escala:\n${url}`;
+                const waUrl = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+                window.open(waUrl, '_blank');
+              }}
               style={{
-                background: "#2ecc71",
+                background: "linear-gradient(135deg, #25D366, #128C7E)",
                 color: "#fff",
                 border: "none",
-                padding: "10px",
-                borderRadius: "8px",
+                padding: "12px",
+                borderRadius: "10px",
                 cursor: "pointer",
-                fontWeight: 600,
-                fontSize: "0.85rem",
+                fontWeight: 700,
+                fontSize: "0.9rem",
                 transition: "all 0.2s",
+                boxShadow: "0 4px 12px rgba(37,211,102,0.3)",
               }}
             >
-              💾 Salvar Equipe (
-              {activeDate.split("-").reverse().slice(0, 2).join("/")})
-            </button>
-            <button
-              onClick={() => setShowPreview("mes")}
-              style={{
-                background: "#3498db",
-                color: "#fff",
-                border: "none",
-                padding: "10px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontWeight: 600,
-                fontSize: "0.85rem",
-                transition: "all 0.2s",
-              }}
-            >
-              💾 Salvar Escala Completa (Mês)
+              📤 Enviar Escala via WhatsApp
             </button>
           </div>
         </div>
