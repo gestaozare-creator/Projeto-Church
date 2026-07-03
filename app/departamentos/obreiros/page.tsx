@@ -117,18 +117,19 @@ export default function ObreirosDashboardPage() {
   const escala = escalasGlobais[activeDate] || {};
 
   const saveToConfig = async (newEscalas: any) => {
-    const { data: churchDb } = await supabase
-      .from("churches")
-      .select("config")
-      .eq("id", currentUser?.churchId || "1")
-      .single();
-    const currentConfig = churchDb?.config || {};
-    if (!currentConfig.escalas) currentConfig.escalas = {};
-    currentConfig.escalas["Obreiros"] = newEscalas;
-    await supabase
-      .from("churches")
-      .update({ config: currentConfig })
-      .eq("id", currentUser?.churchId || "1");
+    try {
+      await fetch("/api/save-scale", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          churchId: currentUser?.churchId || "1",
+          deptName: "Obreiros",
+          newEscalas,
+        }),
+      });
+    } catch (e) {
+      console.error("Failed to save scale via API", e);
+    }
   };
 
   const handleAssign = async (role: string, memberId: string) => {
