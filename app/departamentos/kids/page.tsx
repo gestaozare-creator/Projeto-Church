@@ -354,41 +354,46 @@ export default function InfantilDashboardPage() {
   const handleQuickVisitorCheckin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 1. Criar a criança visitante de forma independente no banco
+    // 1. Criar a criança visitante de forma independente no banco usando a API segura
     const tempKidId = '00000000-0000-0000-0000-' + Math.floor(100000000000 + Math.random() * 900000000000);
-    const { data: newKidDb, error: kidError } = await supabase
-      .from('kids')
-      .insert({
-        id: tempKidId,
+    
+    try {
+      const res = await fetch('/api/save-kid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: tempKidId,
+          name: visitorData.kidName,
+          birth_date: visitorData.birthDate,
+          parent_id: null,
+          emergency_contact: `${visitorData.parentName} | ${visitorData.parentPhone}`,
+          allergies: visitorData.allergies || 'Sem alergias'
+        })
+      });
+
+      const data = await res.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      const newKid: Kid = {
+        id: data.kid.id,
         name: visitorData.kidName,
-        birth_date: visitorData.birthDate,
-        parent_id: null, // Desvinculado do cadastro de membros para evitar erro de tipo UUID
-        emergency_contact: `${visitorData.parentName} | ${visitorData.parentPhone}`,
-        allergies: visitorData.allergies || 'Sem alergias'
-      })
-      .select()
-      .single();
+        birthDate: visitorData.birthDate,
+        parentName: visitorData.parentName,
+        parentPhone: visitorData.parentPhone,
+        allergies: visitorData.allergies || 'Sem alergias',
+        churchId: currentUser?.churchId || '1782771173659'
+      };
 
-    if (kidError || !newKidDb) {
-      alert('Erro ao cadastrar criança visitante no banco: ' + kidError?.message);
-      return;
+      // Salvar na lista local e fazer check-in
+      setKidsList([...kidsList, newKid]);
+      await handleCheckInKid(newKid);
+      setShowQuickVisitorModal(false);
+      setVisitorData({ kidName: '', birthDate: '', parentName: '', parentPhone: '', allergies: '' });
+    } catch (err: any) {
+      alert('Erro ao cadastrar criança visitante no banco: ' + err.message);
     }
-
-    const newKid: Kid = {
-      id: newKidDb.id,
-      name: visitorData.kidName,
-      birthDate: visitorData.birthDate,
-      parentName: visitorData.parentName,
-      parentPhone: visitorData.parentPhone,
-      allergies: visitorData.allergies || 'Sem alergias',
-      churchId: currentUser?.churchId || '1782771173659'
-    };
-
-    // Salvar na lista local e fazer check-in
-    setKidsList([...kidsList, newKid]);
-    await handleCheckInKid(newKid);
-    setShowQuickVisitorModal(false);
-    setVisitorData({ kidName: '', birthDate: '', parentName: '', parentPhone: '', allergies: '' });
   };
 
   // Pesquisar liberação por código
