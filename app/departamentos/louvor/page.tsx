@@ -1039,8 +1039,35 @@ export default function LouvorDashboardPage() {
 
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             <button
-              onClick={() => {
-                saveToConfig(escalasGlobais);
+              onClick={async () => {
+                // Resolve churchId igual ao saveToConfig
+                let resolvedChurchId = currentUser?.churchId;
+                if (!resolvedChurchId) {
+                  const { data: firstChurch } = await supabase.from('churches').select('id').limit(1).single();
+                  resolvedChurchId = firstChurch?.id || '1';
+                }
+                const url = `${window.location.origin}/agenda/${resolvedChurchId}`;
+                navigator.clipboard.writeText(url).catch(() => {});
+                alert(`🔗 Link copiado!\n\n${url}\n\nEnvie este link para os membros consultarem a escala.`);
+              }}
+              style={{
+                background: "linear-gradient(135deg, #9b59b6, #8e44ad)",
+                color: "#fff",
+                border: "none",
+                padding: "10px",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: "0.85rem",
+                transition: "all 0.2s",
+                marginBottom: "4px",
+              }}
+            >
+              🔗 Link Público da Agenda
+            </button>
+            <button
+              onClick={async () => {
+                await saveToConfig(escalasGlobais);
                 alert("Escala salva no sistema com sucesso!");
               }}
               style={{

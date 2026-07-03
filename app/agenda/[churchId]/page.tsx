@@ -4,23 +4,36 @@ import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useParams } from "next/navigation";
 
-// Initialize standard Supabase client for public read
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+const MONTH_NAMES = [
+  "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+  "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro",
+];
+
+const WEEK_DAYS = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+
+const LOUVOR_EMOJIS: Record<string, string> = {
+  Ministro: "🎤", Vocal: "🎵", Violão: "🎸", Guitarra: "🎸", Baixo: "🎻", Teclado: "🎹", Bateria: "🥁",
+};
+const MIDIA_EMOJIS: Record<string, string> = {
+  "Câmera 1": "📷", "Câmera 2": "📷", Transmissão: "📡", Projeção: "🖥️", Som: "🎚️",
+};
+const OBREIROS_EMOJIS: Record<string, string> = {
+  Portaria: "🚪", Recepção: "🤝", Coleta: "💝", Coordenação: "📋",
+};
 
 export default function AgendaPublicaPage() {
   const params = useParams();
   const churchId = params.churchId as string;
 
   const [churchName, setChurchName] = useState("");
-  const [escalas, setEscalas] = useState<{
-    Louvor?: any;
-    Mídia?: any;
-    Obreiros?: any;
-  }>({});
+  const [escalas, setEscalas] = useState<{ Louvor?: any; Mídia?: any; Obreiros?: any }>({});
   const [members, setMembers] = useState<any[]>([]);
-
+  const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
@@ -28,7 +41,6 @@ export default function AgendaPublicaPage() {
     async function loadData() {
       if (!churchId) return;
 
-      // Load Church Info & Config
       const { data: church } = await supabase
         .from("churches")
         .select("name, config")
@@ -37,523 +49,343 @@ export default function AgendaPublicaPage() {
 
       if (church) {
         setChurchName(church.name);
-        setEscalas(church.config?.escalas || {});
+        // Parse config se vier como string
+        let config: any = {};
+        if (church.config) {
+          if (typeof church.config === "string") {
+            try { config = JSON.parse(church.config); } catch { config = {}; }
+          } else {
+            config = church.config;
+          }
+        }
+        setEscalas(config.escalas || {});
       }
 
-      // Load Members
       const { data: mems } = await supabase
         .from("members")
-        .select("id, name")
+        .select("id, name, function, ministry")
         .eq("church_id", churchId);
-      if (mems) {
-        setMembers(mems);
-      }
+      if (mems) setMembers(mems);
+
+      setLoading(false);
     }
     loadData();
   }, [churchId]);
+
+  const getMember = (id: string) => members.find((m) => m.id === id);
+  const getMemberName = (id: string) => getMember(id)?.name || "Membro";
+  const getMemberInitial = (id: string) => getMemberName(id).charAt(0).toUpperCase();
 
   const y = currentDate.getFullYear();
   const m = currentDate.getMonth();
   const firstDay = new Date(y, m, 1).getDay();
   const daysInMonth = new Date(y, m + 1, 0).getDate();
 
-  const days = [];
-  for (let i = 0; i < firstDay; i++) days.push(null);
-  for (let i = 1; i <= daysInMonth; i++) days.push(i);
-
-  const getMemberName = (id: string) =>
-    members.find((m) => m.id === id)?.name || id;
-
   const hasScaleOnDate = (dateStr: string) => {
     return (
-      (escalas.Louvor &&
-        escalas.Louvor[dateStr] &&
-        Object.values(escalas.Louvor[dateStr]).some(
-          (arr: any) => arr.length > 0,
-        )) ||
-      (escalas.Mídia &&
-        escalas.Mídia[dateStr] &&
-        Object.values(escalas.Mídia[dateStr]).some(
-          (arr: any) => arr.length > 0,
-        )) ||
-      (escalas.Obreiros &&
-        escalas.Obreiros[dateStr] &&
-        Object.values(escalas.Obreiros[dateStr]).some(
-          (arr: any) => arr.length > 0,
-        ))
+      Object.values(escalas.Louvor?.[dateStr] || {}).some((a: any) => a?.length > 0) ||
+      Object.values(escalas.Mídia?.[dateStr] || {}).some((a: any) => a?.length > 0) ||
+      Object.values(escalas.Obreiros?.[dateStr] || {}).some((a: any) => a?.length > 0)
     );
   };
 
+  const today = new Date().toISOString().split("T")[0];
+
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: "100vh", background: "#0a1628",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        flexDirection: "column", gap: "16px",
+      }}>
+        <div style={{ fontSize: "3rem", animation: "spin 1s linear infinite" }}>⏳</div>
+        <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "1rem" }}>Carregando agenda...</p>
+        <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
+      </div>
+    );
+  }
+
   return (
-    <div
-      style={{
+    <>
+      <style>{`
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0a1628; font-family: 'Segoe UI', system-ui, sans-serif; color: #fff; }
+        .day-cell { transition: all 0.15s ease; cursor: default; }
+        .day-cell.has-scale { cursor: pointer; }
+        .day-cell.has-scale:hover { transform: scale(1.1); box-shadow: 0 0 16px rgba(52,152,219,0.4); }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes scaleIn { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+      `}</style>
+
+      <div style={{
         minHeight: "100vh",
-        background: "#0f172a",
-        color: "#fff",
-        fontFamily: "'Inter', sans-serif",
-      }}
-    >
-      {/* HEADER */}
-      <header
-        style={{
-          padding: "20px",
-          background: "linear-gradient(90deg, #1e293b, #0f172a)",
-          borderBottom: "1px solid rgba(255,255,255,0.1)",
+        background: "linear-gradient(160deg, #0a1628 0%, #0d1f3c 60%, #0a1628 100%)",
+        padding: "0 0 48px",
+        animation: "fadeUp 0.4s ease",
+      }}>
+
+        {/* HEADER */}
+        <div style={{
+          background: "linear-gradient(90deg, rgba(52,152,219,0.15), rgba(155,89,182,0.1))",
+          borderBottom: "1px solid rgba(255,255,255,0.07)",
+          padding: "28px 24px",
           textAlign: "center",
-        }}
-      >
-        <h1 style={{ margin: 0, fontSize: "1.2rem", color: "#38bdf8" }}>
-          {churchName || "Carregando..."}
-        </h1>
-        <p
-          style={{ margin: "5px 0 0 0", fontSize: "0.85rem", color: "#94a3b8" }}
-        >
-          Agenda Pública de Escalas
-        </p>
-      </header>
+        }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: "10px",
+            background: "rgba(255,255,255,0.06)", padding: "8px 20px",
+            borderRadius: "50px", border: "1px solid rgba(255,255,255,0.1)",
+            marginBottom: "16px",
+          }}>
+            <span style={{ fontSize: "1.2rem" }}>⛪</span>
+            <span style={{ fontWeight: 700, fontSize: "1rem", color: "#38bdf8" }}>{churchName}</span>
+          </div>
+          <h1 style={{ fontSize: "1.8rem", fontWeight: 800, color: "#fff", marginBottom: "6px" }}>
+            Agenda de Escalas
+          </h1>
+          <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.88rem" }}>
+            Clique em um dia destacado para ver quem está escalado
+          </p>
+        </div>
 
-      {/* MAIN CONTENT */}
-      <main style={{ padding: "20px", maxWidth: "600px", margin: "0 auto" }}>
         {/* CALENDAR */}
-        <div
-          style={{
-            background: "#1e293b",
-            padding: "20px",
-            borderRadius: "16px",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.5)",
-            marginBottom: "20px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "20px",
-            }}
-          >
-            <button
-              onClick={() => setCurrentDate(new Date(y, m - 1, 1))}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "#38bdf8",
-                fontSize: "1.2rem",
-                cursor: "pointer",
-                padding: "10px",
-              }}
-            >
-              {"<"}
-            </button>
-            <h3
-              style={{
-                margin: 0,
-                fontSize: "1.1rem",
-                textTransform: "capitalize",
-              }}
-            >
-              {currentDate.toLocaleDateString("pt-BR", {
-                month: "long",
-                year: "numeric",
-              })}
-            </h3>
-            <button
-              onClick={() => setCurrentDate(new Date(y, m + 1, 1))}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "#38bdf8",
-                fontSize: "1.2rem",
-                cursor: "pointer",
-                padding: "10px",
-              }}
-            >
-              {">"}
-            </button>
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(7, 1fr)",
-              gap: "5px",
-              textAlign: "center",
-              marginBottom: "10px",
-            }}
-          >
-            {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => (
-              <div
-                key={i}
+        <div style={{ maxWidth: "480px", margin: "32px auto 0", padding: "0 20px" }}>
+          <div style={{
+            background: "rgba(255,255,255,0.04)",
+            borderRadius: "20px",
+            padding: "24px",
+            border: "1px solid rgba(255,255,255,0.07)",
+            boxShadow: "0 16px 48px rgba(0,0,0,0.4)",
+          }}>
+            {/* Month nav */}
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              marginBottom: "24px",
+            }}>
+              <button
+                onClick={() => setCurrentDate(new Date(y, m - 1, 1))}
                 style={{
-                  fontSize: "0.75rem",
-                  color: "#94a3b8",
-                  fontWeight: 600,
+                  background: "rgba(255,255,255,0.08)", border: "none", color: "#fff",
+                  width: "36px", height: "36px", borderRadius: "50%", cursor: "pointer",
+                  fontSize: "1.1rem", display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "all 0.2s",
                 }}
-              >
-                {d}
-              </div>
-            ))}
-          </div>
+              >‹</button>
+              <h2 style={{ fontWeight: 700, fontSize: "1.05rem", textTransform: "capitalize" }}>
+                {MONTH_NAMES[m]} {y}
+              </h2>
+              <button
+                onClick={() => setCurrentDate(new Date(y, m + 1, 1))}
+                style={{
+                  background: "rgba(255,255,255,0.08)", border: "none", color: "#fff",
+                  width: "36px", height: "36px", borderRadius: "50%", cursor: "pointer",
+                  fontSize: "1.1rem", display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "all 0.2s",
+                }}
+              >›</button>
+            </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(7, 1fr)",
-              gap: "5px",
-            }}
-          >
-            {days.map((d, i) => {
-              if (d === null) return <div key={i} />;
-              const dateStr = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-              const hasScale = hasScaleOnDate(dateStr);
-              const isSelected = selectedDate === dateStr;
+            {/* Weekday labels */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: "4px", marginBottom: "10px" }}>
+              {WEEK_DAYS.map((d) => (
+                <div key={d} style={{
+                  textAlign: "center", fontSize: "0.7rem", fontWeight: 700,
+                  color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.5px",
+                }}>{d}</div>
+              ))}
+            </div>
 
-              return (
-                <button
-                  key={i}
-                  onClick={() => setSelectedDate(dateStr)}
-                  style={{
-                    aspectRatio: "1/1",
-                    background: isSelected
-                      ? "#38bdf8"
-                      : hasScale
-                        ? "rgba(56,189,248,0.15)"
-                        : "transparent",
-                    color: isSelected
-                      ? "#0f172a"
-                      : hasScale
-                        ? "#38bdf8"
-                        : "#fff",
-                    border: isSelected
-                      ? "none"
-                      : hasScale
-                        ? "1px solid rgba(56,189,248,0.3)"
-                        : "1px solid rgba(255,255,255,0.05)",
-                    borderRadius: "8px",
-                    cursor: "pointer",
-                    fontSize: "0.9rem",
-                    fontWeight: isSelected || hasScale ? 700 : 400,
-                    transition: "all 0.2s",
-                  }}
-                >
-                  {d}
-                </button>
-              );
-            })}
+            {/* Day grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: "5px" }}>
+              {Array(firstDay).fill(null).map((_, i) => <div key={`e-${i}`} />)}
+              {Array(daysInMonth).fill(null).map((_, idx) => {
+                const day = idx + 1;
+                const dateStr = `${y}-${String(m + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                const hasScale = hasScaleOnDate(dateStr);
+                const isToday = dateStr === today;
+
+                return (
+                  <button
+                    key={dateStr}
+                    className={`day-cell${hasScale ? " has-scale" : ""}`}
+                    onClick={() => hasScale && setSelectedDate(dateStr)}
+                    style={{
+                      aspectRatio: "1",
+                      borderRadius: "10px",
+                      border: isToday
+                        ? "2px solid #38bdf8"
+                        : hasScale
+                        ? "1px solid rgba(52,152,219,0.35)"
+                        : "1px solid transparent",
+                      background: hasScale
+                        ? "linear-gradient(135deg, rgba(52,152,219,0.22), rgba(52,152,219,0.06))"
+                        : isToday
+                        ? "rgba(56,189,248,0.08)"
+                        : "rgba(255,255,255,0.03)",
+                      color: hasScale ? "#fff" : isToday ? "#38bdf8" : "rgba(255,255,255,0.25)",
+                      fontSize: "0.85rem",
+                      fontWeight: hasScale ? 700 : 400,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "2px",
+                      padding: "2px",
+                    }}
+                  >
+                    {day}
+                    {hasScale && (
+                      <div style={{
+                        width: "4px", height: "4px", borderRadius: "50%",
+                        background: "#38bdf8", flexShrink: 0,
+                      }} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Legend */}
+            <div style={{
+              marginTop: "20px", paddingTop: "16px",
+              borderTop: "1px solid rgba(255,255,255,0.06)",
+              display: "flex", gap: "20px", justifyContent: "center",
+            }}>
+              <span style={{ display: "flex", alignItems: "center", gap: "6px", color: "rgba(255,255,255,0.4)", fontSize: "0.75rem" }}>
+                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#38bdf8", display: "inline-block" }} />
+                Dia com escala
+              </span>
+              <span style={{ display: "flex", alignItems: "center", gap: "6px", color: "rgba(255,255,255,0.4)", fontSize: "0.75rem" }}>
+                <span style={{ width: "10px", height: "10px", borderRadius: "3px", border: "2px solid #38bdf8", display: "inline-block" }} />
+                Hoje
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* SCALE DETAILS */}
-        {selectedDate && (
-          <div style={{ animation: "fadeIn 0.3s ease" }}>
-            <h3
-              style={{
-                fontSize: "1.1rem",
-                marginBottom: "15px",
-                color: "#fff",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-            >
-              <div
-                style={{
-                  width: "8px",
-                  height: "8px",
-                  background: "#38bdf8",
-                  borderRadius: "50%",
-                }}
-              />
-              Escalas do dia {selectedDate.split("-").reverse().join("/")}
-            </h3>
+        <p style={{ textAlign: "center", color: "rgba(255,255,255,0.15)", fontSize: "0.75rem", marginTop: "32px" }}>
+          Projeto Church • Ministérios
+        </p>
+      </div>
 
-            {!hasScaleOnDate(selectedDate) ? (
-              <p
-                style={{
-                  color: "#94a3b8",
-                  fontSize: "0.9rem",
-                  textAlign: "center",
-                  padding: "30px",
-                  background: "rgba(255,255,255,0.02)",
-                  borderRadius: "12px",
-                }}
-              >
-                Nenhuma escala para este dia.
-              </p>
-            ) : (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "15px",
-                }}
-              >
-                {/* LOUVOR */}
-                {escalas.Louvor &&
-                  escalas.Louvor[selectedDate] &&
-                  Object.values(escalas.Louvor[selectedDate]).some(
-                    (a: any) => a.length > 0,
-                  ) && (
-                    <div
-                      style={{
-                        background: "linear-gradient(135deg, #2c3e50, #1a252f)",
-                        borderRadius: "12px",
-                        padding: "20px",
-                        borderLeft: "4px solid #3498db",
-                      }}
-                    >
-                      <h4
-                        style={{
-                          margin: "0 0 15px 0",
-                          color: "#3498db",
-                          fontSize: "0.9rem",
-                          textTransform: "uppercase",
-                          letterSpacing: "1px",
-                        }}
-                      >
-                        🎵 Ministério de Louvor
-                      </h4>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "10px",
-                        }}
-                      >
-                        {Object.entries(escalas.Louvor[selectedDate]).map(
-                          ([role, mems]: any) => {
-                            if (mems.length === 0) return null;
-                            return (
-                              <div
-                                key={role}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "flex-start",
-                                  gap: "10px",
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    color: "#94a3b8",
-                                    fontSize: "0.8rem",
-                                    width: "70px",
-                                    paddingTop: "2px",
-                                  }}
-                                >
-                                  {role}:
-                                </span>
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    flexWrap: "wrap",
-                                    gap: "5px",
-                                    flex: 1,
-                                  }}
-                                >
-                                  {mems.map((id: string) => (
-                                    <span
-                                      key={id}
-                                      style={{
-                                        background: "rgba(0,0,0,0.3)",
-                                        padding: "2px 8px",
-                                        borderRadius: "4px",
-                                        fontSize: "0.85rem",
-                                        color: "#e2e8f0",
-                                      }}
-                                    >
-                                      {getMemberName(id)}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            );
-                          },
-                        )}
-                      </div>
-                    </div>
-                  )}
+      {/* MODAL DO DIA */}
+      {selectedDate && (() => {
+        const louvor = escalas.Louvor?.[selectedDate] || {};
+        const midia = escalas.Mídia?.[selectedDate] || {};
+        const obreiros = escalas.Obreiros?.[selectedDate] || {};
 
-                {/* MÍDIA */}
-                {escalas.Mídia &&
-                  escalas.Mídia[selectedDate] &&
-                  Object.values(escalas.Mídia[selectedDate]).some(
-                    (a: any) => a.length > 0,
-                  ) && (
-                    <div
-                      style={{
-                        background: "linear-gradient(135deg, #1e3c2f, #14281f)",
-                        borderRadius: "12px",
-                        padding: "20px",
-                        borderLeft: "4px solid #2ecc71",
-                      }}
-                    >
-                      <h4
-                        style={{
-                          margin: "0 0 15px 0",
-                          color: "#2ecc71",
-                          fontSize: "0.9rem",
-                          textTransform: "uppercase",
-                          letterSpacing: "1px",
-                        }}
-                      >
-                        📸 Ministério de Mídia
-                      </h4>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "10px",
-                        }}
-                      >
-                        {Object.entries(escalas.Mídia[selectedDate]).map(
-                          ([role, mems]: any) => {
-                            if (mems.length === 0) return null;
-                            return (
-                              <div
-                                key={role}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "flex-start",
-                                  gap: "10px",
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    color: "#94a3b8",
-                                    fontSize: "0.8rem",
-                                    width: "70px",
-                                    paddingTop: "2px",
-                                  }}
-                                >
-                                  {role}:
-                                </span>
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    flexWrap: "wrap",
-                                    gap: "5px",
-                                    flex: 1,
-                                  }}
-                                >
-                                  {mems.map((id: string) => (
-                                    <span
-                                      key={id}
-                                      style={{
-                                        background: "rgba(0,0,0,0.3)",
-                                        padding: "2px 8px",
-                                        borderRadius: "4px",
-                                        fontSize: "0.85rem",
-                                        color: "#e2e8f0",
-                                      }}
-                                    >
-                                      {getMemberName(id)}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            );
-                          },
-                        )}
-                      </div>
-                    </div>
-                  )}
+        const [dd, mm, yyyy] = selectedDate.split("-").reverse();
 
-                {/* OBREIROS */}
-                {escalas.Obreiros &&
-                  escalas.Obreiros[selectedDate] &&
-                  Object.values(escalas.Obreiros[selectedDate]).some(
-                    (a: any) => a.length > 0,
-                  ) && (
-                    <div
-                      style={{
-                        background: "linear-gradient(135deg, #4a3818, #30240f)",
-                        borderRadius: "12px",
-                        padding: "20px",
-                        borderLeft: "4px solid #f1c40f",
-                      }}
-                    >
-                      <h4
-                        style={{
-                          margin: "0 0 15px 0",
-                          color: "#f1c40f",
-                          fontSize: "0.9rem",
-                          textTransform: "uppercase",
-                          letterSpacing: "1px",
-                        }}
-                      >
-                        🛡️ Obreiros / Recepção
-                      </h4>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "10px",
-                        }}
-                      >
-                        {Object.entries(escalas.Obreiros[selectedDate]).map(
-                          ([role, mems]: any) => {
-                            if (mems.length === 0) return null;
-                            return (
-                              <div
-                                key={role}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "flex-start",
-                                  gap: "10px",
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    color: "#94a3b8",
-                                    fontSize: "0.8rem",
-                                    width: "70px",
-                                    paddingTop: "2px",
-                                  }}
-                                >
-                                  {role}:
-                                </span>
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    flexWrap: "wrap",
-                                    gap: "5px",
-                                    flex: 1,
-                                  }}
-                                >
-                                  {mems.map((id: string) => (
-                                    <span
-                                      key={id}
-                                      style={{
-                                        background: "rgba(0,0,0,0.3)",
-                                        padding: "2px 8px",
-                                        borderRadius: "4px",
-                                        fontSize: "0.85rem",
-                                        color: "#e2e8f0",
-                                      }}
-                                    >
-                                      {getMemberName(id)}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            );
-                          },
-                        )}
-                      </div>
+        const Section = ({ title, emoji, color, data, emojis }: any) => {
+          const entries = Object.entries(data).flatMap(([role, ids]: any) =>
+            (ids || []).map((id: string) => ({ role, id }))
+          );
+          if (!entries.length) return null;
+          return (
+            <div style={{
+              background: "rgba(255,255,255,0.04)", borderRadius: "14px",
+              padding: "18px", marginBottom: "14px",
+              border: `1px solid ${color}30`,
+              animation: "scaleIn 0.25s ease",
+            }}>
+              <h3 style={{
+                color, fontSize: "0.95rem", fontWeight: 700, marginBottom: "14px",
+                display: "flex", alignItems: "center", gap: "8px",
+              }}>
+                {emoji} {title}
+              </h3>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "14px" }}>
+                {entries.map(({ role, id }: any) => (
+                  <div key={`${role}-${id}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", minWidth: "70px" }}>
+                    <div style={{
+                      width: "48px", height: "48px", borderRadius: "50%",
+                      background: `linear-gradient(135deg, ${color}, ${color}66)`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: "1.3rem", fontWeight: 800, color: "#fff",
+                      boxShadow: `0 4px 14px ${color}40`,
+                    }}>
+                      {getMemberInitial(id)}
                     </div>
-                  )}
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "#fff" }}>{getMemberName(id)}</div>
+                      <div style={{ fontSize: "0.7rem", color, opacity: 0.8 }}>{emojis[role] || "•"} {role}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+          );
+        };
+
+        const totalPessoas =
+          Object.values(louvor).flat().length +
+          Object.values(midia).flat().length +
+          Object.values(obreiros).flat().length;
+
+        return (
+          <div
+            style={{
+              position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              zIndex: 1000, padding: "20px",
+              backdropFilter: "blur(6px)",
+            }}
+            onClick={() => setSelectedDate(null)}
+          >
+            <div
+              style={{
+                background: "linear-gradient(145deg, #0f1b30, #162240)",
+                borderRadius: "20px", padding: "28px",
+                maxWidth: "560px", width: "100%",
+                maxHeight: "88vh", overflowY: "auto",
+                border: "1px solid rgba(255,255,255,0.1)",
+                boxShadow: "0 24px 64px rgba(0,0,0,0.7)",
+                animation: "scaleIn 0.25s ease",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal header */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "22px" }}>
+                <div>
+                  <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem", marginBottom: "4px" }}>📅 Escala do culto</p>
+                  <h2 style={{ color: "#fff", fontSize: "1.4rem", fontWeight: 800 }}>{`${dd}/${mm}/${yyyy}`}</h2>
+                  <div style={{
+                    display: "inline-flex", alignItems: "center", gap: "6px",
+                    background: "rgba(52,152,219,0.15)", padding: "4px 12px",
+                    borderRadius: "20px", marginTop: "8px",
+                    border: "1px solid rgba(52,152,219,0.3)",
+                  }}>
+                    <span style={{ fontSize: "0.8rem", color: "#38bdf8", fontWeight: 600 }}>
+                      👥 {totalPessoas} {totalPessoas === 1 ? "pessoa escalada" : "pessoas escaladas"}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedDate(null)}
+                  style={{
+                    background: "rgba(255,255,255,0.1)", border: "none", color: "#fff",
+                    width: "34px", height: "34px", borderRadius: "50%", cursor: "pointer",
+                    fontSize: "1.2rem", flexShrink: 0,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}
+                >×</button>
+              </div>
+
+              <Section title="Ministério de Louvor" emoji="🎵" color="#3498db" data={louvor} emojis={LOUVOR_EMOJIS} />
+              <Section title="Mídia & Produção" emoji="📡" color="#e74c3c" data={midia} emojis={MIDIA_EMOJIS} />
+              <Section title="Obreiros" emoji="🤝" color="#f39c12" data={obreiros} emojis={OBREIROS_EMOJIS} />
+
+              {totalPessoas === 0 && (
+                <div style={{ textAlign: "center", padding: "40px 0", color: "rgba(255,255,255,0.3)" }}>
+                  Nenhuma escala encontrada para este dia.
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </main>
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-      `,
-        }}
-      />
-    </div>
+        );
+      })()}
+    </>
   );
 }
