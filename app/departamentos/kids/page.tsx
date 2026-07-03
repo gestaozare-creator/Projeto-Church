@@ -177,62 +177,67 @@ export default function InfantilDashboardPage() {
         setRoomRules(prev => ({ ...prev, ...rulesMap }));
       }
 
-      // 2. Buscar crianças cadastradas
-      const { data: kidsDb } = await supabase
-        .from('kids')
-        .select('*');
-      if (kidsDb) {
-        const kidsFormatadas: Kid[] = kidsDb.map(k => {
-          let pName = 'Responsável Não Identificado';
-          let pPhone = k.emergency_contact || '';
-          let allergiesText = k.allergies || 'Sem alergias';
+      // 2 e 3. Buscar crianças cadastradas e check-ins ativos via API segura
+      try {
+        const res = await fetch('/api/get-kids-data');
+        const data = await res.json();
+        
+        if (data.success) {
+          const { kids: kidsDb, checkins: checkinsDb } = data;
+          
+          if (kidsDb) {
+            const kidsFormatadas: Kid[] = kidsDb.map((k: any) => {
+              let pName = 'Responsável Não Identificado';
+              let pPhone = k.emergency_contact || '';
+              let allergiesText = k.allergies || 'Sem alergias';
 
-          try {
-            if (k.allergies && k.allergies.startsWith('{')) {
-              const parsed = JSON.parse(k.allergies);
-              if (parsed.pn) pName = parsed.pn;
-              if (parsed.al) allergiesText = parsed.al;
-            } else if (k.emergency_contact && k.emergency_contact.includes(' | ')) {
-              const parts = k.emergency_contact.split(' | ');
-              pName = parts[0];
-              pPhone = parts[1] || '';
-            }
-          } catch(e) {}
+              try {
+                if (k.allergies && k.allergies.startsWith('{')) {
+                  const parsed = JSON.parse(k.allergies);
+                  if (parsed.pn) pName = parsed.pn;
+                  if (parsed.al) allergiesText = parsed.al;
+                } else if (k.emergency_contact && k.emergency_contact.includes(' | ')) {
+                  const parts = k.emergency_contact.split(' | ');
+                  pName = parts[0];
+                  pPhone = parts[1] || '';
+                }
+              } catch(e) {}
 
-          return {
-            id: k.id,
-            name: k.name,
-            birthDate: k.birth_date,
-            parentName: pName,
-            parentPhone: pPhone,
-            allergies: allergiesText,
-            churchId: k.church_id || '1782771173659'
-          };
-        });
-        setKidsList(kidsFormatadas);
-      }
-
-      // 3. Buscar check-ins ativos de hoje
-      const { data: checkinsDb } = await supabase
-        .from('kids_checkin')
-        .select('*, kids(*)')
-        .eq('status', 'presente');
-      
-      if (checkinsDb) {
-        const checkinsFormatados: KidCheckIn[] = checkinsDb.map(c => {
-          let pName = 'Responsável';
-          let pPhone = '';
-          if (c.kids?.emergency_contact && c.kids.emergency_contact.includes(' | ')) {
-            const parts = c.kids.emergency_contact.split(' | ');
-            pName = parts[0];
-            pPhone = parts[1] || '';
-          } else if (c.kids?.emergency_contact) {
-            pPhone = c.kids.emergency_contact;
+              return {
+                id: k.id,
+                name: k.name,
+                birthDate: k.birth_date,
+                parentName: pName,
+                parentPhone: pPhone,
+                allergies: allergiesText,
+                churchId: k.church_id || '1782771173659'
+              };
+            });
+            setKidsList(kidsFormatadas);
           }
-          return {
-            id: c.id,
-            kidId: c.kid_id,
-            kidName: c.kids?.name || 'Criança',
+          
+          if (checkinsDb) {
+            const checkinsFormatados: KidCheckIn[] = checkinsDb.map((c: any) => {
+              let pName = 'Responsável';
+              let pPhone = '';
+              if (c.kids?.allergies && c.kids.allergies.startsWith('{')) {
+                try {
+                  const parsed = JSON.parse(c.kids.allergies);
+                  if (parsed.pn) pName = parsed.pn;
+                } catch(e) {}
+              }
+              
+              if (pName === 'Responsável' && c.kids?.emergency_contact && c.kids.emergency_contact.includes(' | ')) {
+                const parts = c.kids.emergency_contact.split(' | ');
+                pName = parts[0];
+                pPhone = parts[1] || '';
+              } else if (c.kids?.emergency_contact) {
+                pPhone = c.kids.emergency_contact;
+              }
+              return {
+                id: c.id,
+                kidId: c.kid_id,
+                kidName: c.kids?.name || 'Criança',
             room: c.room,
             checkInTime: new Date(c.checkin_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
             securityCode: c.security_code,
@@ -240,10 +245,13 @@ export default function InfantilDashboardPage() {
             parentPhone: pPhone,
             status: c.status
           };
-        });
-        setCheckins(checkinsFormatados);
+            });
+            setCheckins(checkinsFormatados);
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao buscar dados de kids via API:", err);
       }
-    }
 
     carregarDadosIniciais();
 
