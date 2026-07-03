@@ -158,14 +158,14 @@ export default function AgendaDeptPage() {
             </div>
 
             {/* Weekdays */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", width: "100%", gap: "4px", marginBottom: "10px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr 1fr 1fr", width: "100%", gap: "4px", marginBottom: "10px" }}>
               {WEEK_DAYS.map((d) => (
                 <div key={d} style={{ textAlign: "center", fontSize: "0.7rem", fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.5px" }}>{d}</div>
               ))}
             </div>
 
             {/* Day cells */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", width: "100%", gap: "5px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr 1fr 1fr", width: "100%", gap: "5px" }}>
               {Array(firstDay).fill(null).map((_, i) => <div key={`e-${i}`} />)}
               {Array(daysInMonth).fill(null).map((_, idx) => {
                 const day = idx + 1;
