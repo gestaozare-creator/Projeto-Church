@@ -430,7 +430,7 @@ export default function DashboardSecretariaPage() {
             status:
               v.status === "ativo"
                 ? "membro"
-                : v.status === "pendente"
+                : v.status === "em_conversao"
                   ? "em_conversao"
                   : "visitante",
             culto: v.culto || "",
