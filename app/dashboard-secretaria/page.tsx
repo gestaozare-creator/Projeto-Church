@@ -1629,27 +1629,6 @@ export default function DashboardSecretariaPage() {
                       >
                         {d.month}
                       </div>
-                      {activeLegends.members && d.members !== null && (
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            fontSize: "0.75rem",
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: "8px",
-                              height: "8px",
-                              background: "#2ecc71",
-                              borderRadius: "2px",
-                            }}
-                          />
-                          <span style={{ color: "#fff" }}>Membros:</span>{" "}
-                          <strong>{d.members}</strong>
-                        </div>
-                      )}
                       {activeLegends.visitors && d.visitors !== null && (
                         <div
                           style={{
@@ -1690,6 +1669,27 @@ export default function DashboardSecretariaPage() {
                           />
                           <span style={{ color: "#fff" }}>Em Conversão:</span>{" "}
                           <strong>{d.converting}</strong>
+                        </div>
+                      )}
+                      {activeLegends.members && d.members !== null && (
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            fontSize: "0.75rem",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "8px",
+                              height: "8px",
+                              background: "#2ecc71",
+                              borderRadius: "2px",
+                            }}
+                          />
+                          <span style={{ color: "#fff" }}>Membros:</span>{" "}
+                          <strong>{d.members}</strong>
                         </div>
                       )}
                       {activeLegends.total && d.total !== null && (
