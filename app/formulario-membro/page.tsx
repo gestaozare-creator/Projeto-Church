@@ -13,7 +13,11 @@ export default function FormularioMembro() {
     phone: '', 
     email: '', 
     address: '', 
-    churchId: '' 
+    churchId: '',
+    birth_date: '',
+    marital_status: '',
+    employment_status: '',
+    profession: ''
   });
   
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -118,7 +122,11 @@ export default function FormularioMembro() {
           status: 'pendente',
           church_id: form.churchId,
           integration_date: new Date().toISOString().split('T')[0],
-          photo_url: photo_url
+          photo_url: photo_url,
+          birth_date: form.birth_date || null,
+          marital_status: form.marital_status || null,
+          employment_status: form.employment_status || null,
+          profession: form.profession || null
         });
 
       if (error) {
@@ -216,6 +224,45 @@ export default function FormularioMembro() {
               <div style={{ flex: 1 }}>
                 <label style={labelStyle}>E-mail</label>
                 <input type="email" name="email" value={form.email} onChange={onChange} placeholder="seu@email.com" style={fieldStyle} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <div style={{ flex: '1 1 calc(50% - 12px)', minWidth: '200px' }}>
+                <label style={labelStyle}>Data de Aniversário</label>
+                <input type="date" name="birth_date" value={form.birth_date} onChange={onChange} style={fieldStyle} />
+              </div>
+              
+              <div style={{ flex: '1 1 calc(50% - 12px)', minWidth: '200px' }}>
+                <label style={labelStyle}>Estado Civil</label>
+                <select name="marital_status" value={form.marital_status} onChange={onChange} style={fieldStyle}>
+                  <option value="">Selecione...</option>
+                  <option value="Casado(a)">Casado(a)</option>
+                  <option value="Solteiro(a)">Solteiro(a)</option>
+                  <option value="Viúvo(a)">Viúvo(a)</option>
+                  <option value="Divorciado(a)">Divorciado(a)</option>
+                  <option value="Outro">Outro</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <div style={{ flex: '1 1 calc(50% - 12px)', minWidth: '200px' }}>
+                <label style={labelStyle}>Situação Profissional</label>
+                <select name="employment_status" value={form.employment_status} onChange={onChange} style={fieldStyle}>
+                  <option value="">Selecione...</option>
+                  <option value="CLT">Assalariado (CLT)</option>
+                  <option value="Autônomo">Autônomo</option>
+                  <option value="Empresário">Empresário(a)</option>
+                  <option value="Desempregado">Desempregado(a)</option>
+                  <option value="Estudante">Estudante</option>
+                  <option value="Aposentado">Aposentado(a)</option>
+                </select>
+              </div>
+
+              <div style={{ flex: '1 1 calc(50% - 12px)', minWidth: '200px' }}>
+                <label style={labelStyle}>Profissão</label>
+                <input type="text" name="profession" value={form.profession} onChange={onChange} placeholder="Sua profissão" style={fieldStyle} />
               </div>
             </div>
 
