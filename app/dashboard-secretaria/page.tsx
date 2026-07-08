@@ -418,7 +418,9 @@ export default function DashboardSecretariaPage() {
         // Visitantes (tanto cadastrados na triagem local quanto no formulário público online)
         const visitorsOnly = membersDb.filter(
           (m) =>
-            m.function === "Visitante" || m.function === "Visitante (Kids)",
+            m.function === "Visitante" ||
+            m.function === "Visitante (Kids)" ||
+            m.function === "Ainda não definida",
         );
         setVisitors(
           visitorsOnly.map((v) => ({
@@ -599,18 +601,19 @@ export default function DashboardSecretariaPage() {
 
   // --- Funil de Conversão ---
   const funnelData = useMemo(() => {
-    const totalVisits = filteredVisitors.length;
+    const visitando = filteredVisitors.filter(
+      (v) => v.status === "visitante",
+    ).length;
     const converting = filteredVisitors.filter(
       (v) => v.status === "em_conversao",
     ).length;
-    const consolidated = filteredVisitors.filter(
-      (v) => v.status === "membro",
-    ).length;
+
+    const totalVisits = visitando + converting;
 
     return {
-      visitantes: totalVisits,
+      visitantes: visitando,
       emConversao: converting,
-      membros: consolidated,
+      total: totalVisits > 0 ? totalVisits : 1,
     };
   }, [filteredVisitors]);
 
@@ -1143,7 +1146,13 @@ export default function DashboardSecretariaPage() {
                 }}
               >
                 <span>Visitantes</span>
-                <strong>{funnelData.visitantes} (100%)</strong>
+                <strong>
+                  {funnelData.visitantes} (
+                  {funnelData.total > 0
+                    ? ((funnelData.visitantes / funnelData.total) * 100).toFixed(1)
+                    : 0}
+                  %)
+                </strong>
               </div>
               <div
                 style={{
@@ -1156,7 +1165,10 @@ export default function DashboardSecretariaPage() {
                 <div
                   style={{
                     background: "#3b82f6",
-                    width: "100%",
+                    width:
+                      funnelData.total > 0
+                        ? `${(funnelData.visitantes / funnelData.total) * 100}%`
+                        : "0%",
                     height: "100%",
                   }}
                 />
@@ -1174,11 +1186,8 @@ export default function DashboardSecretariaPage() {
                 <span>Em Conversão</span>
                 <strong>
                   {funnelData.emConversao} (
-                  {funnelData.visitantes > 0
-                    ? (
-                        (funnelData.emConversao / funnelData.visitantes) *
-                        100
-                      ).toFixed(1)
+                  {funnelData.total > 0
+                    ? ((funnelData.emConversao / funnelData.total) * 100).toFixed(1)
                     : 0}
                   %)
                 </strong>
@@ -1195,49 +1204,8 @@ export default function DashboardSecretariaPage() {
                   style={{
                     background: "#e67e22",
                     width:
-                      funnelData.visitantes > 0
-                        ? `${(funnelData.emConversao / funnelData.visitantes) * 100}%`
-                        : "0%",
-                    height: "100%",
-                  }}
-                />
-              </div>
-            </div>
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "0.8rem",
-                  marginBottom: "4px",
-                }}
-              >
-                <span>Membros (Consolidados)</span>
-                <strong>
-                  {funnelData.membros} (
-                  {funnelData.visitantes > 0
-                    ? (
-                        (funnelData.membros / funnelData.visitantes) *
-                        100
-                      ).toFixed(1)
-                    : 0}
-                  %)
-                </strong>
-              </div>
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  height: "10px",
-                  borderRadius: "5px",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    background: "#2ecc71",
-                    width:
-                      funnelData.visitantes > 0
-                        ? `${(funnelData.membros / funnelData.visitantes) * 100}%`
+                      funnelData.total > 0
+                        ? `${(funnelData.emConversao / funnelData.total) * 100}%`
                         : "0%",
                     height: "100%",
                   }}
