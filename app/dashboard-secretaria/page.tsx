@@ -1296,22 +1296,6 @@ export default function DashboardSecretariaPage() {
                 style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}
               >
                 <div
-                  onClick={() => setActiveLegends(prev => ({...prev, members: !prev.members}))}
-                  style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", opacity: activeLegends.members ? 1 : 0.5 }}
-                >
-                  <div
-                    style={{
-                      width: "12px",
-                      height: "12px",
-                      background: "#2ecc71",
-                      borderRadius: "3px",
-                    }}
-                  />
-                  <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
-                    Membros
-                  </span>
-                </div>
-                <div
                   onClick={() => setActiveLegends(prev => ({...prev, visitors: !prev.visitors}))}
                   style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", opacity: activeLegends.visitors ? 1 : 0.5 }}
                 >
@@ -1341,6 +1325,22 @@ export default function DashboardSecretariaPage() {
                   />
                   <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
                     Em Conversão
+                  </span>
+                </div>
+                <div
+                  onClick={() => setActiveLegends(prev => ({...prev, members: !prev.members}))}
+                  style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", opacity: activeLegends.members ? 1 : 0.5 }}
+                >
+                  <div
+                    style={{
+                      width: "12px",
+                      height: "12px",
+                      background: "#2ecc71",
+                      borderRadius: "3px",
+                    }}
+                  />
+                  <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+                    Membros
                   </span>
                 </div>
                 <div
