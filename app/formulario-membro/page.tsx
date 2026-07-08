@@ -23,6 +23,7 @@ export default function FormularioMembro() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customProfession, setCustomProfession] = useState('');
 
   const [isLocked, setIsLocked] = useState(false);
 
@@ -126,7 +127,7 @@ export default function FormularioMembro() {
           birth_date: form.birth_date || null,
           marital_status: form.marital_status || null,
           employment_status: form.employment_status || null,
-          profession: form.profession || null
+          profession: form.profession === 'Outra' ? customProfession : (form.profession || null)
         });
 
       if (error) {
@@ -229,7 +230,7 @@ export default function FormularioMembro() {
 
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
               <div style={{ flex: '1 1 calc(50% - 12px)', minWidth: '200px' }}>
-                <label style={labelStyle}>Data de Aniversário</label>
+                <label style={labelStyle}>Data de Nascimento</label>
                 <input type="date" name="birth_date" value={form.birth_date} onChange={onChange} style={fieldStyle} />
               </div>
               
@@ -262,7 +263,31 @@ export default function FormularioMembro() {
 
               <div style={{ flex: '1 1 calc(50% - 12px)', minWidth: '200px' }}>
                 <label style={labelStyle}>Profissão</label>
-                <input type="text" name="profession" value={form.profession} onChange={onChange} placeholder="Sua profissão" style={fieldStyle} />
+                <select name="profession" value={form.profession} onChange={onChange} style={fieldStyle}>
+                  <option value="">Selecione...</option>
+                  <option value="Administrador(a)">Administrador(a)</option>
+                  <option value="Advogado(a)">Advogado(a)</option>
+                  <option value="Arquiteto(a)">Arquiteto(a)</option>
+                  <option value="Assistente Social">Assistente Social</option>
+                  <option value="Comerciante">Comerciante</option>
+                  <option value="Contador(a)">Contador(a)</option>
+                  <option value="Designer">Designer</option>
+                  <option value="Desenvolvedor(a) / T.I.">Desenvolvedor(a) / T.I.</option>
+                  <option value="Enfermeiro(a)">Enfermeiro(a)</option>
+                  <option value="Engenheiro(a)">Engenheiro(a)</option>
+                  <option value="Fisioterapeuta">Fisioterapeuta</option>
+                  <option value="Médico(a)">Médico(a)</option>
+                  <option value="Motorista">Motorista</option>
+                  <option value="Odontologista">Odontologista</option>
+                  <option value="Pedreiro/Mestre de Obras">Pedreiro/Mestre de Obras</option>
+                  <option value="Professor(a)">Professor(a)</option>
+                  <option value="Psicólogo(a)">Psicólogo(a)</option>
+                  <option value="Vendedor(a)">Vendedor(a)</option>
+                  <option value="Outra">Outra (Especificar)</option>
+                </select>
+                {form.profession === 'Outra' && (
+                  <input type="text" value={customProfession} onChange={e => setCustomProfession(e.target.value)} placeholder="Digite sua profissão" style={{ ...fieldStyle, marginTop: '8px' }} />
+                )}
               </div>
             </div>
 
