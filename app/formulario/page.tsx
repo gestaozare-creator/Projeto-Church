@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 
 export default function FormularioVisitante() {
   const [step, setStep] = useState<'form' | 'visit' | 'success'>('form');
-  const [churches, setChurches] = useState<{ id: string; name: string }[]>([]);
+  const [churches, setChurches] = useState<any[]>([]);
   const [services, setServices] = useState<{ id: string; church_id: string; name: string; day_of_week: string; time: string }[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -26,7 +26,15 @@ export default function FormularioVisitante() {
   // Carrega as igrejas e os cultos do banco de dados
   useEffect(() => {
     async function loadData() {
-      const { data: churchesDb } = await supabase.from('churches').select('id, name');
+      const { data: churchesDb } = await supabase.from('churches').select(`
+        id, 
+        name, 
+        logo_url,
+        ministries (
+          name,
+          logo_url
+        )
+      `);
       const { data: servicesDb } = await supabase.from('church_services').select('*');
       
       if (churchesDb) {
@@ -155,12 +163,21 @@ export default function FormularioVisitante() {
     );
   }
 
+  const activeChurch = churches.find(c => c.id === form.churchId);
+  const activeLogo = activeChurch?.logo_url || activeChurch?.ministries?.logo_url;
+  const activeMinistryName = activeChurch?.ministries?.name;
+
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', padding: '20px' }}>
+    <div style={{ minHeight: '100vh', width: '100%', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', padding: '20px' }}>
       <div style={{ background: 'rgba(255,255,255,0.95)', borderRadius: '20px', padding: '40px', maxWidth: '480px', width: '100%', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }}>
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <h1 style={{ fontSize: '1.8rem', color: '#0f172a', marginBottom: '5px' }}>ChurchFlow</h1>
-          <p style={{ color: '#64748b', fontSize: '0.95rem' }}>Ficha de Visitante</p>
+          {activeLogo && (
+            <img src={activeLogo} alt="Logo da Igreja" style={{ maxWidth: '140px', maxHeight: '140px', objectFit: 'contain', marginBottom: '15px' }} />
+          )}
+          {activeMinistryName && (
+            <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#3b82f6', letterSpacing: '0.5px', marginBottom: '4px', textTransform: 'uppercase' }}>{activeMinistryName}</div>
+          )}
+          <h1 style={{ fontSize: '1.5rem', color: '#0f172a', marginBottom: '5px' }}>Ficha de Visitante</h1>
           <div style={{ width: '50px', height: '3px', background: '#3b82f6', margin: '15px auto 0', borderRadius: '2px' }}></div>
         </div>
 
