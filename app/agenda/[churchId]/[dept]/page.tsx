@@ -225,15 +225,15 @@ export default function AgendaDeptPage() {
                 <div style={{ textAlign: "center", padding: "40px 0", color: "rgba(255,255,255,0.3)" }}>Nenhuma escala encontrada para este dia.</div>
               ) : (
                 <div style={{ background: `${deptConfig.color}15`, borderRadius: "14px", padding: "18px", border: `1px solid ${deptConfig.color}30` }}>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "18px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))", gap: "15px", justifyItems: "center" }}>
                     {entries.map(({ role, id }: any) => (
-                      <div key={`${role}-${id}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", minWidth: "75px" }}>
+                      <div key={`${role}-${id}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", width: "100%", textAlign: "center" }}>
                         <div style={{ width: "52px", height: "52px", borderRadius: "50%", background: `linear-gradient(135deg, ${deptConfig.color}, ${deptConfig.color}88)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.4rem", fontWeight: 800, color: "#fff", boxShadow: `0 4px 16px ${deptConfig.color}50` }}>
                           {getMemberInitial(id)}
                         </div>
-                        <div style={{ textAlign: "center" }}>
-                          <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "#fff" }}>{getMemberName(id)}</div>
-                          <div style={{ fontSize: "0.7rem", color: deptConfig.color }}>{deptConfig.roles[role] || "•"} {role}</div>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                          <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "#fff", lineHeight: "1.2", marginBottom: "3px", wordBreak: "break-word" }}>{getMemberName(id)}</div>
+                          <div style={{ fontSize: "0.65rem", color: deptConfig.color, lineHeight: "1.2", opacity: 0.9 }}>{deptConfig.roles[role] || "•"} {role}</div>
                         </div>
                       </div>
                     ))}
