@@ -15,6 +15,10 @@ export default function FormularioMembro() {
     address: '', 
     churchId: '' 
   });
+  
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [isLocked, setIsLocked] = useState(false);
 
@@ -52,6 +56,22 @@ export default function FormularioMembro() {
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm(p => ({ ...p, [e.target.name]: e.target.value }));
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        alert('A foto deve ter no máximo 5MB.');
+        return;
+      }
+      setPhotoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -59,28 +79,58 @@ export default function FormularioMembro() {
       alert('Nenhuma igreja selecionada ou disponível.');
       return;
     }
+    
+    setIsSubmitting(true);
 
-    const { error } = await supabase
-      .from('members')
-      .insert({
-        id: 'm_' + Date.now().toString(), // Mapeamento correto de ID único
-        name: form.name,
-        phone: form.phone,
-        email: form.email || null,
-        address: form.address,
-        function: 'Membro',
-        ministry: '',
-        status: 'pendente', // Aguardando aprovação
-        church_id: form.churchId,
-        integration_date: new Date().toISOString().split('T')[0] // Define data padrão do cadastro
-      });
+    let photo_url = null;
 
-    if (error) {
-      alert('Erro ao enviar dados de cadastro: ' + error.message);
-      return;
+    try {
+      if (photoFile) {
+        const fileExt = photoFile.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+        const filePath = `members/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, photoFile);
+
+        if (uploadError) {
+          throw new Error('Erro ao fazer upload da foto: ' + uploadError.message);
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(filePath);
+
+        photo_url = publicUrlData.publicUrl;
+      }
+
+      const { error } = await supabase
+        .from('members')
+        .insert({
+          id: 'm_' + Date.now().toString(),
+          name: form.name,
+          phone: form.phone,
+          email: form.email || null,
+          address: form.address,
+          function: 'Membro',
+          ministry: '',
+          status: 'pendente',
+          church_id: form.churchId,
+          integration_date: new Date().toISOString().split('T')[0],
+          photo_url: photo_url
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      setStep('success');
+    } catch (err: any) {
+      alert('Erro ao enviar dados de cadastro: ' + err.message);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setStep('success');
   };
 
   const fieldStyle: React.CSSProperties = {
@@ -122,6 +172,37 @@ export default function FormularioMembro() {
           <div style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>Carregando congregações...</div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            
+            {/* INSTRUÇÕES E UPLOAD DA FOTO */}
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: '700', color: '#0f172a' }}>📷 Foto de Perfil (Para Carteirinha)</label>
+              
+              <ul style={{ fontSize: '0.75rem', color: '#64748b', margin: 0, paddingLeft: '20px', lineHeight: '1.4' }}>
+                <li>Tire uma foto bem iluminada do seu rosto.</li>
+                <li>Evite usar óculos escuros, bonés ou chapéus.</li>
+                <li>Prefira fundos neutros (como uma parede branca).</li>
+                <li>Formatos aceitos: JPG ou PNG (Máx 5MB).</li>
+              </ul>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '8px' }}>
+                <div style={{ 
+                  width: '80px', height: '80px', borderRadius: '12px', 
+                  background: photoPreview ? `url(${photoPreview}) center/cover` : '#e2e8f0', 
+                  border: '2px dashed #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                }}>
+                  {!photoPreview && <span style={{ fontSize: '1.5rem', color: '#94a3b8' }}>👤</span>}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <input 
+                    type="file" 
+                    accept="image/png, image/jpeg, image/jpg" 
+                    onChange={handlePhotoChange} 
+                    style={{ fontSize: '0.8rem', width: '100%' }} 
+                  />
+                </div>
+              </div>
+            </div>
+
             <div>
               <label style={labelStyle}>Nome Completo *</label>
               <input type="text" name="name" value={form.name} onChange={onChange} placeholder="Seu nome completo" style={fieldStyle} required />
@@ -160,13 +241,13 @@ export default function FormularioMembro() {
               ℹ️ Após aprovação, a secretaria da igreja definirá seu <strong>ministério</strong> e <strong>função</strong>.
             </div>
 
-            <button type="submit" style={{
+            <button type="submit" disabled={isSubmitting} style={{
               marginTop: '4px', padding: '14px', borderRadius: '12px', border: 'none',
-              background: 'linear-gradient(135deg, #3b82f6, #2563eb)', color: '#fff',
-              fontSize: '1rem', fontWeight: '700', cursor: 'pointer', letterSpacing: '0.5px',
-              boxShadow: '0 4px 15px rgba(59,130,246,0.4)', transition: 'transform 0.2s'
+              background: isSubmitting ? '#94a3b8' : 'linear-gradient(135deg, #3b82f6, #2563eb)', color: '#fff',
+              fontSize: '1rem', fontWeight: '700', cursor: isSubmitting ? 'not-allowed' : 'pointer', letterSpacing: '0.5px',
+              boxShadow: isSubmitting ? 'none' : '0 4px 15px rgba(59,130,246,0.4)', transition: 'transform 0.2s'
             }}>
-              Enviar Cadastro
+              {isSubmitting ? 'Enviando...' : 'Enviar Cadastro'}
             </button>
 
             <p style={{ textAlign: 'center', fontSize: '0.72rem', color: '#94a3b8' }}>
