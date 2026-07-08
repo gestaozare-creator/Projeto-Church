@@ -345,6 +345,12 @@ export default function DashboardSecretariaPage() {
   const [cmpYear2, setCmpYear2] = useState("2025");
   const [chartType, setChartType] = useState<"barra" | "linha">("linha");
   const [hoveredMonthIdx, setHoveredMonthIdx] = useState<number | null>(null);
+  const [activeLegends, setActiveLegends] = useState({
+    members: true,
+    visitors: true,
+    converting: true,
+    total: true,
+  });
 
   useEffect(() => {
     if (!canSeeAllChurches && currentUser?.churchId) {
@@ -679,7 +685,12 @@ export default function DashboardSecretariaPage() {
   }, [filteredMembers, filteredVisitors, cmpYear1, months]);
 
   const maxTypeValues = Math.max(
-    ...comparativeData.map((d) => Math.max(d.members || 0, d.visitors || 0, d.converting || 0, d.total || 0)),
+    ...comparativeData.map((d) => Math.max(
+      activeLegends.members ? (d.members || 0) : 0,
+      activeLegends.visitors ? (d.visitors || 0) : 0,
+      activeLegends.converting ? (d.converting || 0) : 0,
+      activeLegends.total ? (d.total || 0) : 0
+    )),
     1,
   );
 
@@ -711,12 +722,8 @@ export default function DashboardSecretariaPage() {
         continue;
       }
       path += ` M ${seg[0].x} ${seg[0].y}`;
-      for (let i = 0; i < seg.length - 1; i++) {
-        const p0 = i > 0 ? seg[i - 1] : seg[0];
-        const p1 = seg[i];
-        const p2 = seg[i + 1];
-        const p3 = i !== seg.length - 2 ? seg[i + 2] : p2;
-        path += ` C ${p1.x + (p2.x - p0.x) / 6} ${p1.y + (p2.y - p0.y) / 6}, ${p2.x - (p3.x - p1.x) / 6} ${p2.y - (p3.y - p1.y) / 6}, ${p2.x} ${p2.y}`;
+      for (let i = 1; i < seg.length; i++) {
+        path += ` L ${seg[i].x} ${seg[i].y}`;
       }
     }
     return path;
@@ -1077,7 +1084,7 @@ export default function DashboardSecretariaPage() {
 
               </div>
 
-      {/* GRÁFICO 1: COMPARATIVO GERAL (AGORA APENAS MEMBROS VS VISITANTES) */}
+      {/* GRÁFICO 1: EVOLUÇÃO MENSAL */}
       <div
         style={{
           display: "flex",
@@ -1085,160 +1092,6 @@ export default function DashboardSecretariaPage() {
           flexWrap: "wrap",
         }}
       >
-        {/* Funil de Visitantes */}
-        <div
-          className="glass"
-          style={{
-            flex: "1 1 300px",
-            padding: "20px",
-            borderRadius: "14px",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <h4
-            style={{
-              fontSize: "0.9rem",
-              margin: "0 0 16px 0",
-              color: "var(--text-secondary)",
-            }}
-          >
-            🎯 Funil de Conversão (Visitantes)
-          </h4>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "14px",
-              flex: 1,
-              justifyContent: "center",
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "0.8rem",
-                  marginBottom: "4px",
-                }}
-              >
-                <span>Visitantes</span>
-                <strong>{funnelData.visitantes} (100%)</strong>
-              </div>
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  height: "10px",
-                  borderRadius: "5px",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    background: "#3b82f6",
-                    width: "100%",
-                    height: "100%",
-                  }}
-                />
-              </div>
-            </div>
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "0.8rem",
-                  marginBottom: "4px",
-                }}
-              >
-                <span>Em Conversão</span>
-                <strong>
-                  {funnelData.emConversao} (
-                  {funnelData.visitantes > 0
-                    ? (
-                        (funnelData.emConversao / funnelData.visitantes) *
-                        100
-                      ).toFixed(1)
-                    : 0}
-                  %)
-                </strong>
-              </div>
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  height: "10px",
-                  borderRadius: "5px",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    background: "#e67e22",
-                    width:
-                      funnelData.visitantes > 0
-                        ? `${(funnelData.emConversao / funnelData.visitantes) * 100}%`
-                        : "0%",
-                    height: "100%",
-                  }}
-                />
-              </div>
-            </div>
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "0.8rem",
-                  marginBottom: "4px",
-                }}
-              >
-                <span>Membros (Consolidados)</span>
-                <strong>
-                  {funnelData.membros} (
-                  {funnelData.visitantes > 0
-                    ? (
-                        (funnelData.membros / funnelData.visitantes) *
-                        100
-                      ).toFixed(1)
-                    : 0}
-                  %)
-                </strong>
-              </div>
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  height: "10px",
-                  borderRadius: "5px",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    background: "#2ecc71",
-                    width:
-                      funnelData.visitantes > 0
-                        ? `${(funnelData.membros / funnelData.visitantes) * 100}%`
-                        : "0%",
-                    height: "100%",
-                  }}
-                />
-              </div>
-            </div>
-            <p
-              style={{
-                fontSize: "0.7rem",
-                color: "var(--text-secondary)",
-                textAlign: "center",
-                margin: "10px 0 0 0",
-                fontStyle: "italic",
-              }}
-            >
-              A taxa de conversão obedece o período filtrado acima.
-            </p>
-          </div>
-        </div>
-
         <div
           className="glass"
           style={{
@@ -1262,13 +1115,8 @@ export default function DashboardSecretariaPage() {
           >
             <div>
               <h4 style={{ fontSize: "1rem", margin: 0, color: "#fff" }}>
-                👥 Membros vs Visitantes
+                👥 Evolução Mensal de Conversão Visitante e Membros
               </h4>
-              <span
-                style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}
-              >
-                Comparativo do ano {cmpYear1}
-              </span>
             </div>
             <div
               style={{
@@ -1282,7 +1130,8 @@ export default function DashboardSecretariaPage() {
                 style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}
               >
                 <div
-                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                  onClick={() => setActiveLegends(prev => ({...prev, members: !prev.members}))}
+                  style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", opacity: activeLegends.members ? 1 : 0.5 }}
                 >
                   <div
                     style={{
@@ -1297,7 +1146,8 @@ export default function DashboardSecretariaPage() {
                   </span>
                 </div>
                 <div
-                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                  onClick={() => setActiveLegends(prev => ({...prev, visitors: !prev.visitors}))}
+                  style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", opacity: activeLegends.visitors ? 1 : 0.5 }}
                 >
                   <div
                     style={{
@@ -1312,7 +1162,8 @@ export default function DashboardSecretariaPage() {
                   </span>
                 </div>
                 <div
-                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                  onClick={() => setActiveLegends(prev => ({...prev, converting: !prev.converting}))}
+                  style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", opacity: activeLegends.converting ? 1 : 0.5 }}
                 >
                   <div
                     style={{
@@ -1327,7 +1178,8 @@ export default function DashboardSecretariaPage() {
                   </span>
                 </div>
                 <div
-                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                  onClick={() => setActiveLegends(prev => ({...prev, total: !prev.total}))}
+                  style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", opacity: activeLegends.total ? 1 : 0.5 }}
                 >
                   <div
                     style={{
@@ -1409,39 +1261,47 @@ export default function DashboardSecretariaPage() {
                 display: "block",
               }}
             >
-              <path
-                d={buildSmoothLinePath("members", maxTypeValues)}
-                fill="none"
-                stroke="#2ecc71"
-                strokeWidth="2.5"
-                vectorEffect="non-scaling-stroke"
-                strokeLinejoin="round"
-              />
-              <path
-                d={buildSmoothLinePath("visitors", maxTypeValues)}
-                fill="none"
-                stroke="#f1c40f"
-                strokeWidth="2.5"
-                vectorEffect="non-scaling-stroke"
-                strokeLinejoin="round"
-              />
-              <path
-                d={buildSmoothLinePath("converting", maxTypeValues)}
-                fill="none"
-                stroke="#e67e22"
-                strokeWidth="2.5"
-                vectorEffect="non-scaling-stroke"
-                strokeLinejoin="round"
-              />
-              <path
-                d={buildSmoothLinePath("total", maxTypeValues)}
-                fill="none"
-                stroke="#3498db"
-                strokeWidth="2.5"
-                vectorEffect="non-scaling-stroke"
-                strokeLinejoin="round"
-                strokeDasharray="5,5"
-              />
+              {activeLegends.members && (
+                <path
+                  d={buildSmoothLinePath("members", maxTypeValues)}
+                  fill="none"
+                  stroke="#2ecc71"
+                  strokeWidth="2.5"
+                  vectorEffect="non-scaling-stroke"
+                  strokeLinejoin="round"
+                />
+              )}
+              {activeLegends.visitors && (
+                <path
+                  d={buildSmoothLinePath("visitors", maxTypeValues)}
+                  fill="none"
+                  stroke="#f1c40f"
+                  strokeWidth="2.5"
+                  vectorEffect="non-scaling-stroke"
+                  strokeLinejoin="round"
+                />
+              )}
+              {activeLegends.converting && (
+                <path
+                  d={buildSmoothLinePath("converting", maxTypeValues)}
+                  fill="none"
+                  stroke="#e67e22"
+                  strokeWidth="2.5"
+                  vectorEffect="non-scaling-stroke"
+                  strokeLinejoin="round"
+                />
+              )}
+              {activeLegends.total && (
+                <path
+                  d={buildSmoothLinePath("total", maxTypeValues)}
+                  fill="none"
+                  stroke="#3498db"
+                  strokeWidth="2.5"
+                  vectorEffect="non-scaling-stroke"
+                  strokeLinejoin="round"
+                  strokeDasharray="5,5"
+                />
+              )}
             </svg>
 
             {/* Hover Areas */}
@@ -1499,7 +1359,7 @@ export default function DashboardSecretariaPage() {
                     pointerEvents: "none",
                   }}
                 >
-                  {topMembers && (
+                  {activeLegends.members && topMembers && (
                     <div
                       style={{
                         position: "absolute",
@@ -1516,7 +1376,7 @@ export default function DashboardSecretariaPage() {
                       }}
                     />
                   )}
-                  {topVisitors && (
+                  {activeLegends.visitors && topVisitors && (
                     <div
                       style={{
                         position: "absolute",
@@ -1533,7 +1393,7 @@ export default function DashboardSecretariaPage() {
                       }}
                     />
                   )}
-                  {topConverting && (
+                  {activeLegends.converting && topConverting && (
                     <div
                       style={{
                         position: "absolute",
@@ -1550,7 +1410,7 @@ export default function DashboardSecretariaPage() {
                       }}
                     />
                   )}
-                  {topTotal && (
+                  {activeLegends.total && topTotal && (
                     <div
                       style={{
                         position: "absolute",
@@ -1601,7 +1461,7 @@ export default function DashboardSecretariaPage() {
                       >
                         {d.month}
                       </div>
-                      {d.members !== null && (
+                      {activeLegends.members && d.members !== null && (
                         <div
                           style={{
                             display: "flex",
@@ -1622,7 +1482,7 @@ export default function DashboardSecretariaPage() {
                           <strong>{d.members}</strong>
                         </div>
                       )}
-                      {d.visitors !== null && (
+                      {activeLegends.visitors && d.visitors !== null && (
                         <div
                           style={{
                             display: "flex",
@@ -1643,7 +1503,7 @@ export default function DashboardSecretariaPage() {
                           <strong>{d.visitors}</strong>
                         </div>
                       )}
-                      {d.converting !== null && (
+                      {activeLegends.converting && d.converting !== null && (
                         <div
                           style={{
                             display: "flex",
@@ -1664,7 +1524,7 @@ export default function DashboardSecretariaPage() {
                           <strong>{d.converting}</strong>
                         </div>
                       )}
-                      {d.total !== null && (
+                      {activeLegends.total && d.total !== null && (
                         <div
                           style={{
                             display: "flex",
