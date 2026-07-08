@@ -16,6 +16,7 @@ export default function IgrejasPage() {
   
   const [showModal, setShowModal] = useState(false);
   const [showMinistryModal, setShowMinistryModal] = useState(false);
+  const [editingMinistryData, setEditingMinistryData] = useState<any>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [initialData, setInitialData] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
@@ -336,7 +337,7 @@ export default function IgrejasPage() {
           </div>
 
           <button 
-            onClick={() => setShowMinistryModal(true)}
+            onClick={() => { setEditingMinistryData(null); setShowMinistryModal(true); }}
             style={{ 
               background: '#9b59b6', color: '#fff', border: 'none', padding: '10px 20px', 
               borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
@@ -507,17 +508,28 @@ export default function IgrejasPage() {
       {/* AGRUPAMENTO DE IGREJAS POR REDE (MINISTÉRIO) */}
       {ministryGroups.map(ministry => {
         const networkChurches = churches.filter(c => c.ministryId === ministry.id);
+        const minData = ministry as any;
         
         return (
           <div key={ministry.id} style={{ marginBottom: '30px' }}>
             <div style={{ padding: '12px 20px', background: 'rgba(155, 89, 182, 0.1)', borderLeft: '4px solid #9b59b6', borderRadius: '8px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h4 style={{ margin: 0, color: '#fff', fontSize: '1.2rem' }}>{ministry.name}</h4>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Pastor Diretor: {(ministry as any).director_pastor_name || 'Não informado'}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                {minData.logo_url && (
+                  <img src={minData.logo_url} alt="Logo da Rede" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.2)' }} />
+                )}
+                <div>
+                  <h4 style={{ margin: 0, color: '#fff', fontSize: '1.2rem' }}>{ministry.name}</h4>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Pastor Diretor: {minData.director_pastor_name || 'Não informado'}</span>
+                </div>
               </div>
-              <span style={{ background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', color: '#fff' }}>
-                {networkChurches.length} igrejas
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <button onClick={() => { setEditingMinistryData(ministry); setShowMinistryModal(true); }} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 12px', borderRadius: '8px', color: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}>
+                  Editar Rede
+                </button>
+                <span style={{ background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', color: '#fff' }}>
+                  {networkChurches.length} igrejas
+                </span>
+              </div>
             </div>
 
             {networkChurches.length === 0 ? (
@@ -563,10 +575,16 @@ export default function IgrejasPage() {
 
       {showMinistryModal && (
         <MinistryFormModal 
-          onClose={() => setShowMinistryModal(false)}
-          onSave={(newMinistry) => {
-            setMinistryGroups([...ministryGroups, newMinistry]);
+          initialData={editingMinistryData}
+          onClose={() => { setShowMinistryModal(false); setEditingMinistryData(null); }}
+          onSave={(savedMinistry) => {
+            if (editingMinistryData) {
+              setMinistryGroups(ministryGroups.map(m => m.id === savedMinistry.id ? savedMinistry : m));
+            } else {
+              setMinistryGroups([...ministryGroups, savedMinistry]);
+            }
             setShowMinistryModal(false);
+            setEditingMinistryData(null);
           }}
         />
       )}
@@ -574,4 +592,3 @@ export default function IgrejasPage() {
     </div>
   );
 }
-
