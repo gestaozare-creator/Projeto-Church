@@ -632,9 +632,12 @@ export default function DashboardSecretariaPage() {
   const comparativeData = useMemo(() => {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth();
+    // Assuming cmpYear1 is the target year they want to view.
     const isPastYear = parseInt(cmpYear1) < currentYear;
     const isCurrentYear = parseInt(cmpYear1) === currentYear;
-    const maxMonthToFill = isPastYear ? 11 : (isCurrentYear ? currentMonth : -1);
+    // Se o sistema estiver atrasado (ex: 2024 local, mas o app testa 2026), vamos garantir que não retorne -1.
+    // Usamos o mês atual para o ano atual, ou 11 para passado, ou 11 para futuro simulado.
+    const maxMonthToFill = isPastYear ? 11 : (isCurrentYear ? currentMonth : currentMonth);
 
     const data = months.map((m, index) => {
       const shouldFill = index <= maxMonthToFill;
@@ -722,8 +725,17 @@ export default function DashboardSecretariaPage() {
         continue;
       }
       path += ` M ${seg[0].x} ${seg[0].y}`;
-      for (let i = 1; i < seg.length; i++) {
-        path += ` L ${seg[i].x} ${seg[i].y}`;
+      for (let i = 0; i < seg.length - 1; i++) {
+        const p0 = i > 0 ? seg[i - 1] : seg[0];
+        const p1 = seg[i];
+        const p2 = seg[i + 1];
+        const p3 = i !== seg.length - 2 ? seg[i + 2] : p2;
+        
+        // Clamp control points to not go below 90%
+        const c1y = Math.min(p1.y + (p2.y - p0.y) / 6, 90);
+        const c2y = Math.min(p2.y - (p3.y - p1.y) / 6, 90);
+        
+        path += ` C ${p1.x + (p2.x - p0.x) / 6} ${c1y}, ${p2.x - (p3.x - p1.x) / 6} ${c2y}, ${p2.x} ${p2.y}`;
       }
     }
     return path;
@@ -1252,6 +1264,8 @@ export default function DashboardSecretariaPage() {
 
             {/* Gráfico SVG */}
             <svg
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
               style={{
                 position: "absolute",
                 inset: 0,
