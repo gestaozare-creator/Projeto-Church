@@ -523,6 +523,44 @@ export default function DashboardSecretariaPage() {
     (m) => m.status === "ativo",
   ).length;
 
+  // --- Gráfico de Situação Profissional ---
+  const employmentStatusData = useMemo(() => {
+    const map = new Map<string, number>();
+    filteredMembers.forEach((m) => {
+      const s = m.employment_status || "Não Informada";
+      map.set(s, (map.get(s) || 0) + 1);
+    });
+
+    const colors = ["#2ecc71", "#3498db", "#9b59b6", "#f1c40f", "#e67e22", "#e74c3c", "#1abc9c", "#34495e"];
+    return Array.from(map.entries())
+      .map(([key, val], i) => ({
+        key,
+        label: key,
+        value: val,
+        color: colors[i % colors.length],
+      }))
+      .sort((a, b) => b.value - a.value);
+  }, [filteredMembers]);
+
+  // --- Gráfico de Profissões ---
+  const professionsData = useMemo(() => {
+    const map = new Map<string, number>();
+    filteredMembers.forEach((m) => {
+      const p = m.profession || "Não Informada";
+      map.set(p, (map.get(p) || 0) + 1);
+    });
+
+    const colors = ["#9b59b6", "#f1c40f", "#1abc9c", "#e74c3c", "#3498db", "#2ecc71", "#e67e22", "#34495e"];
+    return Array.from(map.entries())
+      .map(([key, val], i) => ({
+        key,
+        label: key,
+        value: val,
+        color: colors[i % colors.length],
+      }))
+      .sort((a, b) => b.value - a.value);
+  }, [filteredMembers]);
+
   // --- Gráfico de Funções ---
   const functionsData = useMemo(() => {
     const map = new Map<string, number>();
@@ -1013,6 +1051,17 @@ export default function DashboardSecretariaPage() {
         <DonutChart
           title="🏢 Membros por Funções/Depart."
           data={functionsData}
+          total={totalMembersCount}
+        />
+
+        <DonutChart
+          title="💼 Situação Profissional"
+          data={employmentStatusData}
+          total={totalMembersCount}
+        />
+        <DonutChart
+          title="👷 Profissões"
+          data={professionsData}
           total={totalMembersCount}
         />
 
