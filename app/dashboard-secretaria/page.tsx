@@ -1104,6 +1104,160 @@ export default function DashboardSecretariaPage() {
           flexWrap: "wrap",
         }}
       >
+        {/* Funil de Visitantes */}
+        <div
+          className="glass"
+          style={{
+            flex: "1 1 300px",
+            padding: "20px",
+            borderRadius: "14px",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <h4
+            style={{
+              fontSize: "0.9rem",
+              margin: "0 0 16px 0",
+              color: "var(--text-secondary)",
+            }}
+          >
+            🎯 Funil de Conversão (Visitantes)
+          </h4>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "14px",
+              flex: 1,
+              justifyContent: "center",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "0.8rem",
+                  marginBottom: "4px",
+                }}
+              >
+                <span>Visitantes</span>
+                <strong>{funnelData.visitantes} (100%)</strong>
+              </div>
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  height: "10px",
+                  borderRadius: "5px",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    background: "#3b82f6",
+                    width: "100%",
+                    height: "100%",
+                  }}
+                />
+              </div>
+            </div>
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "0.8rem",
+                  marginBottom: "4px",
+                }}
+              >
+                <span>Em Conversão</span>
+                <strong>
+                  {funnelData.emConversao} (
+                  {funnelData.visitantes > 0
+                    ? (
+                        (funnelData.emConversao / funnelData.visitantes) *
+                        100
+                      ).toFixed(1)
+                    : 0}
+                  %)
+                </strong>
+              </div>
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  height: "10px",
+                  borderRadius: "5px",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    background: "#e67e22",
+                    width:
+                      funnelData.visitantes > 0
+                        ? `${(funnelData.emConversao / funnelData.visitantes) * 100}%`
+                        : "0%",
+                    height: "100%",
+                  }}
+                />
+              </div>
+            </div>
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "0.8rem",
+                  marginBottom: "4px",
+                }}
+              >
+                <span>Membros (Consolidados)</span>
+                <strong>
+                  {funnelData.membros} (
+                  {funnelData.visitantes > 0
+                    ? (
+                        (funnelData.membros / funnelData.visitantes) *
+                        100
+                      ).toFixed(1)
+                    : 0}
+                  %)
+                </strong>
+              </div>
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  height: "10px",
+                  borderRadius: "5px",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    background: "#2ecc71",
+                    width:
+                      funnelData.visitantes > 0
+                        ? `${(funnelData.membros / funnelData.visitantes) * 100}%`
+                        : "0%",
+                    height: "100%",
+                  }}
+                />
+              </div>
+            </div>
+            <p
+              style={{
+                fontSize: "0.7rem",
+                color: "var(--text-secondary)",
+                textAlign: "center",
+                margin: "10px 0 0 0",
+                fontStyle: "italic",
+              }}
+            >
+              A taxa de conversão obedece o período filtrado acima.
+            </p>
+          </div>
+        </div>
+
         <div
           className="glass"
           style={{
