@@ -624,21 +624,29 @@ export default function DashboardSecretariaPage() {
     "Dez",
   ];
   const comparativeData = useMemo(() => {
-    const data = months.map((m) => ({
-      month: m,
-      members: null as number | null,
-      visitors: null as number | null,
-      converting: null as number | null,
-      total: null as number | null,
-    }));
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+    const isPastYear = parseInt(cmpYear1) < currentYear;
+    const isCurrentYear = parseInt(cmpYear1) === currentYear;
+    const maxMonthToFill = isPastYear ? 11 : (isCurrentYear ? currentMonth : -1);
+
+    const data = months.map((m, index) => {
+      const shouldFill = index <= maxMonthToFill;
+      return {
+        month: m,
+        members: shouldFill ? 0 : null,
+        visitors: shouldFill ? 0 : null,
+        converting: shouldFill ? 0 : null,
+        total: shouldFill ? 0 : null,
+      };
+    });
     
     // Membros are members integrated this year
     filteredMembers.forEach((m) => {
       const d = m.integrationDate || "2026-01-01";
       if (d.startsWith(cmpYear1)) {
         const mIdx = parseInt(d.split("-")[1]) - 1;
-        if (data[mIdx]) {
-          if (data[mIdx].members === null) data[mIdx].members = 0;
+        if (data[mIdx] && mIdx <= maxMonthToFill) {
           data[mIdx].members!++;
         }
       }
@@ -648,15 +656,12 @@ export default function DashboardSecretariaPage() {
     filteredVisitors.forEach((v) => {
       if (v.date.startsWith(cmpYear1)) {
         const mIdx = parseInt(v.date.split("-")[1]) - 1;
-        if (data[mIdx]) {
+        if (data[mIdx] && mIdx <= maxMonthToFill) {
           if (v.status === "visitante") {
-            if (data[mIdx].visitors === null) data[mIdx].visitors = 0;
             data[mIdx].visitors!++;
           } else if (v.status === "em_conversao") {
-            if (data[mIdx].converting === null) data[mIdx].converting = 0;
             data[mIdx].converting!++;
           } else if (v.status === "membro") {
-            if (data[mIdx].members === null) data[mIdx].members = 0;
             data[mIdx].members!++;
           }
         }
@@ -671,7 +676,7 @@ export default function DashboardSecretariaPage() {
     });
 
     return data;
-  }, [filteredMembers, filteredVisitors, cmpYear1]);
+  }, [filteredMembers, filteredVisitors, cmpYear1, months]);
 
   const maxTypeValues = Math.max(
     ...comparativeData.map((d) => Math.max(d.members || 0, d.visitors || 0, d.converting || 0, d.total || 0)),
