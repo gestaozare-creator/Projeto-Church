@@ -1133,234 +1133,82 @@ export default function DashboardSecretariaPage() {
               justifyContent: "center",
             }}
           >
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "0.8rem",
-                  marginBottom: "4px",
-                }}
-              >
-                <span>Visitantes</span>
-                <strong>{funnelData.visitantes} (100%)</strong>
-              </div>
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  height: "10px",
-                  borderRadius: "5px",
-                  overflow: "hidden",
-                }}
-              >
+                          <div>
                 <div
                   style={{
-                    background: "#3b82f6",
-                    width: "100%",
-                    height: "100%",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "0.8rem",
+                    marginBottom: "4px",
                   }}
-                />
-              </div>
-            </div>
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "0.8rem",
-                  marginBottom: "4px",
-                }}
-              >
-                <span>Em Conversão</span>
-                <strong>
-                  {funnelData.emConversao} (
-                  {funnelData.visitantes > 0
-                    ? (
-                        (funnelData.emConversao / funnelData.visitantes) *
-                        100
-                      ).toFixed(1)
-                    : 0}
-                  %)
-                </strong>
-              </div>
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  height: "10px",
-                  borderRadius: "5px",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    background: "#e67e22",
-                    width:
-                      funnelData.visitantes > 0
-                        ? `${(funnelData.emConversao / funnelData.visitantes) * 100}%`
-                        : "0%",
-                    height: "100%",
-                  }}
-                />
-              </div>
-            </div>
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "0.8rem",
-                  marginBottom: "4px",
-                }}
-              >
-                <span>Membros (Consolidados)</span>
-                <strong>
-                  {funnelData.membros} (
-                  {funnelData.visitantes > 0
-                    ? (
-                        (funnelData.membros / funnelData.visitantes) *
-                        100
-                      ).toFixed(1)
-                    : 0}
-                  %)
-                </strong>
-              </div>
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  height: "10px",
-                  borderRadius: "5px",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    background: "#2ecc71",
-                    width:
-                      funnelData.visitantes > 0
-                        ? `${(funnelData.membros / funnelData.visitantes) * 100}%`
-                        : "0%",
-                    height: "100%",
-                  }}
-                />
-              </div>
-            </div>
-            <p
-              style={{
-                fontSize: "0.7rem",
-                color: "var(--text-secondary)",
-                textAlign: "center",
-                margin: "10px 0 0 0",
-                fontStyle: "italic",
-              }}
-            >
-              A taxa de conversão obedece o período filtrado acima.
-            </p>
-          </div>
-        </div>
-
-        <div
-          className="glass"
-          style={{
-            flex: "2.3 1 500px",
-            padding: "20px",
-            borderRadius: "14px",
-            display: "flex",
-            flexDirection: "column",
-            minHeight: "300px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "20px",
-              flexWrap: "wrap",
-              gap: "10px",
-            }}
-          >
-            <div>
-              <h4 style={{ fontSize: "1rem", margin: 0, color: "#fff" }}>
-                👥 Evolução Mensal de Conversão Visitante e Membros
-              </h4>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                gap: "16px",
-                alignItems: "center",
-                flexWrap: "wrap",
-              }}
-            >
-              <div
-                style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}
-              >
-                <div
-                  onClick={() => setActiveLegends(prev => ({...prev, visitors: !prev.visitors}))}
-                  style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", opacity: activeLegends.visitors ? 1 : 0.5 }}
                 >
-                  <div
-                    style={{
-                      width: "12px",
-                      height: "12px",
-                      background: "#f1c40f",
-                      borderRadius: "3px",
-                    }}
-                  />
-                  <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
-                    Visitantes
-                  </span>
+                  <span>Visitantes</span>
+                  <strong>
+                    {funnelData.visitantes} (
+                    {funnelData.total > 0
+                      ? ((funnelData.visitantes / funnelData.total) * 100).toFixed(1)
+                      : 0}
+                    %)
+                  </strong>
                 </div>
                 <div
-                  onClick={() => setActiveLegends(prev => ({...prev, converting: !prev.converting}))}
-                  style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", opacity: activeLegends.converting ? 1 : 0.5 }}
+                  style={{
+                    background: "rgba(255,255,255,0.05)",
+                    height: "10px",
+                    borderRadius: "5px",
+                    overflow: "hidden",
+                  }}
                 >
                   <div
                     style={{
-                      width: "12px",
-                      height: "12px",
+                      background: "#3b82f6",
+                      width:
+                        funnelData.total > 0
+                          ? `${(funnelData.visitantes / funnelData.total) * 100}%`
+                          : "0%",
+                      height: "100%",
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "0.8rem",
+                    marginBottom: "4px",
+                  }}
+                >
+                  <span>Em Conversão</span>
+                  <strong>
+                    {funnelData.emConversao} (
+                    {funnelData.total > 0
+                      ? ((funnelData.emConversao / funnelData.total) * 100).toFixed(1)
+                      : 0}
+                    %)
+                  </strong>
+                </div>
+                <div
+                  style={{
+                    background: "rgba(255,255,255,0.05)",
+                    height: "10px",
+                    borderRadius: "5px",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
                       background: "#e67e22",
-                      borderRadius: "3px",
+                      width:
+                        funnelData.total > 0
+                          ? `${(funnelData.emConversao / funnelData.total) * 100}%`
+                          : "0%",
+                      height: "100%",
                     }}
                   />
-                  <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
-                    Em Conversão
-                  </span>
-                </div>
-                <div
-                  onClick={() => setActiveLegends(prev => ({...prev, members: !prev.members}))}
-                  style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", opacity: activeLegends.members ? 1 : 0.5 }}
-                >
-                  <div
-                    style={{
-                      width: "12px",
-                      height: "12px",
-                      background: "#2ecc71",
-                      borderRadius: "3px",
-                    }}
-                  />
-                  <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
-                    Membros
-                  </span>
-                </div>
-                <div
-                  onClick={() => setActiveLegends(prev => ({...prev, total: !prev.total}))}
-                  style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", opacity: activeLegends.total ? 1 : 0.5 }}
-                >
-                  <div
-                    style={{
-                      width: "12px",
-                      height: "12px",
-                      background: "#3498db",
-                      borderRadius: "3px",
-                    }}
-                  />
-                  <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
-                    Total
-                  </span>
                 </div>
               </div>
-            </div>
           </div>
 
           <div
