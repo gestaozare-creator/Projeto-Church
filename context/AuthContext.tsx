@@ -49,7 +49,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setCurrentUser(null);
         setLoading(false);
-        const isPublic = pathname === '/login' || pathname?.startsWith('/formulario') || pathname?.startsWith('/agenda');
+        const isAgendaPublicScale = pathname?.match(/^\/agenda\/[^/]+\/[^/]+$/);
+        const isPublic = pathname === '/login' || pathname?.startsWith('/formulario') || isAgendaPublicScale;
         if (!isPublic) {
           router.push('/login');
         }
@@ -115,7 +116,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Redirecionamento de proteção de rotas
   useEffect(() => {
-    const isPublic = pathname === '/login' || pathname?.startsWith('/formulario') || pathname?.startsWith('/agenda');
+    const isAgendaPublicScale = pathname?.match(/^\/agenda\/[^/]+\/[^/]+$/);
+    const isPublic = pathname === '/login' || pathname?.startsWith('/formulario') || isAgendaPublicScale;
     if (!loading && !currentUser && !isPublic) {
       router.push('/login');
     }

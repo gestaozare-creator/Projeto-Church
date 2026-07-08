@@ -44,7 +44,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
     setActiveMenu(activeMenu === menuName ? '' : menuName);
   };
 
-  const isPublicRoute = pathname?.startsWith('/formulario') || pathname?.startsWith('/agenda');
+  const isAgendaPublicScale = pathname?.match(/^\/agenda\/[^/]+\/[^/]+$/);
+  const isPublicRoute = pathname?.startsWith('/formulario') || isAgendaPublicScale;
   const isLoginRoute = pathname === '/login';
   
   useEffect(() => {
