@@ -845,7 +845,11 @@ export default function InfantilDashboardPage() {
                 </button>
               </div>
             )}
-{/* ABA 4: ESCALA DE PROFESSORES (Mantida e integrada) */}
+          </div>
+        </div>
+      )}
+
+      {/* ABA 4: ESCALA DE PROFESSORES (Mantida e integrada) */}
       {activeTab === 'escala' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 1fr) minmax(320px, 2fr)', gap: '20px', alignItems: 'flex-start' }}>
           
