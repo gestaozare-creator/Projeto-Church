@@ -556,6 +556,11 @@ export default function MidiaDashboardPage() {
                   );
                 const dayNumber = parseInt(dateStr.split("-")[2], 10);
                 const isActive = dateStr === activeDate;
+
+                const now = new Date();
+                const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                const isToday = dateStr === todayStr;
+
                 const hasScale = Object.values(
                   escalasGlobais[dateStr] || {},
                 ).some((arr) => arr.length > 0);
@@ -580,12 +585,14 @@ export default function MidiaDashboardPage() {
                           : "rgba(255,255,255,0.02)",
                       border: isActive
                         ? "1px solid var(--primary-light)"
-                        : "1px solid rgba(255,255,255,0.05)",
+                        : isToday 
+                          ? "1px solid rgba(255, 255, 255, 0.45)"
+                          : "1px solid rgba(255,255,255,0.05)",
                       borderRadius: "6px",
                       cursor: "pointer",
                       fontSize: "0.8rem",
-                      fontWeight: isActive ? "bold" : "normal",
-                      color: isActive ? "#fff" : "var(--sidebar-text)",
+                      fontWeight: isActive || isToday ? "bold" : "normal",
+                      color: isActive ? "#fff" : isToday ? "#fff" : "var(--sidebar-text)",
                       transition: "all 0.2s",
                     }}
                   >

@@ -451,12 +451,13 @@ export default function AgendaPage() {
                       <span style={{ 
                         fontSize: '0.85rem', 
                         fontWeight: isToday ? 'bold' : 'normal', 
-                        color: isToday ? 'var(--primary-light)' : 'var(--text-secondary)',
+                        color: isToday ? '#fff' : 'var(--text-secondary)',
                         alignSelf: 'flex-start',
-                        width: '24px', height: '24px',
+                        width: '28px', height: '28px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         borderRadius: '50%',
-                        background: isToday ? 'rgba(56, 189, 248, 0.2)' : 'transparent'
+                        background: isToday ? 'var(--primary-color)' : 'transparent',
+                        boxShadow: isToday ? '0 0 10px rgba(56,189,248,0.5)' : 'none'
                       }}>
                         {day.getDate()}
                       </span>
