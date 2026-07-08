@@ -1070,10 +1070,21 @@ export default function DashboardSecretariaPage() {
           total={totalMembersCount}
         />
 
+              </div>
+
+      {/* GRÁFICO 1: COMPARATIVO GERAL (AGORA APENAS MEMBROS VS VISITANTES) */}
+      <div
+        style={{
+          display: "flex",
+          gap: "20px",
+          flexWrap: "wrap",
+        }}
+      >
         {/* Funil de Visitantes */}
         <div
           className="glass"
           style={{
+            flex: "1 1 300px",
             padding: "20px",
             borderRadius: "14px",
             display: "flex",
@@ -1222,20 +1233,11 @@ export default function DashboardSecretariaPage() {
             </p>
           </div>
         </div>
-      </div>
 
-      {/* GRÁFICO 1: COMPARATIVO GERAL (AGORA APENAS MEMBROS VS VISITANTES) */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr",
-          gap: "20px",
-          flexWrap: "wrap",
-        }}
-      >
         <div
           className="glass"
           style={{
+            flex: "2.3 1 500px",
             padding: "20px",
             borderRadius: "14px",
             display: "flex",
