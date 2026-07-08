@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 
 export default function FormularioMembro() {
   const [step, setStep] = useState<'form' | 'success'>('form');
-  const [churches, setChurches] = useState<{ id: string; name: string }[]>([]);
+  const [churches, setChurches] = useState<any[]>([]);
   const [loadingChurches, setLoadingChurches] = useState(true);
   
   const [form, setForm] = useState({ 
@@ -32,7 +32,15 @@ export default function FormularioMembro() {
     async function loadChurches() {
       const { data, error } = await supabase
         .from('churches')
-        .select('id, name');
+        .select(`
+          id, 
+          name, 
+          logo_url,
+          ministries (
+            name,
+            logo_url
+          )
+        `);
       
       if (!error && data) {
         setChurches(data);
@@ -167,13 +175,22 @@ export default function FormularioMembro() {
     );
   }
 
+  const activeChurch = churches.find(c => c.id === form.churchId);
+  const activeLogo = activeChurch?.logo_url || activeChurch?.ministries?.logo_url;
+  const activeMinistryName = activeChurch?.ministries?.name;
+
   return (
     <div style={{ minHeight: '100vh', width: '100%', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #0f172a, #1e3a5f)', fontFamily: "'Inter', sans-serif", padding: '20px' }}>
       <div style={{ background: '#fff', borderRadius: '20px', padding: '40px 35px', maxWidth: '480px', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
 
         <div style={{ textAlign: 'center', marginBottom: '25px' }}>
-          <div style={{ fontSize: '1.4rem', fontWeight: '700', color: '#0f172a', letterSpacing: '1px', marginBottom: '4px' }}>CHURCHFLOW</div>
-          <h2 style={{ fontSize: '1.3rem', color: '#1e293b', marginBottom: '6px' }}>📋 Cadastro de Membro</h2>
+          {activeLogo && (
+            <img src={activeLogo} alt="Logo da Igreja" style={{ maxWidth: '140px', maxHeight: '140px', objectFit: 'contain', marginBottom: '15px' }} />
+          )}
+          {activeMinistryName && (
+            <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#3b82f6', letterSpacing: '0.5px', marginBottom: '4px', textTransform: 'uppercase' }}>{activeMinistryName}</div>
+          )}
+          <h2 style={{ fontSize: '1.3rem', color: '#1e293b', marginBottom: '6px' }}>Cadastro de Membro</h2>
           <p style={{ color: '#94a3b8', fontSize: '0.82rem' }}>Preencha seus dados para se cadastrar na igreja</p>
         </div>
 
