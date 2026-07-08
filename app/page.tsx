@@ -125,6 +125,8 @@ export default function Home() {
   const [customMinistry, setCustomMinistry] = useState(false);
   const [customFunctions, setCustomFunctions] = useState<string[]>([]);
   const [customMinistries, setCustomMinistries] = useState<string[]>([]);
+  const [customProfession, setCustomProfession] = useState(false);
+  const [customProfessions, setCustomProfessions] = useState<string[]>([]);
   const [customChurch, setCustomChurch] = useState(false);
   const [newChurchName, setNewChurchName] = useState('');
   const [customChurches, setCustomChurches] = useState<{id:string, name:string}[]>([]);
@@ -205,8 +207,20 @@ export default function Home() {
   const isExp = (d?: string) => { if (!d) return false; const e = new Date(d); e.setFullYear(e.getFullYear()+2); return e < new Date(); };
   const calcExp = (d?: string) => { if (!d) return '—'; const e = new Date(d); e.setFullYear(e.getFullYear()+2); return e.toLocaleDateString('pt-BR'); };
 
-  const openEdit = (m: Member) => { setEditForm({...m}); setPhotoPreview(m.photoUrl||null); setIsCreating(false); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomChurch(false); setIsEditing(true); };
-  const openCreate = () => { setEditForm({ id:'', name:'', function:'Membro', ministry:'Louvor', phone:'', email:'', address:'', integrationDate: new Date().toISOString().split('T')[0], cardValidity: '', churchId: (church && church !== 'ALL') ? church : (currentUser?.churchId || dbChurches[0]?.id || ''), photoUrl:'', status:'ativo' }); setPhotoPreview(null); setIsCreating(true); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomChurch(false); setIsEditing(true); };
+  const openEdit = (m: Member) => { 
+    setEditForm({
+      ...m,
+      birthDate: (m as any).birth_date || '',
+      maritalStatus: (m as any).marital_status || '',
+      employmentStatus: (m as any).employment_status || '',
+      profession: (m as any).profession || ''
+    }); 
+    setPhotoPreview(m.photoUrl||null); setIsCreating(false); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomProfession(false); setCustomChurch(false); setIsEditing(true); 
+  };
+  const openCreate = () => { 
+    setEditForm({ id:'', name:'', function:'Membro', ministry:'Louvor', phone:'', email:'', address:'', integrationDate: new Date().toISOString().split('T')[0], cardValidity: '', churchId: (church && church !== 'ALL') ? church : (currentUser?.churchId || dbChurches[0]?.id || ''), photoUrl:'', status:'ativo', birthDate:'', maritalStatus:'', employmentStatus:'', profession:'' }); 
+    setPhotoPreview(null); setIsCreating(true); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomProfession(false); setCustomChurch(false); setIsEditing(true); 
+  };
 
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -228,7 +242,11 @@ export default function Home() {
       church_id: editForm.churchId && editForm.churchId.length > 5 ? editForm.churchId : ((church && church !== 'ALL') ? church : (currentUser?.churchId || dbChurches[0]?.id || '')),
       integration_date: editForm.integrationDate,
       photo_url: finalPhoto,
-      card_validity: editForm.cardValidity
+      card_validity: editForm.cardValidity,
+      birth_date: editForm.birthDate || null,
+      marital_status: editForm.maritalStatus || null,
+      employment_status: editForm.employmentStatus || null,
+      profession: editForm.profession || null
     };
 
     if (isCreating) {
@@ -554,6 +572,65 @@ export default function Home() {
                         ))}
                         {customMinistries.map(m => <option key={m} value={m}>{m}</option>)}
                         <option value="__new__">➕ Criar novo ministério...</option>
+                      </select>
+                    )}
+                  </div>
+                </div>
+                <div style={{ display:'flex', gap:'10px', marginBottom:'10px' }}>
+                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Data de Nascimento</label><input type="date" name="birthDate" value={editForm.birthDate || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} /></div>
+                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Estado Civil</label>
+                    <select name="maritalStatus" value={editForm.maritalStatus || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }}>
+                      <option value="">Selecione...</option>
+                      <option value="Casado(a)">Casado(a)</option>
+                      <option value="Solteiro(a)">Solteiro(a)</option>
+                      <option value="Viúvo(a)">Viúvo(a)</option>
+                      <option value="Divorciado(a)">Divorciado(a)</option>
+                      <option value="Outro">Outro</option>
+                    </select>
+                  </div>
+                </div>
+                <div style={{ display:'flex', gap:'10px', marginBottom:'10px' }}>
+                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Situação Profissional</label>
+                    <select name="employmentStatus" value={editForm.employmentStatus || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }}>
+                      <option value="">Selecione...</option>
+                      <option value="CLT">Assalariado (CLT)</option>
+                      <option value="Autônomo">Autônomo</option>
+                      <option value="Empresário">Empresário(a)</option>
+                      <option value="Desempregado">Desempregado(a)</option>
+                      <option value="Estudante">Estudante</option>
+                      <option value="Aposentado">Aposentado(a)</option>
+                    </select>
+                  </div>
+                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Profissão</label>
+                    {customProfession ? (
+                      <div style={{ display:'flex', gap:'4px' }}>
+                        <input type="text" placeholder="Qual a profissão?" value={editForm.profession || ''} onChange={e => setEditForm((p:any) => ({...p, profession: e.target.value}))} className="search-input glass-input" style={{ flex:1, padding:'8px' }} autoFocus />
+                        <button type="button" onClick={() => { if (editForm.profession && !customProfessions.includes(editForm.profession)) setCustomProfessions(p => [...p, editForm.profession]); setCustomProfession(false); }} style={{ padding:'6px 10px', borderRadius:'6px', border:'none', background:'#2ecc71', color:'#fff', cursor:'pointer', fontSize:'0.7rem', fontWeight:'600' }}>OK</button>
+                        <button type="button" onClick={() => { setCustomProfession(false); setEditForm((p:any) => ({...p, profession: ''})); }} style={{ padding:'6px 8px', borderRadius:'6px', border:'none', background:'#e74c3c', color:'#fff', cursor:'pointer', fontSize:'0.7rem' }}>X</button>
+                      </div>
+                    ) : (
+                      <select name="profession" value={editForm.profession || ''} onChange={e => { if (e.target.value === '__new__') { setCustomProfession(true); setEditForm((p:any) => ({...p, profession: ''})); } else { onChange(e); }}} className="search-input glass-input" style={{ width:'100%', padding:'8px' }}>
+                        <option value="">Selecione...</option>
+                        <option value="Administrador(a)">Administrador(a)</option>
+                        <option value="Advogado(a)">Advogado(a)</option>
+                        <option value="Arquiteto(a)">Arquiteto(a)</option>
+                        <option value="Assistente Social">Assistente Social</option>
+                        <option value="Comerciante">Comerciante</option>
+                        <option value="Contador(a)">Contador(a)</option>
+                        <option value="Designer">Designer</option>
+                        <option value="Desenvolvedor(a) / T.I.">Desenvolvedor(a) / T.I.</option>
+                        <option value="Enfermeiro(a)">Enfermeiro(a)</option>
+                        <option value="Engenheiro(a)">Engenheiro(a)</option>
+                        <option value="Fisioterapeuta">Fisioterapeuta</option>
+                        <option value="Médico(a)">Médico(a)</option>
+                        <option value="Motorista">Motorista</option>
+                        <option value="Odontologista">Odontologista</option>
+                        <option value="Pedreiro/Mestre de Obras">Pedreiro/Mestre de Obras</option>
+                        <option value="Professor(a)">Professor(a)</option>
+                        <option value="Psicólogo(a)">Psicólogo(a)</option>
+                        <option value="Vendedor(a)">Vendedor(a)</option>
+                        {customProfessions.map(p => <option key={p} value={p}>{p}</option>)}
+                        <option value="__new__">➕ Outra (Especificar)</option>
                       </select>
                     )}
                   </div>
