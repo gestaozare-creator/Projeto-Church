@@ -228,13 +228,13 @@ export default function FormularioMembro() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              <div style={{ flex: '1 1 calc(50% - 12px)', minWidth: '200px' }}>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ flex: 1 }}>
                 <label style={labelStyle}>Data de Nascimento</label>
                 <input type="date" name="birth_date" value={form.birth_date} onChange={onChange} style={fieldStyle} />
               </div>
               
-              <div style={{ flex: '1 1 calc(50% - 12px)', minWidth: '200px' }}>
+              <div style={{ flex: 1 }}>
                 <label style={labelStyle}>Estado Civil</label>
                 <select name="marital_status" value={form.marital_status} onChange={onChange} style={fieldStyle}>
                   <option value="">Selecione...</option>
@@ -247,8 +247,8 @@ export default function FormularioMembro() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              <div style={{ flex: '1 1 calc(50% - 12px)', minWidth: '200px' }}>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ flex: 1 }}>
                 <label style={labelStyle}>Situação Profissional</label>
                 <select name="employment_status" value={form.employment_status} onChange={onChange} style={fieldStyle}>
                   <option value="">Selecione...</option>
@@ -261,7 +261,7 @@ export default function FormularioMembro() {
                 </select>
               </div>
 
-              <div style={{ flex: '1 1 calc(50% - 12px)', minWidth: '200px' }}>
+              <div style={{ flex: 1 }}>
                 <label style={labelStyle}>Profissão</label>
                 <select name="profession" value={form.profession} onChange={onChange} style={fieldStyle}>
                   <option value="">Selecione...</option>
