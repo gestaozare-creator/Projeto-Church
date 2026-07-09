@@ -38,6 +38,17 @@ export default function ContasReceber() {
   const [cultoFilter, setCultoFilter] = useState('ALL');
   const [horarioFilter, setHorarioFilter] = useState('ALL');
 
+  const availableCultos = useMemo(() => {
+    let svcs: any[] = [];
+    if (church === 'ALL') {
+      svcs = churchServices || [];
+    } else {
+      svcs = churchServices?.filter(s => s.church_id === church) || [];
+    }
+    const names = new Set(svcs.map(s => s.name));
+    return Array.from(names).sort();
+  }, [church, churchServices]);
+
   const availableHorarios = useMemo(() => {
     let svcs: any[] = [];
     if (church === 'ALL') {
@@ -49,11 +60,7 @@ export default function ContasReceber() {
       const times = new Set(svcs.map(s => s.time));
       return Array.from(times).sort();
     } else {
-      const dayName = cultoFilter === 'domingo' ? 'Domingo' : 
-                      cultoFilter === 'quarta' ? 'Quarta-feira' : 
-                      cultoFilter === 'sabado' ? 'Sábado' : '';
-      
-      const times = new Set(svcs.filter(s => s.day_of_week === dayName).map(s => s.time));
+      const times = new Set(svcs.filter(s => s.name === cultoFilter).map(s => s.time));
       return Array.from(times).sort();
     }
   }, [church, cultoFilter, churchServices]);
@@ -84,6 +91,17 @@ export default function ContasReceber() {
   const receitasCats: string[] = selectedChurchConfig?.receitas || ['Dízimo', 'Oferta', 'Oferta Oficial', 'Campanha', 'Doação', 'Aluguel de Espaço'];
   const pagamentosCats: string[] = selectedChurchConfig?.pagamentos || ['PIX', 'Dinheiro', 'Cartão de Débito', 'Cartão de Crédito', 'Transferência', 'Boleto', 'Cheque'];
 
+  const availableNewCultos = useMemo(() => {
+    let svcs: any[] = [];
+    if (church === 'ALL') {
+      svcs = churchServices || [];
+    } else {
+      svcs = churchServices?.filter(s => s.church_id === church) || [];
+    }
+    const names = new Set(svcs.map(s => s.name));
+    return Array.from(names).sort();
+  }, [church, churchServices]);
+
   const availableNewHorarios = useMemo(() => {
     if (!selectedNewCulto || selectedNewCulto === 'Fora de Culto') return [];
     
@@ -94,7 +112,7 @@ export default function ContasReceber() {
       svcs = churchServices?.filter(s => s.church_id === church) || [];
     }
 
-    const times = new Set(svcs.filter(s => s.day_of_week === selectedNewCulto).map(s => s.time));
+    const times = new Set(svcs.filter(s => s.name === selectedNewCulto).map(s => s.time));
     return Array.from(times).sort();
   }, [church, selectedNewCulto, churchServices]);
 
@@ -218,9 +236,7 @@ export default function ContasReceber() {
       
       if (cultoFilter !== 'ALL') {
         const desc = t.description.toLowerCase();
-        if (cultoFilter === 'domingo' && !desc.includes('domingo')) return false;
-        if (cultoFilter === 'quarta' && !desc.includes('quarta')) return false;
-        if (cultoFilter === 'sabado' && !desc.includes('sabado') && !desc.includes('sábado')) return false;
+        if (!desc.includes(cultoFilter.toLowerCase())) return false;
       }
       
       if (horarioFilter !== 'ALL') {
@@ -345,9 +361,7 @@ export default function ContasReceber() {
           )}
           <select value={cultoFilter} onChange={e => setCultoFilter(e.target.value)} className="search-input glass-input" style={{ padding: '6px 12px' }}>
             <option value="ALL">Todos os Cultos</option>
-            <option value="domingo">Domingo</option>
-            <option value="quarta">Quarta-feira</option>
-            <option value="sabado">Sábado</option>
+            {availableCultos.map(name => <option key={name} value={name}>{name}</option>)}
           </select>
           <select value={horarioFilter} onChange={e => setHorarioFilter(e.target.value)} className="search-input glass-input" style={{ padding: '6px 12px' }}>
             <option value="ALL">Todos os Horários</option>
@@ -606,13 +620,9 @@ export default function ContasReceber() {
                   <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Culto (Opcional)</label>
                   <select name="culto" value={selectedNewCulto} onChange={e => setSelectedNewCulto(e.target.value)} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
                     <option value="">Fora de Culto</option>
-                    <option value="Domingo">Domingo</option>
-                    <option value="Segunda-feira">Segunda-feira</option>
-                    <option value="Terça-feira">Terça-feira</option>
-                    <option value="Quarta-feira">Quarta-feira</option>
-                    <option value="Quinta-feira">Quinta-feira</option>
-                    <option value="Sexta-feira">Sexta-feira</option>
-                    <option value="Sábado">Sábado</option>
+                    {availableNewCultos.map(name => (
+                      <option key={name} value={name}>{name}</option>
+                    ))}
                   </select>
                 </div>
                 {availableNewHorarios.length > 0 && (
