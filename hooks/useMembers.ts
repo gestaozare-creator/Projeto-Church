@@ -32,6 +32,7 @@ export function useMembers(churchId?: string) {
             ministry: m.ministry || '',
             status: m.status || 'pendente',
             integrationDate: m.integration_date || (m.created_at ? m.created_at.split('T')[0] : ''),
+            birthDate: m.birth_date || '',
             photoUrl: m.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}&background=random`,
             culto: m.culto || '',
             horario: m.horario || ''

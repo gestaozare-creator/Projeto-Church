@@ -37,6 +37,7 @@ export interface Member {
   ministry?: string;
   status?: 'ativo' | 'inativo' | 'visitante' | 'em_conversao' | 'pendente';
   integrationDate?: string;
+  birthDate?: string;
   photoUrl?: string;
   cardValidity?: string;
   culto?: string;

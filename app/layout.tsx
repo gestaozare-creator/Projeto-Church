@@ -110,6 +110,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
                     <div className="sub-menu">
                       <Link href="/dashboard-secretaria" className={`sub-link ${pathname === '/dashboard-secretaria' ? 'active' : ''}`}>📈 Dashboard Secretaria</Link>
                       <Link href="/" className={`sub-link ${pathname === '/' ? 'active' : ''}`}>👥 Membros</Link>
+                      <Link href="/aniversariantes" className={`sub-link ${pathname === '/aniversariantes' ? 'active' : ''}`}>🎂 Aniversariantes</Link>
                       <Link href="/compartilhar" className={`sub-link ${pathname === '/compartilhar' ? 'active' : ''}`} style={{ paddingLeft: '28px', fontSize: '0.82rem' }}>📋 Cadastro Online</Link>
                       <Link href="/mapeamento" className={`sub-link ${pathname === '/mapeamento' ? 'active' : ''}`}>🗺️ Mapeamento</Link>
                       <Link href="/visitantes" className={`sub-link ${pathname === '/visitantes' ? 'active' : ''}`}>👋 Visitantes</Link>
