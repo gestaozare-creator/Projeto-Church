@@ -647,6 +647,7 @@ export default function ContasPagar() {
                     <select name="supplierId" value={selectedSupplier} onChange={e => setSelectedSupplier(e.target.value)} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
                       <option value="">Selecione...</option>
                       {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      <option value="NOVO">➕ Adicionar Novo Fornecedor...</option>
                     </select>
                   )}
                 </div>
