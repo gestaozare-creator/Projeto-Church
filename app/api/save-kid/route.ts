@@ -28,7 +28,6 @@ export async function POST(req: Request) {
       .from('kids')
       .insert({
         id,
-        church_id: churchId,
         name,
         birth_date,
         parent_id: parent_id || null,
