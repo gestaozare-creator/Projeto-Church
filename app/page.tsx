@@ -668,7 +668,7 @@ export default function Home() {
                 </div>
                 <div><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Endereço</label><input type="text" name="address" value={editForm.address} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required /></div>
                 <div style={{ display:'flex', gap:'10px' }}>
-                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Data de Batismo / Integração</label><input type="date" name="integrationDate" value={editForm.integrationDate} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} /></div>
+                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Data de Integração</label><input type="date" name="integrationDate" value={editForm.integrationDate} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} /></div>
                   <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Validade da Carteirinha</label><input type="text" name="cardValidity" value={editForm.cardValidity || ''} onChange={onChange} placeholder="Ex: 12/2026" className="search-input glass-input" style={{ width:'100%', padding:'8px' }} /></div>
                 </div>
               </div>

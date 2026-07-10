@@ -625,7 +625,7 @@ export default function Visitantes() {
               </div>
               <div style={{ display:'flex', gap:'10px' }}>
                 <div style={{ flex:1 }}>
-                  <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Data de Batismo / Integração</label>
+                  <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Data de Integração</label>
                   <input type="date" value={convertForm.integrationDate} onChange={e => setConvertForm((p:any) => ({...p, integrationDate: e.target.value}))} className="search-input glass-input" style={{ width:'100%', padding:'8px', colorScheme: 'dark' }} />
                 </div>
                 <div style={{ flex:1 }}>
