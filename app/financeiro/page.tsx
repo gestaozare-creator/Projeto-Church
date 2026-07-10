@@ -216,6 +216,13 @@ export default function FinanceiroDashboardPage() {
   const [showCompareEntradas, setShowCompareEntradas] = useState(false);
   const [showCompareSaldo, setShowCompareSaldo] = useState(false);
 
+  const [hiddenEvolucaoLines, setHiddenEvolucaoLines] = useState<string[]>([]);
+  const toggleEvolucaoLine = (key: string) => setHiddenEvolucaoLines(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+
+  const [hiddenHistoricoLines, setHiddenHistoricoLines] = useState<string[]>([]);
+  const toggleHistoricoLine = (key: string) => setHiddenHistoricoLines(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+
+
   const [evolucaoChartType, setEvolucaoChartType] = useState<'barra' | 'linha'>('linha');
   const [evolucaoHoveredMonthIdx, setEvolucaoHoveredMonthIdx] = useState<number | null>(null);
 
@@ -513,15 +520,42 @@ export default function FinanceiroDashboardPage() {
       target[matchedDia]! += amount;
       if (target[matchedDia]! > maxValue) maxValue = target[matchedDia]!;
     });
-    
-    return { data: monthsData, max: maxValue || 1, cultos: availableDiasCulto };
-  }, [chartTransactions, chartYear, availableCultos, cultosDaysMap, availableDiasCulto]);
+        const currentYearStr = new Date().getFullYear().toString();
+      const currentMonthIdx = new Date().getMonth();
+
+      const getLimit = (yStr: string) => {
+        if (yStr === currentYearStr) return currentMonthIdx;
+        if (parseInt(yStr) < parseInt(currentYearStr)) return 11;
+        return -1;
+      };
+
+      const currLimit = getLimit(chartYear);
+      const prevLimit = getLimit(prevYear);
+
+      monthsData.forEach((m, idx) => {
+        if (idx <= currLimit) {
+          availableDiasCulto.forEach(culto => {
+            if (m.curr[culto] == null) m.curr[culto] = 0;
+          });
+          if (m.curr['Outros'] == null) m.curr['Outros'] = 0;
+        }
+        if (idx <= prevLimit) {
+          availableDiasCulto.forEach(culto => {
+            if (m.prev[culto] == null) m.prev[culto] = 0;
+          });
+          if (m.prev['Outros'] == null) m.prev['Outros'] = 0;
+        }
+      });
+      
+      return { data: monthsData, max: maxValue || 1, cultos: availableDiasCulto };
+    }, [chartTransactions, chartYear, availableCultos, cultosDaysMap, availableDiasCulto]);
 
   const CULTOS_COLORS = ['#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#1abc9c', '#e74c3c'];
   const getCultoColor = (idx: number, isOutros = false) => isOutros ? '#888888' : CULTOS_COLORS[idx % CULTOS_COLORS.length];
 
   const buildEvolucaoLinePath = (key: string, isPrev: boolean = false) => {
     if (evolucaoCultos.data.length === 0) return '';
+    if (hiddenEvolucaoLines.includes(key)) return '';
     const points = evolucaoCultos.data.map((d: any, i) => {
       const target = isPrev ? d.prev : d.curr;
       const val = target[key];
@@ -595,26 +629,50 @@ export default function FinanceiroDashboardPage() {
       }
     });
 
-    monthsData.forEach(d => {
-      if (d.curr.entradas !== null || d.curr.saidas !== null) {
-        d.curr.saldo = (d.curr.entradas || 0) - (d.curr.saidas || 0);
-        if (d.curr.entradas && d.curr.entradas > maxVal) maxVal = d.curr.entradas;
-        if (d.curr.saidas && d.curr.saidas > maxVal) maxVal = d.curr.saidas;
-        if (Math.abs(d.curr.saldo) > maxVal) maxVal = Math.abs(d.curr.saldo);
-      }
-      if (d.prev.entradas !== null || d.prev.saidas !== null) {
-        d.prev.saldo = (d.prev.entradas || 0) - (d.prev.saidas || 0);
-        if (d.prev.entradas && d.prev.entradas > maxVal) maxVal = d.prev.entradas;
-        if (d.prev.saidas && d.prev.saidas > maxVal) maxVal = d.prev.saidas;
-        if (Math.abs(d.prev.saldo) > maxVal) maxVal = Math.abs(d.prev.saldo);
-      }
-    });
+      const currentYearStr = new Date().getFullYear().toString();
+      const currentMonthIdx = new Date().getMonth();
 
-    return { data: monthsData, max: maxVal || 1 };
-  }, [chartTransactions, chartYear]);
+      const getLimit = (yStr: string) => {
+        if (yStr === currentYearStr) return currentMonthIdx;
+        if (parseInt(yStr) < parseInt(currentYearStr)) return 11;
+        return -1;
+      };
+
+      const currLimit = getLimit(chartYear);
+      const prevLimit = getLimit(prevYear);
+
+      monthsData.forEach((d, idx) => {
+        if (idx <= currLimit) {
+          if (d.curr.entradas === null) d.curr.entradas = 0;
+          if (d.curr.saidas === null) d.curr.saidas = 0;
+          if (d.curr.saldo === null) d.curr.saldo = 0;
+        }
+        if (idx <= prevLimit) {
+          if (d.prev.entradas === null) d.prev.entradas = 0;
+          if (d.prev.saidas === null) d.prev.saidas = 0;
+          if (d.prev.saldo === null) d.prev.saldo = 0;
+        }
+
+        if (d.curr.entradas !== null || d.curr.saidas !== null) {
+          d.curr.saldo = (d.curr.entradas || 0) - (d.curr.saidas || 0);
+          if (d.curr.entradas && d.curr.entradas > maxVal) maxVal = d.curr.entradas;
+          if (d.curr.saidas && d.curr.saidas > maxVal) maxVal = d.curr.saidas;
+          if (Math.abs(d.curr.saldo) > maxVal) maxVal = Math.abs(d.curr.saldo);
+        }
+        if (d.prev.entradas !== null || d.prev.saidas !== null) {
+          d.prev.saldo = (d.prev.entradas || 0) - (d.prev.saidas || 0);
+          if (d.prev.entradas && d.prev.entradas > maxVal) maxVal = d.prev.entradas;
+          if (d.prev.saidas && d.prev.saidas > maxVal) maxVal = d.prev.saidas;
+          if (Math.abs(d.prev.saldo) > maxVal) maxVal = Math.abs(d.prev.saldo);
+        }
+      });
+  
+      return { data: monthsData, max: maxVal || 1 };
+    }, [chartTransactions, chartYear]);
 
   const buildHistoricoLinePath = (key: 'entradas' | 'saidas' | 'saldo', isPrev: boolean = false) => {
     if (historicoMensal.data.length === 0) return '';
+    if (hiddenHistoricoLines.includes(key)) return '';
     const points = historicoMensal.data.map((d: any, i) => {
       const target = isPrev ? d.prev : d.curr;
       const val = target[key as keyof typeof target] as number | null;
@@ -935,10 +993,17 @@ export default function FinanceiroDashboardPage() {
                 >Linha</button>
               </div>
               <div style={{ display: 'flex', gap: '6px', fontSize: '0.65rem', flexWrap: 'wrap' }}>
-                {evolucaoCultos.cultos.map((culto: string, idx: number) => (
-                  <div key={culto} style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><div style={{ width: '8px', height: '8px', background: getCultoColor(idx), borderRadius: '2px' }}/> {culto}</div>
-                ))}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><div style={{ width: '8px', height: '8px', background: '#888888', borderRadius: '2px' }}/> Outros</div>
+                {evolucaoCultos.cultos.map((culto: string, idx: number) => {
+                  const isHidden = hiddenEvolucaoLines.includes(culto);
+                  return (
+                    <div key={culto} style={{ display: 'flex', alignItems: 'center', gap: '2px', cursor: 'pointer', opacity: isHidden ? 0.4 : 1 }} onClick={() => toggleEvolucaoLine(culto)}>
+                      <div style={{ width: '8px', height: '8px', background: getCultoColor(idx), borderRadius: '2px' }}/> {culto}
+                    </div>
+                  );
+                })}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2px', cursor: 'pointer', opacity: hiddenEvolucaoLines.includes('Outros') ? 0.4 : 1 }} onClick={() => toggleEvolucaoLine('Outros')}>
+                  <div style={{ width: '8px', height: '8px', background: '#888888', borderRadius: '2px' }}/> Outros
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '2px', cursor: 'pointer', opacity: showCompareCultos ? 1 : 0.4, marginLeft: '6px' }} onClick={() => setShowCompareCultos(!showCompareCultos)}>
                   <div style={{ width: '8px', height: '8px', border: '1px solid #fff', borderRadius: '2px' }}/> vs {parseInt(chartYear) - 1}
                 </div>
@@ -1062,8 +1127,12 @@ export default function FinanceiroDashboardPage() {
               <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Evolução do período</span>
             </div>
             <div style={{ display: 'flex', gap: '8px', fontSize: '0.65rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '8px', height: '8px', background: '#2ecc71', borderRadius: '2px' }}/> Entradas</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '8px', height: '8px', background: '#e74c3c', borderRadius: '2px' }}/> Saídas</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', opacity: hiddenHistoricoLines.includes('entradas') ? 0.4 : 1 }} onClick={() => toggleHistoricoLine('entradas')}>
+                <div style={{ width: '8px', height: '8px', background: '#2ecc71', borderRadius: '2px' }}/> Entradas
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', opacity: hiddenHistoricoLines.includes('saidas') ? 0.4 : 1 }} onClick={() => toggleHistoricoLine('saidas')}>
+                <div style={{ width: '8px', height: '8px', background: '#e74c3c', borderRadius: '2px' }}/> Saídas
+              </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', opacity: showCompareEntradas ? 1 : 0.4, marginLeft: '6px' }} onClick={() => setShowCompareEntradas(!showCompareEntradas)}>
                 <div style={{ width: '8px', height: '8px', border: '1px solid #fff', borderRadius: '2px' }}/> vs {parseInt(chartYear) - 1}
               </div>
@@ -1167,7 +1236,9 @@ export default function FinanceiroDashboardPage() {
               <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Evolução do Saldo Líquido no período</span>
             </div>
             <div style={{ display: 'flex', gap: '8px', fontSize: '0.65rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '8px', height: '8px', background: '#f1c40f', borderRadius: '2px' }}/> Saldo Atual</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', opacity: hiddenHistoricoLines.includes('saldo') ? 0.4 : 1 }} onClick={() => toggleHistoricoLine('saldo')}>
+                <div style={{ width: '8px', height: '8px', background: '#f1c40f', borderRadius: '2px' }}/> Saldo Atual
+              </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', opacity: showCompareSaldo ? 1 : 0.4, marginLeft: '6px' }} onClick={() => setShowCompareSaldo(!showCompareSaldo)}>
                 <div style={{ width: '8px', height: '8px', border: '1px solid #fff', borderRadius: '2px' }}/> vs {parseInt(chartYear) - 1}
               </div>
