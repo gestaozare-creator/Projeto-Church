@@ -36,7 +36,7 @@ export async function GET(req: Request) {
     const visitorKidIds = checkinIds ? checkinIds.map(c => c.kid_id).filter(id => id) : [];
 
     // Combine kids from parents and checkins
-    let kids = [];
+    let kids: any[] = [];
     
     if (memberIds.length > 0) {
       // Fetch kids of members in chunks of 100 to avoid URL too long
