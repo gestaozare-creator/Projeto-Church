@@ -19,13 +19,42 @@ export async function GET(req: Request) {
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
     
-    // Fetch kids filtered by churchId
-    const { data: kids, error: kidsError } = await supabaseAdmin
-      .from('kids')
-      .select('*')
+    // Fetch members of this church to find kids by parent
+    const { data: members } = await supabaseAdmin
+      .from('members')
+      .select('id')
       .eq('church_id', churchId);
       
-    if (kidsError) throw kidsError;
+    const memberIds = members ? members.map(m => m.id) : [];
+
+    // Fetch kids_checkin to find visitor kids
+    const { data: checkinIds } = await supabaseAdmin
+      .from('kids_checkin')
+      .select('kid_id')
+      .eq('church_id', churchId);
+      
+    const visitorKidIds = checkinIds ? checkinIds.map(c => c.kid_id).filter(id => id) : [];
+
+    // Combine kids from parents and checkins
+    let kids = [];
+    
+    if (memberIds.length > 0) {
+      // Fetch kids of members in chunks of 100 to avoid URL too long
+      const chunk = memberIds.slice(0, 100);
+      const { data: pKids } = await supabaseAdmin.from('kids').select('*').in('parent_id', chunk);
+      if (pKids) kids = [...kids, ...pKids];
+    }
+    
+    if (visitorKidIds.length > 0) {
+      const chunk = visitorKidIds.slice(0, 100);
+      const { data: vKids } = await supabaseAdmin.from('kids').select('*').in('id', chunk);
+      if (vKids) {
+        // filter out kids already added
+        const existingIds = new Set(kids.map(k => k.id));
+        const newKids = vKids.filter(k => !existingIds.has(k.id));
+        kids = [...kids, ...newKids];
+      }
+    }
     
     // Fetch active checkins filtered by churchId
     const { data: checkins, error: checkinsError } = await supabaseAdmin
