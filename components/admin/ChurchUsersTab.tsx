@@ -12,10 +12,11 @@ interface ChurchUser {
 }
 
 const ROLES: Record<string, { label: string; color: string }> = {
-  admin:       { label: '🏠 Pastor Local (Acesso Total)',      color: '#3498db' },
-  secretaria:  { label: '📁 Secretaria (Sem Financeiro)',       color: '#e67e22' },
+  pastor_diretor: { label: '👑 Pastor Diretor (Diretor da Rede)',  color: '#9b59b6' },
+  admin:       { label: '💼 Pastor Local (Acesso Total)',      color: '#3498db' },
+  secretaria:  { label: '📄 Secretaria (Sem Financeiro)',       color: '#e67e22' },
   financeiro:  { label: '💰 Tesoureiro (Financeiro)',           color: '#2ecc71' },
-  kids_leader: { label: '🧸 Líder Kids (Check-in)',             color: '#fd79a8' },
+  kids_leader: { label: '👶 Líder Kids (Check-in)',             color: '#fd79a8' },
 };
 
 type FormMode = 'hidden' | 'create' | 'edit';
@@ -195,6 +196,11 @@ export function ChurchUsersTab({ churchId }: { churchId: string }) {
                   <option key={val} value={val}>{label}</option>
                 ))}
               </select>
+              {formRole === 'pastor_diretor' && (
+                <div style={{ marginTop: '8px', padding: '10px 12px', background: 'rgba(155,89,182,0.1)', border: '1px solid rgba(155,89,182,0.3)', borderRadius: '8px', fontSize: '0.75rem', color: 'rgba(155,89,182,0.9)' }}>
+                  👑 <strong>Pastor Diretor</strong> tem acesso ao <strong>Painel da Rede</strong>, podendo visualizar todas as igrejas da denominação e navegar entre elas para análise completa.
+                </div>
+              )}
             </div>
             <div>
               <label className="input-label">

@@ -286,10 +286,10 @@ function DonutChart({
 }
 
 export default function DashboardSecretariaPage() {
-  const { currentUser, canSeeAllChurches } = useAuth();
+  const { currentUser, canSeeAllChurches, activeChurchId, activeChurchName, exitChurch } = useAuth();
 
   const [church, setChurch] = useState(
-    canSeeAllChurches ? "ALL" : currentUser?.churchId || "",
+    activeChurchId ? activeChurchId : (canSeeAllChurches ? "ALL" : currentUser?.churchId || ""),
   );
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
@@ -353,10 +353,13 @@ export default function DashboardSecretariaPage() {
   });
 
   useEffect(() => {
-    if (!canSeeAllChurches && currentUser?.churchId) {
+    if (activeChurchId) {
+      // Diretor/Master entrou em uma igreja específica via Painel da Rede
+      setChurch(activeChurchId);
+    } else if (!canSeeAllChurches && currentUser?.churchId) {
       setChurch(currentUser.churchId);
     }
-  }, [canSeeAllChurches, currentUser]);
+  }, [activeChurchId, canSeeAllChurches, currentUser]);
 
   const [members, setMembers] = useState<any[]>([]);
   const [visitors, setVisitors] = useState<DBVisitor[]>([]);

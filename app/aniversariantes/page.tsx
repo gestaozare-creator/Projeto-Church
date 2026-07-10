@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useMembers } from '@/hooks/useMembers';
@@ -8,8 +8,17 @@ import { useChurches } from '@/hooks/useChurches';
 import { ChevronLeft, Cake, CalendarHeart, Gift } from 'lucide-react';
 
 export default function AniversariantesPage() {
-  const { currentUser, canSeeAllChurches } = useAuth();
-  const [churchF, setChurchF] = useState(canSeeAllChurches ? 'ALL' : (currentUser?.churchId || ''));
+  const { currentUser, canSeeAllChurches, activeChurchId } = useAuth();
+  const [churchF, setChurchF] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches ? 'ALL' : currentUser?.churchId || ''));
+
+  // Sincronizar filtro de igreja com activeChurchId
+  useEffect(() => {
+    if (activeChurchId) {
+      setChurchF(activeChurchId);
+    } else if (!canSeeAllChurches && currentUser?.churchId) {
+      setChurchF(currentUser.churchId);
+    }
+  }, [activeChurchId, canSeeAllChurches, currentUser]);
   
   const { churches: dbChurches } = useChurches();
   const { members: allMembers, loading } = useMembers();

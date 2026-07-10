@@ -19,14 +19,15 @@ interface FinancialTransaction {
   date: string;
   dueDate?: string;
   paidDate?: string;
+  attachment_url?: string;
 }
 type Transaction = FinancialTransaction;
 
 export default function ContasPagar() {
-  const { currentUser, canSeeAllChurches } = useAuth();
+  const { currentUser, canSeeAllChurches, activeChurchId } = useAuth();
   const { churches, churchServices, suppliers } = useGlobalData();
   
-  const [church, setChurch] = useState(canSeeAllChurches ? 'ALL' : (currentUser?.churchId || ''));
+  const [church, setChurch] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches ? 'ALL' : currentUser?.churchId || ''));
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), 0, 1).toISOString().split('T')[0];
@@ -71,13 +72,16 @@ export default function ContasPagar() {
 
   // Efeito para sincronizar filtro caso a flag mude
   useEffect(() => {
-    if (!canSeeAllChurches && currentUser?.churchId) {
+    if (activeChurchId) {
+      setChurch(activeChurchId);
+    } else if (!canSeeAllChurches && currentUser?.churchId) {
       setChurch(currentUser.churchId);
     }
-  }, [canSeeAllChurches, currentUser]);
+  }, [activeChurchId, canSeeAllChurches, currentUser]);
 
   const [showExpenseModal, setShowExpenseModal] = useState(false);
   const [localTransactions, setLocalTransactions] = useState<Transaction[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function loadTransactions() {
     const { data } = await supabase
@@ -98,7 +102,8 @@ export default function ContasPagar() {
         status: t.status as any,
         date: t.date,
         dueDate: t.due_date || undefined,
-        paidDate: t.paid_date || undefined
+        paidDate: t.paid_date || undefined,
+        attachment_url: t.attachment_url || undefined
       }));
       setLocalTransactions(formatadas);
     } else {
@@ -123,6 +128,7 @@ export default function ContasPagar() {
   const [isAsset, setIsAsset] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState('');
   const [showAssetLabelModal, setShowAssetLabelModal] = useState<any | null>(null);
+  const [newSuppliers, setNewSuppliers] = useState<{id: string, name: string}[]>([]);
 
   // Config dinâmica da igreja selecionada
   const rawConfig = churches?.find((c: any) => c.id === church)?.config;
@@ -136,106 +142,173 @@ export default function ContasPagar() {
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const finalCategory = selectedCategory === 'NOVA' ? formData.get('customCategory') : selectedCategory;
+    setIsSubmitting(true);
     
-    let finalSupplierId = formData.get('supplierId') as string || undefined;
-    if (selectedSupplier === 'NOVO') {
-      finalSupplierId = undefined; // Pularmos a criação inline para manter simples por enquanto
-    }
+    try {
+      const formData = new FormData(e.currentTarget);
+      const finalCategory = selectedCategory === 'NOVA' ? formData.get('customCategory') : selectedCategory;
+      
+      let finalSupplierId = formData.get('supplierId') as string || undefined;
+      if (selectedSupplier === 'NOVO') {
+        const customSupplierName = formData.get('customSupplier') as string;
+        if (customSupplierName) {
+          const { data: newSupplier, error: supError } = await supabase
+            .from('suppliers')
+            .insert({ name: customSupplierName })
+            .select()
+            .single();
+            
+          if (!supError && newSupplier) {
+            finalSupplierId = newSupplier.id;
+            setNewSuppliers(prev => [...prev, { id: newSupplier.id, name: newSupplier.name }]);
+          }
+        }
+      }
 
-    const amount = parseFloat(formData.get('amount') as string) || 0;
-    const descriptionField = formData.get('description') as string;
-    const dateField = formData.get('date') as string;
-    const statusField = formData.get('status') as 'pendente' | 'confirmado';
-    const dueDateField = formData.get('dueDate') as string;
-    const paymentMethodField = formData.get('paymentMethod') as string;
+      const amount = parseFloat(formData.get('amount') as string) || 0;
+      const descriptionField = formData.get('description') as string;
+      const dateField = formData.get('date') as string;
+      const statusField = formData.get('status') as 'pendente' | 'confirmado';
+      const dueDateField = formData.get('dueDate') as string;
+      const paymentMethodField = formData.get('paymentMethod') as string;
 
-    // Verificar se o ID do fornecedor é um UUID válido
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(finalSupplierId || '');
+      // Verificar se o ID do fornecedor é um UUID válido
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(finalSupplierId || '');
 
-    // Gravar no Supabase
-    const { data: newTxDb, error } = await supabase
-      .from('transactions')
-      .insert({
-        church_id: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
-        supplier_id: finalSupplierId,
-        type: 'despesa',
-        category: finalCategory as string,
-        amount: amount,
-        description: descriptionField,
-        date: dateField,
-        paid_date: statusField === 'confirmado' ? dateField : null,
-        due_date: statusField === 'pendente' ? (dueDateField || dateField) : null,
-        status: statusField,
-        payment_method: paymentMethodField
-      })
-      .select()
-      .single();
+      let attachmentUrl = null;
+      const file = formData.get('attachment') as File | null;
+      if (file && file.size > 0) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+        const filePath = `${currentUser?.churchId || 'public'}/${fileName}`;
 
-    if (error || !newTxDb) {
-      alert('Erro ao lançar despesa no banco: ' + error?.message);
-      return;
-    }
+        const { error: uploadError } = await supabase.storage
+          .from('receipts')
+          .upload(filePath, file);
 
-    const newTransaction: Transaction = {
-      id: newTxDb.id,
-      churchId: newTxDb.church_id || '1',
-      supplierId: newTxDb.supplier_id || undefined,
-      type: 'despesa',
-      category: newTxDb.category,
-      amount: Number(newTxDb.amount),
-      description: newTxDb.description || '',
-      date: newTxDb.date,
-      paidDate: newTxDb.paid_date || undefined,
-      dueDate: newTxDb.due_date || undefined,
-      status: newTxDb.status as any,
-      paymentMethod: newTxDb.payment_method || ''
-    };
+        if (uploadError) {
+          throw new Error('Erro ao enviar anexo: ' + uploadError.message);
+        }
 
-    // Registrar no patrimônio se a opção estiver ativa
-    let createdAssetObj = null;
-    if (isAsset) {
-      const assetName = formData.get('assetName') as string;
-      const assetLocation = formData.get('assetLocation') as string;
+        const { data: publicUrlData } = supabase.storage
+          .from('receipts')
+          .getPublicUrl(filePath);
 
-      const { data: newAssetDb, error: assetError } = await supabase
-        .from('assets')
+        attachmentUrl = publicUrlData.publicUrl;
+      }
+
+      // Gravar no Supabase
+      const { data: newTxDb, error } = await supabase
+        .from('transactions')
         .insert({
           church_id: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
-          name: assetName,
+          supplier_id: finalSupplierId,
+          type: 'despesa',
           category: finalCategory as string,
-          condition: 'Novo',
-          location: assetLocation,
-          purchase_value: amount,
-          purchase_date: dateField,
-          expense_id: newTxDb.id
+          amount: amount,
+          description: descriptionField,
+          date: dateField,
+          paid_date: statusField === 'confirmado' ? dateField : null,
+          due_date: statusField === 'pendente' ? (dueDateField || dateField) : null,
+          status: statusField,
+          payment_method: paymentMethodField,
+          attachment_url: attachmentUrl
         })
         .select()
         .single();
 
-      if (assetError) {
-        alert('Despesa lançada, mas erro ao registrar patrimônio: ' + assetError.message);
-      } else if (newAssetDb) {
-        createdAssetObj = {
-          id: newAssetDb.id,
-          churchId: newAssetDb.church_id || '1',
-          name: newAssetDb.name,
-          category: newAssetDb.category,
-          condition: newAssetDb.condition as any,
-          location: newAssetDb.location,
-          purchaseValue: Number(newAssetDb.purchase_value || 0),
-          purchaseDate: newAssetDb.purchase_date || '',
-          expenseId: newAssetDb.expense_id || undefined
-        };
+      if (error || !newTxDb) {
+        throw new Error('Erro ao lançar despesa no banco: ' + error?.message);
       }
+
+      const newTransaction: Transaction = {
+        id: newTxDb.id,
+        churchId: newTxDb.church_id || '1',
+        supplierId: newTxDb.supplier_id || undefined,
+        type: 'despesa',
+        category: newTxDb.category,
+        amount: Number(newTxDb.amount),
+        description: newTxDb.description || '',
+        date: newTxDb.date,
+        paidDate: newTxDb.paid_date || undefined,
+        dueDate: newTxDb.due_date || undefined,
+        status: newTxDb.status as any,
+        paymentMethod: newTxDb.payment_method || '',
+        attachment_url: newTxDb.attachment_url || undefined
+      };
+
+      // Registrar no patrimônio se a opção estiver ativa
+      let createdAssetObj = null;
+      if (isAsset) {
+        const assetName = formData.get('assetName') as string;
+        const assetLocation = formData.get('assetLocation') as string;
+
+        const { data: newAssetDb, error: assetError } = await supabase
+          .from('assets')
+          .insert({
+            church_id: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+            name: assetName,
+            category: finalCategory as string,
+            condition: 'Novo',
+            location: assetLocation,
+            purchase_value: amount,
+            purchase_date: dateField,
+            expense_id: newTxDb.id
+          })
+          .select()
+          .single();
+
+        if (assetError) {
+          alert('Despesa lançada, mas erro ao registrar patrimônio: ' + assetError.message);
+        } else if (newAssetDb) {
+          createdAssetObj = {
+            id: newAssetDb.id,
+            churchId: newAssetDb.church_id || '1',
+            name: newAssetDb.name,
+            category: newAssetDb.category,
+            condition: newAssetDb.condition as any,
+            location: newAssetDb.location,
+            purchaseValue: Number(newAssetDb.purchase_value || 0),
+            purchaseDate: newAssetDb.purchase_date || '',
+            expenseId: newAssetDb.expense_id || undefined
+          };
+        }
+      }
+      
+      setLocalTransactions(prev => [newTransaction, ...prev]);
+      setShowExpenseModal(false);
+      setIsAsset(false);
+      if (createdAssetObj) {
+        setShowAssetLabelModal(createdAssetObj);
+      }
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setLocalTransactions(prev => [newTransaction, ...prev]);
-    setShowExpenseModal(false);
-    setIsAsset(false);
-    if (createdAssetObj) {
-      setShowAssetLabelModal(createdAssetObj);
+  };
+
+  const handleRemoveAttachment = async (transaction: Transaction) => {
+    if (!transaction.attachment_url) return;
+    try {
+      const filePath = transaction.attachment_url.split('/receipts/')[1];
+      if (filePath) {
+        await supabase.storage.from('receipts').remove([filePath]);
+      }
+      
+      const { error } = await supabase
+        .from('transactions')
+        .update({ attachment_url: null })
+        .eq('id', transaction.id);
+        
+      if (error) throw error;
+      
+      setLocalTransactions(prev => prev.map(t => t.id === transaction.id ? { ...t, attachment_url: undefined } : t));
+      if (selectedTransaction?.id === transaction.id) {
+        setSelectedTransaction({ ...selectedTransaction, attachment_url: undefined });
+      }
+    } catch (err: any) {
+      alert('Erro ao remover anexo: ' + err.message);
     }
   };
 
@@ -275,7 +348,11 @@ export default function ContasPagar() {
     return Math.floor((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   };
 
-  const getSupplierName = (id?: string) => id ? suppliers.find(s => s.id === id)?.name || 'Desconhecido' : '-';
+  const getSupplierName = (id?: string) => {
+    if (!id) return '-';
+    const found = suppliers.find(s => s.id === id) || newSuppliers.find(s => s.id === id);
+    return found?.name || 'Desconhecido';
+  };
 
   const expiringSoonCount = pendentes.filter(t => {
     if(!t.dueDate) return false;
@@ -437,7 +514,10 @@ export default function ContasPagar() {
                 style={{ padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer' }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{t.category}</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {t.category}
+                    {t.attachment_url && <span title="Possui anexo" style={{ fontSize: '0.9rem' }}>📎</span>}
+                  </div>
                   <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#f1c40f' }}>{formatCurrency(t.amount)}</div>
                 </div>
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{t.description}</div>
@@ -491,7 +571,10 @@ export default function ContasPagar() {
               style={{ padding: '14px', borderRadius: '10px', border: '1px solid rgba(46,204,113,0.2)', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer' }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{t.category}</div>
+                <div style={{ fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {t.category}
+                  {t.attachment_url && <span title="Possui anexo" style={{ fontSize: '0.9rem' }}>📎</span>}
+                </div>
                 <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#2ecc71' }}>{formatCurrency(t.amount)}</div>
               </div>
               <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{t.description}</div>
@@ -531,7 +614,10 @@ export default function ContasPagar() {
                 style={{ padding: '14px', borderRadius: '10px', border: '1px solid rgba(231,76,60,0.2)', display: 'flex', flexDirection: 'column', gap: '8px', opacity: 0.8, cursor: 'pointer' }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{t.category}</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {t.category}
+                    {t.attachment_url && <span title="Possui anexo" style={{ fontSize: '0.9rem' }}>📎</span>}
+                  </div>
                   <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#e74c3c' }}>{formatCurrency(t.amount)}</div>
                 </div>
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{t.description}</div>
@@ -577,7 +663,12 @@ export default function ContasPagar() {
                     <td style={{ padding: '12px 8px' }}>{t.date.split('-').reverse().join('/')}</td>
                     <td style={{ padding: '12px 8px' }}>{t.description}</td>
                     <td style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>{getSupplierName(t.supplierId)}</td>
-                    <td style={{ padding: '12px 8px' }}><span style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem' }}>{t.category}</span></td>
+                    <td style={{ padding: '12px 8px' }}>
+                      <span style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        {t.category}
+                        {t.attachment_url && <span title="Possui anexo">📎</span>}
+                      </span>
+                    </td>
                     <td style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>{t.paymentMethod}</td>
                     <td style={{ padding: '12px 8px' }}>
                       <span style={{ 
@@ -670,6 +761,10 @@ export default function ContasPagar() {
                   <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Descrição</label>
                   <input name="description" type="text" required placeholder="Ex: Pagamento referente a..." className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
                 </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Anexar Nota Fiscal / Recibo (Opcional)</label>
+                  <input name="attachment" type="file" accept="image/*,.pdf" className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
+                </div>
                 
                 {/* TOGGLE PATRIMONIO */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', gridColumn: 'span 2', background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px' }}>
@@ -705,8 +800,10 @@ export default function ContasPagar() {
                 )}
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                <button type="button" onClick={() => { setShowExpenseModal(false); setIsAsset(false); }} style={{ padding: '8px 16px', borderRadius: '8px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer' }}>Cancelar</button>
-                <button type="submit" style={{ padding: '8px 16px', borderRadius: '8px', background: '#e74c3c', border: 'none', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>💾 Lançar Despesa</button>
+                <button type="button" onClick={() => { setShowExpenseModal(false); setIsAsset(false); }} style={{ padding: '8px 16px', borderRadius: '8px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer' }} disabled={isSubmitting}>Cancelar</button>
+                <button type="submit" style={{ padding: '8px 16px', borderRadius: '8px', background: '#e74c3c', border: 'none', color: '#fff', fontWeight: 600, cursor: 'pointer' }} disabled={isSubmitting}>
+                  {isSubmitting ? 'Enviando...' : '💸 Lançar Despesa'}
+                </button>
               </div>
             </form>
           </div>
@@ -841,23 +938,18 @@ export default function ContasPagar() {
 
             {/* SEÇÃO DE ANEXO / COMPROVANTE */}
             <div style={{ marginTop: '20px', padding: '20px', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.02)' }}>
-              <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '10px' }}>📎 Anexos e Notas Fiscais</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '10px' }}>📁 Anexos e Notas Fiscais</div>
               
-              {attachmentLink ? (
+              {selectedTransaction.attachment_url ? (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem' }}>
-                    📄 <span style={{ color: '#3498db', textDecoration: 'underline', cursor: 'pointer' }}>nota_fiscal_servico_v1.pdf</span>
+                    📄 <a href={selectedTransaction.attachment_url} target="_blank" rel="noopener noreferrer" style={{ color: '#3498db', textDecoration: 'underline', cursor: 'pointer' }}>Ver Nota Fiscal</a>
                   </div>
-                  <button onClick={() => setAttachmentLink(null)} style={{ background: 'transparent', border: 'none', color: '#e74c3c', cursor: 'pointer', fontSize: '0.8rem' }}>🗑️ Remover</button>
+                  <button onClick={() => handleRemoveAttachment(selectedTransaction)} style={{ background: 'transparent', border: 'none', color: '#e74c3c', cursor: 'pointer', fontSize: '0.8rem' }}>🗑️ Remover</button>
                 </div>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <button 
-                    onClick={() => setAttachmentLink('https://fake-storage.supabase.co/nota_fiscal.pdf')}
-                    style={{ padding: '8px 16px', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s' }}>
-                    + Anexar Nota Fiscal
-                  </button>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>O arquivo será salvo de forma segura na nuvem.</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Nenhum anexo salvo para esta transação.</span>
                 </div>
               )}
             </div>

@@ -158,13 +158,21 @@ export default function IgrejasPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if(confirm('Tem certeza que deseja excluir esta igreja?')) {
-      // Remover do banco
-      const { error } = await supabase.from('churches').delete().eq('id', id);
+    const { error } = await supabase.from('churches').delete().eq('id', id);
+    if (!error) {
+      setChurches(churches.filter(c => c.id !== id));
+    } else {
+      alert('Erro ao excluir igreja: ' + error.message);
+    }
+  };
+
+  const handleDeleteMinistry = async (id: string, name: string) => {
+    if (window.confirm(`TEM CERTEZA que deseja excluir a rede "${name}"? Esta ação apagará a rede.`)) {
+      const { error } = await supabase.from('ministries').delete().eq('id', id);
       if (!error) {
-        setChurches(churches.filter(c => c.id !== id));
+        setMinistryGroups(ministryGroups.filter(m => m.id !== id));
       } else {
-        alert('Erro ao excluir igreja: ' + error.message);
+        alert('Erro ao excluir rede: ' + error.message);
       }
     }
   };
@@ -526,6 +534,9 @@ export default function IgrejasPage() {
                 <button onClick={() => { setEditingMinistryData(ministry); setShowMinistryModal(true); }} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 12px', borderRadius: '8px', color: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}>
                   Editar Rede
                 </button>
+                <button onClick={() => handleDeleteMinistry(ministry.id, ministry.name)} style={{ background: 'rgba(231,76,60,0.15)', border: '1px solid rgba(231,76,60,0.2)', padding: '6px 12px', borderRadius: '8px', color: '#e74c3c', fontSize: '0.8rem', cursor: 'pointer' }} title="Excluir Rede">
+                  🗑️ Excluir
+                </button>
                 <span style={{ background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', color: '#fff' }}>
                   {networkChurches.length} igrejas
                 </span>
@@ -539,13 +550,13 @@ export default function IgrejasPage() {
             ) : viewMode === 'grid' ? (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px' }}>
                 {networkChurches.map(c => (
-                  <ChurchCard key={c.id} church={c as any} usage={getDatabaseUsage(c.id)} ministryName={ministry.name} onEdit={handleOpenEdit} viewMode="grid" />
+                  <ChurchCard key={c.id} church={c as any} usage={getDatabaseUsage(c.id)} ministryName={ministry.name} onEdit={handleOpenEdit} onDelete={(c) => handleDelete(c.id)} viewMode="grid" />
                 ))}
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {networkChurches.map(c => (
-                  <ChurchCard key={c.id} church={c as any} usage={getDatabaseUsage(c.id)} ministryName={ministry.name} onEdit={handleOpenEdit} viewMode="list" />
+                  <ChurchCard key={c.id} church={c as any} usage={getDatabaseUsage(c.id)} ministryName={ministry.name} onEdit={handleOpenEdit} onDelete={(c) => handleDelete(c.id)} viewMode="list" />
                 ))}
               </div>
             )}
@@ -570,6 +581,7 @@ export default function IgrejasPage() {
           onClose={() => setShowModal(false)}
           onSave={handleSaveChurch}
           editingId={editingId}
+          churches={churches}
         />
       )}
 

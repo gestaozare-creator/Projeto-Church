@@ -23,10 +23,11 @@ interface ChurchCardProps {
   usage: DatabaseUsage;
   ministryName: string;
   onEdit: (church: any) => void;
+  onDelete?: (church: any) => void;
   viewMode: 'grid' | 'list';
 }
 
-export function ChurchCard({ church, usage, ministryName, onEdit, viewMode }: ChurchCardProps) {
+export function ChurchCard({ church, usage, ministryName, onEdit, onDelete, viewMode }: ChurchCardProps) {
   if (viewMode === 'list') {
     return (
       <div 
@@ -87,8 +88,8 @@ export function ChurchCard({ church, usage, ministryName, onEdit, viewMode }: Ch
           </span>
         </div>
 
-        {/* Ação */}
-        <div>
+        {/* Ações */}
+        <div style={{ display: 'flex', gap: '8px' }}>
           <button 
             onClick={() => onEdit(church)} 
             style={{ 
@@ -113,6 +114,38 @@ export function ChurchCard({ church, usage, ministryName, onEdit, viewMode }: Ch
           >
             ⚙️ Gerenciar
           </button>
+          
+          {onDelete && (
+            <button 
+              onClick={() => {
+                if (window.confirm(`TEM CERTEZA que deseja excluir a igreja "${church.name}"? Esta ação não pode ser desfeita e pode apagar dados relacionados caso o banco de dados esteja configurado para CASCADE.`)) {
+                  onDelete(church);
+                }
+              }} 
+              style={{ 
+                background: 'rgba(231, 76, 60, 0.15)', 
+                color: '#e74c3c', 
+                border: '1px solid rgba(231, 76, 60, 0.2)', 
+                padding: '6px 10px', 
+                borderRadius: '6px', 
+                fontSize: '0.78rem', 
+                fontWeight: 600, 
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }} 
+              title="Excluir Igreja"
+              onMouseEnter={e => {
+                e.currentTarget.style.background='#e74c3c';
+                e.currentTarget.style.color='#fff';
+              }} 
+              onMouseLeave={e => {
+                e.currentTarget.style.background='rgba(231, 76, 60, 0.15)';
+                e.currentTarget.style.color='#e74c3c';
+              }}
+            >
+              🗑️
+            </button>
+          )}
         </div>
       </div>
     );
@@ -175,7 +208,22 @@ export function ChurchCard({ church, usage, ministryName, onEdit, viewMode }: Ch
 
       {/* Actions */}
       <div style={{ display: 'flex', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.3)' }}>
-        <button onClick={() => onEdit(church)} style={{ flex: 1, padding: '12px', background: 'transparent', border: 'none', color: '#3498db', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background='rgba(52, 152, 219, 0.1)'} onMouseLeave={e => e.currentTarget.style.background='transparent'}>⚙️ Gerenciar Tenant</button>
+        <button onClick={() => onEdit(church)} style={{ flex: 1, padding: '12px', background: 'transparent', border: 'none', borderRight: onDelete ? '1px solid rgba(255,255,255,0.05)' : 'none', color: '#3498db', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background='rgba(52, 152, 219, 0.1)'} onMouseLeave={e => e.currentTarget.style.background='transparent'}>⚙️ Gerenciar Tenant</button>
+        {onDelete && (
+          <button 
+            onClick={() => {
+              if (window.confirm(`TEM CERTEZA que deseja excluir a igreja "${church.name}"? Esta ação não pode ser desfeita.`)) {
+                onDelete(church);
+              }
+            }} 
+            style={{ padding: '12px', background: 'transparent', border: 'none', color: '#e74c3c', cursor: 'pointer', fontSize: '1.2rem', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
+            title="Excluir Igreja"
+            onMouseEnter={e => e.currentTarget.style.background='rgba(231, 76, 60, 0.1)'} 
+            onMouseLeave={e => e.currentTarget.style.background='transparent'}
+          >
+            🗑️
+          </button>
+        )}
       </div>
     </div>
   );

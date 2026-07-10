@@ -24,9 +24,9 @@ const getFunctionColor = (func?: string, cardConfig?: any) => {
 };
 
 export default function Home() {
-  const { currentUser, canSeeAllChurches } = useAuth();
+  const { currentUser, canSeeAllChurches, activeChurchId } = useAuth();
   const [search, setSearch] = useState('');
-  const [church, setChurch] = useState(canSeeAllChurches ? 'ALL' : (currentUser?.churchId || ''));
+  const [church, setChurch] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches ? 'ALL' : currentUser?.churchId || ''));
   const { churches: dbChurches, loading: churchesLoading } = useChurches();
   const { members: allMembers, loading: membersLoading, setMembers } = useMembers();
 
@@ -109,10 +109,12 @@ export default function Home() {
 
   // Sincronizar igreja selecionada com igreja do admin logado
   useEffect(() => {
-    if (!canSeeAllChurches && currentUser?.churchId) {
+    if (activeChurchId) {
+      setChurch(activeChurchId);
+    } else if (!canSeeAllChurches && currentUser?.churchId) {
       setChurch(currentUser.churchId);
     }
-  }, [canSeeAllChurches, currentUser]);
+  }, [activeChurchId, canSeeAllChurches, currentUser]);
 
   const [sel, setSel] = useState<Member | null>(null);
   const [isEditing, setIsEditing] = useState(false);

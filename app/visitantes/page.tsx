@@ -25,7 +25,7 @@ interface Visitor {
 }
 
 export default function Visitantes() {
-  const { currentUser, canSeeAllChurches } = useAuth();
+  const { currentUser, canSeeAllChurches, activeChurchId } = useAuth();
   
   const [visitors, setVisitors] = useState<Visitor[]>([]);
   const [dbChurches, setDbChurches] = useState<Church[]>([]);
@@ -63,7 +63,7 @@ export default function Visitantes() {
     setShowWaModal(false);
   };
 
-  const [churchF, setChurchF] = useState(canSeeAllChurches ? 'all' : (currentUser?.churchId || ''));
+  const [churchF, setChurchF] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches ? 'all' : currentUser?.churchId || ''));
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), 0, 1).toISOString().split('T')[0];
@@ -114,10 +114,12 @@ export default function Visitantes() {
   }, [cultoFilter]);
 
   useEffect(() => {
-    if (!canSeeAllChurches && currentUser?.churchId) {
+    if (activeChurchId) {
+      setChurchF(activeChurchId);
+    } else if (!canSeeAllChurches && currentUser?.churchId) {
       setChurchF(currentUser.churchId);
     }
-  }, [canSeeAllChurches, currentUser]);
+  }, [activeChurchId, canSeeAllChurches, currentUser]);
 
   useEffect(() => {
     async function fetchVisitors() {

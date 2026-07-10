@@ -28,6 +28,7 @@ interface ChurchFormModalProps {
   onClose: () => void;
   onSave: (churchData: any) => Promise<void>;
   editingId: string | null;
+  churches: Church[];
 }
 
 export function ChurchFormModal({ 
@@ -36,11 +37,38 @@ export function ChurchFormModal({
   getDatabaseUsage, 
   onClose, 
   onSave, 
-  editingId 
+  editingId,
+  churches
 }: ChurchFormModalProps) {
   const [formData, setFormData] = useState<any>(initialData);
-    const [newDepartment, setNewDepartment] = useState('');
+  const [newDepartment, setNewDepartment] = useState('');
   const [newCulto, setNewCulto] = useState({ name: '', dayOfWeek: 'Domingo', time: '19:30' });
+
+  // Efeito de Herança da Sede (apenas para novas igrejas)
+  useEffect(() => {
+    if (!editingId && formData.ministryId) {
+      // Procura a sede ou a primeira igreja da rede
+      const networkChurches = (churches as any[]).filter(c => c.ministryId === formData.ministryId);
+      const hq = networkChurches.find(c => c.isHeadquarters) || networkChurches[0];
+      
+      if (hq) {
+        setFormData((prev: any) => ({
+          ...prev,
+          logoUrl: hq.logoUrl || prev.logoUrl,
+          coverPhotoUrl: hq.coverPhotoUrl || prev.coverPhotoUrl,
+          primaryColor: hq.primaryColor || prev.primaryColor,
+          secondaryColor: hq.secondaryColor || prev.secondaryColor,
+          cardConfig: hq.cardConfig ? (typeof hq.cardConfig === 'string' ? JSON.parse(hq.cardConfig) : hq.cardConfig) : prev.cardConfig,
+          config: hq.config ? (typeof hq.config === 'string' ? JSON.parse(hq.config) : hq.config) : prev.config,
+          departments: hq.departments?.length ? hq.departments : prev.departments,
+          activeModules: hq.activeModules?.length ? hq.activeModules : prev.activeModules,
+          plan: hq.plan || prev.plan,
+          userLimit: hq.userLimit || prev.userLimit,
+          memberLimit: hq.memberLimit || prev.memberLimit
+        }));
+      }
+    }
+  }, [formData.ministryId, editingId, churches]);
 
   // Preço por módulo
   const MODULE_PRICES: Record<string, number> = {

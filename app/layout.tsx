@@ -7,11 +7,23 @@ import './globals.css';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 
 function AppContent({ children }: { children: React.ReactNode }) {
-  const { currentUser, loading, signOut, canSeeFinanceiro, canManageSystem } = useAuth();
+  const { currentUser, loading, signOut, canSeeFinanceiro, canManageSystem, canSeeAllChurches, activeChurchId, activeChurchName, exitChurch } = useAuth();
   const [theme, setTheme] = useState('light');
   const [activeMenu, setActiveMenu] = useState('secretaria');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+
+  const showLocalMenus = !canSeeAllChurches || !!activeChurchId;
+
+  useEffect(() => {
+    if (activeChurchId) {
+      setActiveMenu('secretaria');
+    } else if (canSeeAllChurches) {
+      setActiveMenu('rede');
+    } else {
+      setActiveMenu('secretaria');
+    }
+  }, [activeChurchId, canSeeAllChurches]);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -98,7 +110,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
               <>
                 {/* SECRETARIA — visível para todos */}
                 {/* SECRETARIA — Oculto para Líder Kids */}
-                {(currentUser as any).role !== 'kids_leader' && (
+                {(currentUser as any).role !== 'kids_leader' && showLocalMenus && (
                   <div className="nav-item">
                     <div 
                       className={`nav-link ${activeMenu === 'secretaria' ? 'active' : ''}`} 
@@ -123,7 +135,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
                 )}
 
                 {/* FINANCEIRO — oculto APENAS para secretária e Líder Kids */}
-                {canSeeFinanceiro && (
+                {canSeeFinanceiro && showLocalMenus && (
                   <div className="nav-item">
                     <div 
                       className={`nav-link ${activeMenu === 'financeiro' ? 'active' : ''}`} 
@@ -143,7 +155,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
                 )}
 
                 {/* DEPARTAMENTOS — Oculto para Secretaria */}
-                {currentUser.role !== 'secretaria' && (
+                {currentUser.role !== 'secretaria' && showLocalMenus && (
                   <div className="nav-item">
                   <div 
                     className={`nav-link ${activeMenu === 'departamentos' ? 'active' : ''}`} 
@@ -162,6 +174,23 @@ function AppContent({ children }: { children: React.ReactNode }) {
                 </div>
                 )}
 
+                {/* MINHA REDE — EXCLUSIVO DO PASTOR DIRETOR E MASTER */}
+                {canSeeAllChurches && (
+                  <div className="nav-item">
+                    <div 
+                      className={`nav-link ${activeMenu === 'rede' ? 'active' : ''}`} 
+                      onClick={() => toggleMenu('rede')}
+                    >
+                      ⛪ Minha Rede
+                    </div>
+                    {activeMenu === 'rede' && (
+                      <div className="sub-menu">
+                        <Link href="/rede" className={`sub-link ${pathname === '/rede' ? 'active' : ''}`}>📊 Painel da Rede</Link>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* ADMINISTRAÇÃO — EXCLUSIVO DO MASTER */}
                 {canManageSystem && (
                   <div className="nav-item">
@@ -173,7 +202,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
                     </div>
                     {activeMenu === 'admin' && (
                       <div className="sub-menu">
-                        <Link href="/admin/igrejas" className={`sub-link ${pathname === '/admin/igrejas' ? 'active' : ''}`}>⛪ Gestão de Igrejas e Redes</Link>
+                        <Link href="/admin/igrejas" className={`sub-link ${pathname === '/admin/igrejas' ? 'active' : ''}`}>🌐 Gestão de Igrejas e Redes</Link>
                       </div>
                     )}
                   </div>
@@ -220,7 +249,39 @@ function AppContent({ children }: { children: React.ReactNode }) {
               Acessar Painel Kids
             </Link>
           </div>
-        ) : children}
+        ) : (
+          <>
+            {/* BANNER DE IGREJA ATIVA — aparece quando Diretor/Master entra em uma igreja */}
+            {activeChurchId && activeChurchName && canSeeAllChurches && (
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 24px', flexWrap: 'wrap', gap: '8px',
+                background: 'linear-gradient(90deg, rgba(52,152,219,0.25), rgba(155,89,182,0.2))',
+                borderBottom: '1px solid rgba(52,152,219,0.4)',
+                fontSize: '0.82rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+                  <span style={{ fontSize: '1.1rem' }}>⛪</span>
+                  <span>Você está visualizando:</span>
+                  <strong style={{ color: '#3498db' }}>{activeChurchName}</strong>
+                  <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem' }}>— todos os dados exibidos são desta igreja</span>
+                </div>
+                <button
+                  onClick={() => { exitChurch(); window.location.href = '/rede'; }}
+                  style={{
+                    background: 'rgba(231,76,60,0.15)', color: '#e74c3c',
+                    border: '1px solid rgba(231,76,60,0.3)', padding: '5px 14px',
+                    borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  ← Voltar ao Painel da Rede
+                </button>
+              </div>
+            )}
+            {children}
+          </>
+        )}
       </main>
     </div>
   );

@@ -14,6 +14,10 @@ export interface User {
   churchId: string | null;
 }
 
+// Chave usada no localStorage para persistir a igreja ativa ao navegar
+const ACTIVE_CHURCH_KEY = 'pg_active_church_id';
+const ACTIVE_CHURCH_NAME_KEY = 'pg_active_church_name';
+
 interface AuthContextType {
   currentUser: User | null;
   loading: boolean;
@@ -21,6 +25,11 @@ interface AuthContextType {
   canSeeFinanceiro: boolean;
   canManageSystem: boolean;
   signOut: () => Promise<void>;
+  // Igreja Ativa (contexto de visão do diretor/master)
+  activeChurchId: string | null;
+  activeChurchName: string | null;
+  enterChurch: (churchId: string, churchName: string) => void;
+  exitChurch: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,8 +37,22 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeChurchId, setActiveChurchId] = useState<string | null>(null);
+  const [activeChurchName, setActiveChurchName] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+
+  // Recarrega a igreja ativa do localStorage ao iniciar
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(ACTIVE_CHURCH_KEY);
+      const savedName = localStorage.getItem(ACTIVE_CHURCH_NAME_KEY);
+      if (saved) {
+        setActiveChurchId(saved);
+        setActiveChurchName(savedName);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -49,6 +72,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setCurrentUser(null);
         setLoading(false);
+        // Limpa a igreja ativa ao fazer logout
+        setActiveChurchId(null);
+        setActiveChurchName(null);
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem(ACTIVE_CHURCH_KEY);
+          localStorage.removeItem(ACTIVE_CHURCH_NAME_KEY);
+        }
         const isAgendaPublicScale = pathname?.match(/^\/agenda\/[^/]+\/[^/]+$/);
         const isPublic = pathname === '/login' || pathname?.startsWith('/formulario') || isAgendaPublicScale;
         if (!isPublic) {
@@ -64,7 +94,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadUserProfile = async (authUser: any) => {
     try {
-      // Fetch role and church_id from our custom table
       const { data, error } = await supabase
         .from('user_roles')
         .select('role, church_id, email')
@@ -80,7 +109,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         finalRole = 'superadmin';
       }
 
-      // Se não tiver church_id, busca a primeira igreja disponível
       let resolvedChurchId = data?.church_id || null;
       if (!resolvedChurchId) {
         const { data: firstChurch } = await supabase
@@ -109,6 +137,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  // Entra na visão de uma igreja específica (para diretores/master)
+  const enterChurch = (churchId: string, churchName: string) => {
+    setActiveChurchId(churchId);
+    setActiveChurchName(churchName);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(ACTIVE_CHURCH_KEY, churchId);
+      localStorage.setItem(ACTIVE_CHURCH_NAME_KEY, churchName);
+    }
+  };
+
+  // Sai da visão da igreja e volta ao painel geral
+  const exitChurch = () => {
+    setActiveChurchId(null);
+    setActiveChurchName(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(ACTIVE_CHURCH_KEY);
+      localStorage.removeItem(ACTIVE_CHURCH_NAME_KEY);
+    }
+  };
+
   // Derivações de permissão centralizadas
   const canSeeAllChurches = currentUser?.role === 'superadmin' || currentUser?.role === 'pastor_diretor';
   const canSeeFinanceiro = currentUser?.role !== 'secretaria' && currentUser?.role !== 'kids_leader';
@@ -131,6 +179,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       canSeeFinanceiro,
       canManageSystem,
       signOut,
+      activeChurchId,
+      activeChurchName,
+      enterChurch,
+      exitChurch,
     }}>
       {children}
     </AuthContext.Provider>

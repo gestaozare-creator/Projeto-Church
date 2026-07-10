@@ -20,6 +20,7 @@ interface FinancialTransaction {
   date: string;
   dueDate?: string;
   paidDate?: string;
+  attachment_url?: string;
 }
 
 // Componente Reutilizável de Gráfico de Rosca (Donut)
@@ -175,7 +176,7 @@ const getYearBounds = () => {
 const { firstDayStr, lastDayStr } = getYearBounds();
 
 export default function FinanceiroDashboardPage() {
-  const { currentUser, canSeeAllChurches } = useAuth();
+  const { currentUser, canSeeAllChurches, activeChurchId } = useAuth();
   const { churches, churchServices, members } = useGlobalData();
   const [dbTransactions, setDbTransactions] = useState<FinancialTransaction[]>([]);
 
@@ -203,7 +204,7 @@ export default function FinanceiroDashboardPage() {
     loadAllTransactions();
   }, []);
 
-  const [church, setChurch] = useState(canSeeAllChurches ? 'ALL' : (currentUser?.churchId || 'ALL'));
+  const [church, setChurch] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches ? 'ALL' : (currentUser?.churchId || 'ALL')));
   const [startDate, setStartDate] = useState(firstDayStr);
   const [endDate, setEndDate] = useState(lastDayStr);
   const [selectedDia, setSelectedDia] = useState<string | null>(null);
@@ -231,12 +232,14 @@ export default function FinanceiroDashboardPage() {
   const [showAllRanking, setShowAllRanking] = useState(false);
 
   useEffect(() => {
-    if (!canSeeAllChurches) {
+    if (activeChurchId) {
+      setChurch(activeChurchId);
+    } else if (!canSeeAllChurches) {
       setChurch(currentUser?.churchId || 'ALL');
     } else {
       setChurch('ALL');
     }
-  }, [currentUser, canSeeAllChurches]);
+  }, [activeChurchId, currentUser, canSeeAllChurches]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
