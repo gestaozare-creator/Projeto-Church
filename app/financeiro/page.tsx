@@ -247,8 +247,9 @@ export default function FinanceiroDashboardPage() {
     }
     const map = new Map<string, string>();
     svcs.forEach(s => {
-      if (s.name && s.dayOfWeek) {
-        map.set(s.name.toLowerCase(), s.dayOfWeek);
+      const day = s.dayOfWeek || s.day_of_week;
+      if (s.name && day) {
+        map.set(s.name.toLowerCase(), day);
       }
     });
     return map;
@@ -261,7 +262,7 @@ export default function FinanceiroDashboardPage() {
     } else {
       svcs = churchServices?.filter(s => s.church_id === church) || [];
     }
-    const dias = new Set(svcs.map(s => s.dayOfWeek).filter(Boolean));
+    const dias = new Set(svcs.map(s => s.dayOfWeek || s.day_of_week).filter(Boolean));
     return Array.from(dias).sort();
   }, [church, churchServices]);
 
