@@ -176,7 +176,7 @@ const { firstDayStr, lastDayStr } = getYearBounds();
 
 export default function FinanceiroDashboardPage() {
   const { currentUser, canSeeAllChurches } = useAuth();
-  const { churches, churchServices } = useGlobalData();
+  const { churches, churchServices, members } = useGlobalData();
   const [dbTransactions, setDbTransactions] = useState<FinancialTransaction[]>([]);
 
   useEffect(() => {
@@ -739,30 +739,28 @@ export default function FinanceiroDashboardPage() {
     return { data: Array.from(map.entries()).sort((a,b) => b[1] - a[1]), max };
   }, [filteredTransactions]);
 
-  // 7. NOVO: Ranking das Igrejas
-  const rankingIgrejas = useMemo(() => {
-    const map = new Map<string, { churchName: string, entradas: number, saidas: number, saldo: number }>();
+  // 7. NOVO: Ranking de Entradas por Membro
+  const rankingMembros = useMemo(() => {
+    const map = new Map<string, number>();
     
-    filteredTransactions.filter(t => t.status === 'confirmado' || t.status === 'pendente').forEach(t => {
-      if (!map.has(t.churchId)) {
-        const churchData = churches.find(c => c.id === t.churchId);
-        map.set(t.churchId, { churchName: churchData ? churchData.name : 'Desconhecida', entradas: 0, saidas: 0, saldo: 0 });
-      }
-      
-      const stats = map.get(t.churchId)!;
-      if (t.type === 'receita') {
-        stats.entradas += t.amount;
-        stats.saldo += t.amount;
-      } else if (t.type === 'despesa') {
-        stats.saidas += t.amount;
-        stats.saldo -= t.amount;
-      }
+    selectedDiaTransactions.filter(t => t.type === 'receita' && t.status === 'confirmado' && t.memberId).forEach(t => {
+      const current = map.get(t.memberId!) || 0;
+      map.set(t.memberId!, current + t.amount);
     });
 
-    const data = Array.from(map.values()).sort((a, b) => b.saldo - a.saldo);
-    const maxSaldo = Math.max(0, ...data.map(d => d.saldo));
-    return { data, max: maxSaldo };
-  }, [filteredTransactions]);
+    const data = Array.from(map.entries()).map(([memberId, totalAmount]) => {
+      const member = members.find(m => m.id === memberId);
+      return {
+        memberId,
+        name: member ? member.name : 'Membro Desconhecido',
+        photo: null,
+        amount: totalAmount
+      };
+    }).sort((a, b) => b.amount - a.amount);
+    
+    const maxAmount = Math.max(0, ...data.map(d => d.amount));
+    return { data, max: maxAmount };
+  }, [selectedDiaTransactions, members]);
 
   // Análise Geral
   const totalReceitas = receitasCultoData.total;
@@ -927,40 +925,43 @@ export default function FinanceiroDashboardPage() {
 
         <DonutChart title="💸 Formas de Pgto (Saídas)" data={pagamentosSaidaData.slices} total={pagamentosSaidaData.total} formatCenterTotal={formatShortCurrency} />
 
-        {/* Ranking das Igrejas */}
-        {canSeeAllChurches && church === 'ALL' && (
-          <div className="glass" style={{ padding: '20px', borderRadius: '14px', display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <h4 style={{ fontSize: '0.85rem', margin: '0 0 16px 0', color: '#f1c40f' }}>🏆 Ranking de Saldo por Igreja</h4>
-            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '8px' }}>
-              {rankingIgrejas.data.slice(0, showAllRanking ? undefined : 5).map((r, i) => (
-                <div key={r.churchName} style={{ marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px' }}>
-                    <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{i + 1}. {r.churchName}</span>
-                    <span style={{ fontWeight: 600, color: '#2ecc71' }}>{formatCurrency(r.entradas)}</span>
+        {/* Ranking de Entradas por Membro */}
+        <div className="glass" style={{ padding: '20px', borderRadius: '14px', display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <h4 style={{ fontSize: '0.85rem', margin: '0 0 16px 0', color: '#f1c40f' }}>🏆 Ranking de Entradas por Membro</h4>
+          <div style={{ flex: 1, overflowY: 'auto', paddingRight: '8px' }}>
+            {rankingMembros.data.slice(0, showAllRanking ? undefined : 5).map((r, i) => (
+              <div key={r.memberId} style={{ marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {r.photo ? (
+                      <img src={r.photo} alt={r.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                        {r.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.75rem' }}>{i + 1}. {r.name}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', marginBottom: '4px' }}>
-                    <span style={{ color: '#f1c40f', fontWeight: 600 }}>Saldo: {formatCurrency(r.saldo)}</span>
-                    <span style={{ color: '#e74c3c' }}>Saída: {formatCurrency(r.saidas)}</span>
-                  </div>
-                  <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '3px' }}>
-                    <div style={{ width: `${rankingIgrejas.max > 0 ? (Math.max(0, r.saldo) / rankingIgrejas.max) * 100 : 0}%`, height: '100%', backgroundColor: '#f1c40f', borderRadius: '3px' }}></div>
-                  </div>
+                  <span style={{ fontWeight: 600, color: '#2ecc71', fontSize: '0.75rem' }}>{formatCurrency(r.amount)}</span>
                 </div>
-              ))}
-              {rankingIgrejas.data.length === 0 && <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Nenhum dado encontrado.</div>}
-              {rankingIgrejas.data.length > 5 && (
-                <button 
-                  onClick={() => setShowAllRanking(!showAllRanking)}
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', border: 'none', padding: '8px', fontSize: '0.75rem', borderRadius: '8px', cursor: 'pointer', marginTop: '6px', transition: 'background 0.3s' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                >
-                  {showAllRanking ? 'Ver menos' : `Ver mais (${rankingIgrejas.data.length - 5})`}
-                </button>
-              )}
-            </div>
+                <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '3px' }}>
+                  <div style={{ width: `${rankingMembros.max > 0 ? (r.amount / rankingMembros.max) * 100 : 0}%`, height: '100%', backgroundColor: '#f1c40f', borderRadius: '3px' }}></div>
+                </div>
+              </div>
+            ))}
+            {rankingMembros.data.length === 0 && <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Nenhum dado encontrado.</div>}
+            {rankingMembros.data.length > 5 && (
+              <button 
+                onClick={() => setShowAllRanking(!showAllRanking)}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', border: 'none', padding: '8px', fontSize: '0.75rem', borderRadius: '8px', cursor: 'pointer', marginTop: '6px', transition: 'background 0.3s' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              >
+                {showAllRanking ? 'Ver menos' : `Ver mais (${rankingMembros.data.length - 5})`}
+              </button>
+            )}
           </div>
-        )}
+        </div>
         
       </div>
       {/* GRUPO DOS 3 GRÁFICOS DE EVOLUÇÃO (LADO A LADO) */}
