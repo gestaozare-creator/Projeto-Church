@@ -284,25 +284,36 @@ export default function FinanceiroDashboardPage() {
 
   // 2. Lógica para Entradas por Culto
   const receitasCultoData = useMemo(() => {
-    const data = { domingo: 0, quarta: 0, sabado: 0, outros: 0, total: 0 };
+    const map = new Map<string, number>();
+    let total = 0;
+    
     filteredTransactions.filter(t => t.type === 'receita' && t.status === 'confirmado').forEach(t => {
       const desc = t.description.toLowerCase();
-      data.total += t.amount;
-      if (desc.includes('domingo')) data.domingo += t.amount;
-      else if (desc.includes('quarta')) data.quarta += t.amount;
-      else if (desc.includes('sábado') || desc.includes('sabado')) data.sabado += t.amount;
-      else data.outros += t.amount;
+      let matchedCulto = 'Outros';
+      
+      for (const culto of availableCultos) {
+        if (desc.includes(culto.toLowerCase())) {
+          matchedCulto = culto;
+          break;
+        }
+      }
+      
+      const current = map.get(matchedCulto) || 0;
+      map.set(matchedCulto, current + t.amount);
+      total += t.amount;
     });
-    return {
-      total: data.total,
-      slices: [
-        { key: 'domingo', color: '#3498db', label: 'Domingo', value: data.domingo },
-        { key: 'quarta', color: '#9b59b6', label: 'Quarta-Feira', value: data.quarta },
-        { key: 'sabado', color: '#f1c40f', label: 'Sábado', value: data.sabado },
-        { key: 'outros', color: '#e67e22', label: 'Outros', value: data.outros }
-      ]
-    };
-  }, [filteredTransactions]);
+
+    const colors = ['#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#1abc9c', '#e74c3c'];
+    let colorIdx = 0;
+    const slices = Array.from(map.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([key, val]) => {
+        const color = key === 'Outros' ? '#888888' : colors[colorIdx++ % colors.length];
+        return { key, color, label: key, value: val };
+      });
+
+    return { total, slices };
+  }, [filteredTransactions, availableCultos]);
 
   // 3. Lógica para Formas de Pagamento (Entradas)
   const pagamentosReceitaData = useMemo(() => {
@@ -361,8 +372,8 @@ export default function FinanceiroDashboardPage() {
   const evolucaoCultos = useMemo(() => {
     const monthsData = Array.from({ length: 12 }, (_, i) => ({
       monthStr: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][i],
-      curr: { domingo: null as number | null, quarta: null as number | null, sabado: null as number | null },
-      prev: { domingo: null as number | null, quarta: null as number | null, sabado: null as number | null }
+      curr: {} as Record<string, number | null>,
+      prev: {} as Record<string, number | null>
     }));
     
     const prevYear = (parseInt(chartYear) - 1).toString();
@@ -376,30 +387,31 @@ export default function FinanceiroDashboardPage() {
       const amount = t.amount;
       const target = y === chartYear ? monthsData[m].curr : monthsData[m].prev;
       
-      if (desc.includes('domingo')) {
-        if (target.domingo === null) target.domingo = 0;
-        target.domingo += amount;
-        if (target.domingo > maxValue) maxValue = target.domingo;
-      } else if (desc.includes('quarta')) {
-        if (target.quarta === null) target.quarta = 0;
-        target.quarta += amount;
-        if (target.quarta > maxValue) maxValue = target.quarta;
-      } else if (desc.includes('sábado') || desc.includes('sabado')) {
-        if (target.sabado === null) target.sabado = 0;
-        target.sabado += amount;
-        if (target.sabado > maxValue) maxValue = target.sabado;
+      let matchedCulto = 'Outros';
+      for (const culto of availableCultos) {
+        if (desc.includes(culto.toLowerCase())) {
+          matchedCulto = culto;
+          break;
+        }
       }
+      
+      if (target[matchedCulto] == null) target[matchedCulto] = 0;
+      target[matchedCulto]! += amount;
+      if (target[matchedCulto]! > maxValue) maxValue = target[matchedCulto]!;
     });
+    
+    return { data: monthsData, max: maxValue || 1, cultos: availableCultos };
+  }, [chartTransactions, chartYear, availableCultos]);
 
-    return { data: monthsData, max: maxValue || 1 };
-  }, [chartTransactions, chartYear]);
+  const CULTOS_COLORS = ['#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#1abc9c', '#e74c3c'];
+  const getCultoColor = (idx: number, isOutros = false) => isOutros ? '#888888' : CULTOS_COLORS[idx % CULTOS_COLORS.length];
 
-  const buildEvolucaoLinePath = (key: 'domingo' | 'quarta' | 'sabado', isPrev: boolean = false) => {
+  const buildEvolucaoLinePath = (key: string, isPrev: boolean = false) => {
     if (evolucaoCultos.data.length === 0) return '';
     const points = evolucaoCultos.data.map((d: any, i) => {
       const target = isPrev ? d.prev : d.curr;
       const val = target[key];
-      if (val === null) return null;
+      if (val == null) return null;
       const x = (i / 11) * 100;
       const y = 90 - (val / evolucaoCultos.max) * 80;
       return { x, y };
@@ -799,10 +811,11 @@ export default function FinanceiroDashboardPage() {
                   style={{ background: evolucaoChartType === 'linha' ? 'var(--primary-light)' : 'transparent', color: '#fff', border: 'none', padding: '2px 8px', fontSize: '0.65rem', borderRadius: '4px', cursor: 'pointer', transition: 'background 0.3s' }}
                 >Linha</button>
               </div>
-              <div style={{ display: 'flex', gap: '6px', fontSize: '0.65rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><div style={{ width: '8px', height: '8px', background: '#3498db', borderRadius: '2px' }}/> Dom</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><div style={{ width: '8px', height: '8px', background: '#9b59b6', borderRadius: '2px' }}/> Qua</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><div style={{ width: '8px', height: '8px', background: '#f1c40f', borderRadius: '2px' }}/> Sáb</div>
+              <div style={{ display: 'flex', gap: '6px', fontSize: '0.65rem', flexWrap: 'wrap' }}>
+                {evolucaoCultos.cultos.map((culto, idx) => (
+                  <div key={culto} style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><div style={{ width: '8px', height: '8px', background: getCultoColor(idx), borderRadius: '2px' }}/> {culto}</div>
+                ))}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><div style={{ width: '8px', height: '8px', background: '#888888', borderRadius: '2px' }}/> Outros</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '2px', cursor: 'pointer', opacity: showCompareCultos ? 1 : 0.4, marginLeft: '6px' }} onClick={() => setShowCompareCultos(!showCompareCultos)}>
                   <div style={{ width: '8px', height: '8px', border: '1px solid #fff', borderRadius: '2px' }}/> vs {parseInt(chartYear) - 1}
                 </div>
@@ -815,9 +828,10 @@ export default function FinanceiroDashboardPage() {
               <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1, gap: '4px', paddingBottom: '10px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                 {evolucaoCultos.data.map((d, i) => (
                   <div key={i} style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: '2px', height: '100%' }}>
-                    {d.curr.domingo !== null && <div style={{ width: '6px', height: `${(d.curr.domingo / evolucaoCultos.max) * 90}%`, background: '#3498db', borderRadius: '2px 2px 0 0', transition: 'height 0.4s' }} title={`Dom: ${formatShortCurrency(d.curr.domingo)}`} />}
-                    {d.curr.quarta !== null && <div style={{ width: '6px', height: `${(d.curr.quarta / evolucaoCultos.max) * 90}%`, background: '#9b59b6', borderRadius: '2px 2px 0 0', transition: 'height 0.4s' }} title={`Qua: ${formatShortCurrency(d.curr.quarta)}`} />}
-                    {d.curr.sabado !== null && <div style={{ width: '6px', height: `${(d.curr.sabado / evolucaoCultos.max) * 90}%`, background: '#f1c40f', borderRadius: '2px 2px 0 0', transition: 'height 0.4s' }} title={`Sáb: ${formatShortCurrency(d.curr.sabado)}`} />}
+                    {evolucaoCultos.cultos.map((culto, idx) => (
+                      d.curr[culto] != null && <div key={culto} style={{ width: '6px', height: `${(d.curr[culto]! / evolucaoCultos.max) * 90}%`, background: getCultoColor(idx), borderRadius: '2px 2px 0 0', transition: 'height 0.4s' }} title={`${culto}: ${formatShortCurrency(d.curr[culto]!)}`} />
+                    ))}
+                    {d.curr['Outros'] != null && <div key="Outros" style={{ width: '6px', height: `${(d.curr['Outros']! / evolucaoCultos.max) * 90}%`, background: '#888888', borderRadius: '2px 2px 0 0', transition: 'height 0.4s' }} title={`Outros: ${formatShortCurrency(d.curr['Outros']!)}`} />}
                   </div>
                 ))}
               </div>
@@ -826,14 +840,16 @@ export default function FinanceiroDashboardPage() {
                 <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', display: 'block' }}>
                   {showCompareCultos && (
                     <>
-                      <path d={buildEvolucaoLinePath('domingo', true)} fill="none" stroke="#3498db" strokeWidth="1.5" strokeDasharray="2,2" opacity="0.4" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
-                      <path d={buildEvolucaoLinePath('quarta', true)} fill="none" stroke="#9b59b6" strokeWidth="1.5" strokeDasharray="2,2" opacity="0.4" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
-                      <path d={buildEvolucaoLinePath('sabado', true)} fill="none" stroke="#f1c40f" strokeWidth="1.5" strokeDasharray="2,2" opacity="0.4" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+                      {evolucaoCultos.cultos.map((culto, idx) => (
+                        <path key={`prev-${culto}`} d={buildEvolucaoLinePath(culto, true)} fill="none" stroke={getCultoColor(idx)} strokeWidth="1.5" strokeDasharray="2,2" opacity="0.4" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+                      ))}
+                      <path d={buildEvolucaoLinePath('Outros', true)} fill="none" stroke="#888888" strokeWidth="1.5" strokeDasharray="2,2" opacity="0.4" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
                     </>
                   )}
-                  <path d={buildEvolucaoLinePath('domingo')} fill="none" stroke="#3498db" strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
-                  <path d={buildEvolucaoLinePath('quarta')} fill="none" stroke="#9b59b6" strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
-                  <path d={buildEvolucaoLinePath('sabado')} fill="none" stroke="#f1c40f" strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+                  {evolucaoCultos.cultos.map((culto, idx) => (
+                    <path key={`curr-${culto}`} d={buildEvolucaoLinePath(culto)} fill="none" stroke={getCultoColor(idx)} strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+                  ))}
+                  <path d={buildEvolucaoLinePath('Outros')} fill="none" stroke="#888888" strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
                 </svg>
                 
                 <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
@@ -854,47 +870,49 @@ export default function FinanceiroDashboardPage() {
 
                 {evolucaoCultos.data.map((d, i) => {
                   const left = `${(i / 11) * 100}%`;
-                  const topDom = d.curr.domingo !== null ? `${90 - (d.curr.domingo / evolucaoCultos.max) * 80}%` : null;
-                  const topQua = d.curr.quarta !== null ? `${90 - (d.curr.quarta / evolucaoCultos.max) * 80}%` : null;
-                  const topSab = d.curr.sabado !== null ? `${90 - (d.curr.sabado / evolucaoCultos.max) * 80}%` : null;
                   const isHovered = evolucaoHoveredMonthIdx === i;
+                  
+                  const cultosWithData = [...evolucaoCultos.cultos, 'Outros'].filter(c => d.curr[c] != null);
+                  const hasNoData = cultosWithData.length === 0;
+
                   return (
                     <div key={`dots-${i}`} style={{ position: 'absolute', left, top: 0, width: 0, height: '100%', pointerEvents: 'none' }}>
-                      {topDom && <div style={{ position: 'absolute', top: topDom, width: isHovered ? '12px' : '8px', height: isHovered ? '12px' : '8px', background: '#3498db', borderRadius: '50%', transform: 'translate(-50%, -50%)', border: '1.5px solid #1a1a2e', boxShadow: isHovered ? '0 0 8px #3498db' : 'none', zIndex: 3, transition: 'all 0.2s' }} />}
-                      {topQua && <div style={{ position: 'absolute', top: topQua, width: isHovered ? '12px' : '8px', height: isHovered ? '12px' : '8px', background: '#9b59b6', borderRadius: '50%', transform: 'translate(-50%, -50%)', border: '1.5px solid #1a1a2e', boxShadow: isHovered ? '0 0 8px #9b59b6' : 'none', zIndex: 2, transition: 'all 0.2s' }} />}
-                      {topSab && <div style={{ position: 'absolute', top: topSab, width: isHovered ? '12px' : '8px', height: isHovered ? '12px' : '8px', background: '#f1c40f', borderRadius: '50%', transform: 'translate(-50%, -50%)', border: '1.5px solid #1a1a2e', boxShadow: isHovered ? '0 0 8px #f1c40f' : 'none', zIndex: 1, transition: 'all 0.2s' }} />}
+                      {evolucaoCultos.cultos.map((culto, idx) => {
+                        if (d.curr[culto] == null) return null;
+                        const top = `${90 - (d.curr[culto]! / evolucaoCultos.max) * 80}%`;
+                        return (
+                          <div key={`dot-${culto}`} style={{ position: 'absolute', top, width: isHovered ? '12px' : '8px', height: isHovered ? '12px' : '8px', background: getCultoColor(idx), borderRadius: '50%', transform: 'translate(-50%, -50%)', border: '1.5px solid #1a1a2e', boxShadow: isHovered ? `0 0 8px ${getCultoColor(idx)}` : 'none', zIndex: 10 - idx, transition: 'all 0.2s' }} />
+                        );
+                      })}
+                      {d.curr['Outros'] != null && (
+                        <div key="dot-Outros" style={{ position: 'absolute', top: `${90 - (d.curr['Outros']! / evolucaoCultos.max) * 80}%`, width: isHovered ? '12px' : '8px', height: isHovered ? '12px' : '8px', background: '#888888', borderRadius: '50%', transform: 'translate(-50%, -50%)', border: '1.5px solid #1a1a2e', boxShadow: isHovered ? `0 0 8px #888888` : 'none', zIndex: 0, transition: 'all 0.2s' }} />
+                      )}
                       
                       {isHovered && (
                         <div style={{ position: 'absolute', top: '-60px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(20,20,30,0.95)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 14px', borderRadius: '8px', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '6px', whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', pointerEvents: 'none' }}>
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, textAlign: 'center', marginBottom: '2px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '4px' }}>{d.monthStr}</div>
-                          {d.curr.domingo !== null && (
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', fontSize: '0.75rem' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <div style={{ width: '8px', height: '8px', background: '#3498db', borderRadius: '2px' }} />
-                                <span style={{ color: '#fff' }}>Domingo</span>
+                          {evolucaoCultos.cultos.map((culto, idx) => {
+                            if (d.curr[culto] == null) return null;
+                            return (
+                              <div key={`tt-${culto}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', fontSize: '0.75rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <div style={{ width: '8px', height: '8px', background: getCultoColor(idx), borderRadius: '2px' }} />
+                                  <span style={{ color: '#fff' }}>{culto}</span>
+                                </div>
+                                <strong>{formatShortCurrency(d.curr[culto]!)}</strong>
                               </div>
-                              <strong>{formatShortCurrency(d.curr.domingo)}</strong>
+                            );
+                          })}
+                          {d.curr['Outros'] != null && (
+                            <div key="tt-Outros" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', fontSize: '0.75rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <div style={{ width: '8px', height: '8px', background: '#888888', borderRadius: '2px' }} />
+                                <span style={{ color: '#fff' }}>Outros</span>
+                              </div>
+                              <strong>{formatShortCurrency(d.curr['Outros']!)}</strong>
                             </div>
                           )}
-                          {d.curr.quarta !== null && (
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', fontSize: '0.75rem' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <div style={{ width: '8px', height: '8px', background: '#9b59b6', borderRadius: '2px' }} />
-                                <span style={{ color: '#fff' }}>Quarta</span>
-                              </div>
-                              <strong>{formatShortCurrency(d.curr.quarta)}</strong>
-                            </div>
-                          )}
-                          {d.curr.sabado !== null && (
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', fontSize: '0.75rem' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <div style={{ width: '8px', height: '8px', background: '#f1c40f', borderRadius: '2px' }} />
-                                <span style={{ color: '#fff' }}>Sábado</span>
-                              </div>
-                              <strong>{formatShortCurrency(d.curr.sabado)}</strong>
-                            </div>
-                          )}
-                          {d.curr.domingo === null && d.curr.quarta === null && d.curr.sabado === null && (
+                          {hasNoData && (
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Sem dados em {chartYear}</div>
                           )}
                         </div>
