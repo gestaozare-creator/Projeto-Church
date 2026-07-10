@@ -133,9 +133,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
                     </div>
                     {activeMenu === 'financeiro' && (
                       <div className="sub-menu">
-                        <Link href="/financeiro" className={`sub-link ${pathname === '/financeiro' ? 'active' : ''}`}>📈 Dashboard Financeiro</Link>
-                        <Link href="/financeiro/receber" className={`sub-link ${pathname?.startsWith('/financeiro/receber') ? 'active' : ''}`}>💵 Contas a Receber</Link>
-                        <Link href="/financeiro/pagar" className={`sub-link ${pathname?.startsWith('/financeiro/pagar') ? 'active' : ''}`}>📉 Contas a Pagar</Link>
+                        <Link href="/financeiro" className={`sub-link ${pathname === '/financeiro' ? 'active' : ''}`}>📊 Dashboard Financeiro</Link>
+                        <Link href="/financeiro/receber" className={`sub-link ${pathname?.startsWith('/financeiro/receber') ? 'active' : ''}`}>💵 Receitas</Link>
+                        <Link href="/financeiro/pagar" className={`sub-link ${pathname?.startsWith('/financeiro/pagar') ? 'active' : ''}`}>📉 Despesas</Link>
                         <Link href="/financeiro/patrimonio" className={`sub-link ${pathname?.startsWith('/financeiro/patrimonio') ? 'active' : ''}`}>🪑 Gestão de Patrimônio</Link>
                       </div>
                     )}
