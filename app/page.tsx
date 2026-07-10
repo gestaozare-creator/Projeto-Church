@@ -30,6 +30,14 @@ export default function Home() {
   const { churches: dbChurches, loading: churchesLoading } = useChurches();
   const { members: allMembers, loading: membersLoading, setMembers } = useMembers();
 
+  useEffect(() => {
+    if (activeChurchId) {
+      setChurch(activeChurchId);
+    } else if (canSeeAllChurches) {
+      setChurch('ALL');
+    }
+  }, [activeChurchId, canSeeAllChurches]);
+
   // Filtramos os membros na memória para não refazer a chamada de rede à toa no MVP
   const members = useMemo(() => {
     if (canSeeAllChurches && church === 'ALL') return allMembers;

@@ -36,7 +36,11 @@ export async function POST(request: Request) {
       });
 
       if (authError) {
-        return NextResponse.json({ error: `Erro no Auth: ${authError.message}` }, { status: 400 });
+        let errorMessage = authError.message;
+        if (errorMessage.includes('already been registered')) {
+          errorMessage = 'Este e-mail já está cadastrado no sistema. Um e-mail só pode ser vinculado a um único acesso.';
+        }
+        return NextResponse.json({ error: `Erro no Auth: ${errorMessage}` }, { status: 400 });
       }
 
       const uid = authUser.user?.id;

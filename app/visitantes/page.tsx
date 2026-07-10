@@ -64,6 +64,14 @@ export default function Visitantes() {
   };
 
   const [churchF, setChurchF] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches ? 'all' : currentUser?.churchId || ''));
+
+  useEffect(() => {
+    if (activeChurchId) {
+      setChurchF(activeChurchId);
+    } else if (canSeeAllChurches) {
+      setChurchF("all");
+    }
+  }, [activeChurchId, canSeeAllChurches]);
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), 0, 1).toISOString().split('T')[0];

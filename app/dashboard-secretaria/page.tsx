@@ -304,6 +304,14 @@ export default function DashboardSecretariaPage() {
 
   const [dbChurches, setDbChurches] = useState<any[]>([]);
 
+  useEffect(() => {
+    if (activeChurchId) {
+      setChurch(activeChurchId);
+    } else if (canSeeAllChurches) {
+      setChurch("ALL");
+    }
+  }, [activeChurchId, canSeeAllChurches]);
+
   const availableHorarios = useMemo(() => {
     let svcs: any[] = [];
     if (church === "ALL") {

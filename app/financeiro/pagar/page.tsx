@@ -28,6 +28,14 @@ export default function ContasPagar() {
   const { churches, churchServices, suppliers } = useGlobalData();
   
   const [church, setChurch] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches ? 'ALL' : currentUser?.churchId || ''));
+
+  useEffect(() => {
+    if (activeChurchId) {
+      setChurch(activeChurchId);
+    } else if (canSeeAllChurches) {
+      setChurch('ALL');
+    }
+  }, [activeChurchId, canSeeAllChurches]);
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), 0, 1).toISOString().split('T')[0];
