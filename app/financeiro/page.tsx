@@ -263,9 +263,7 @@ export default function FinanceiroDashboardPage() {
       
       if (cultoFilter !== 'ALL') {
         const desc = t.description.toLowerCase();
-        if (cultoFilter === 'domingo' && !desc.includes('domingo')) return false;
-        if (cultoFilter === 'quarta' && !desc.includes('quarta')) return false;
-        if (cultoFilter === 'sabado' && !desc.includes('sabado') && !desc.includes('sábado')) return false;
+        if (!desc.includes(cultoFilter.toLowerCase())) return false;
       }
       
       if (horarioFilter !== 'ALL') {
@@ -274,7 +272,7 @@ export default function FinanceiroDashboardPage() {
 
       return true;
     });
-  }, [church, startDate, endDate, cultoFilter, horarioFilter]);
+  }, [church, startDate, endDate, cultoFilter, horarioFilter, dbTransactions]);
 
   // KPIs
   const receitas = filteredTransactions.filter(t => t.type === 'receita' && t.status === 'confirmado').reduce((a, b) => a + b.amount, 0);
@@ -357,7 +355,7 @@ export default function FinanceiroDashboardPage() {
       if (t.status === 'cancelado') return false;
       return true;
     });
-  }, [church]);
+  }, [church, dbTransactions]);
 
   // 7. Gráfico Evolutivo: Entradas por Culto Mês a Mês
   const evolucaoCultos = useMemo(() => {
