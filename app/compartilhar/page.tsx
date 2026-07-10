@@ -5,11 +5,11 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function Compartilhar() {
-  const { currentUser } = useAuth();
+  const { currentUser, activeChurchId } = useAuth();
   const [tab, setTab] = useState<'visitantes' | 'membros'>('visitantes');
   const [copiedV, setCopiedV] = useState(false);
   const [copiedM, setCopiedM] = useState(false);
-  const [selectedChurchId, setSelectedChurchId] = useState('');
+  const [selectedChurchId, setSelectedChurchId] = useState(activeChurchId || currentUser?.churchId || '');
   const [churches, setChurches] = useState<{ id: string; name: string }[]>([]);
 
   // Carrega as igrejas apenas para Superadmins poderem filtrar de qual igreja querem copiar o link
@@ -19,16 +19,22 @@ export default function Compartilhar() {
         const { data } = await supabase.from('churches').select('id, name').eq('status', 'ativa');
         if (data) {
           setChurches(data);
-          if (data.length > 0) {
+          if (data.length > 0 && !activeChurchId) {
             setSelectedChurchId(data[0].id);
           }
         }
-      } else if (currentUser?.churchId) {
+      } else if (currentUser?.churchId && !activeChurchId) {
         setSelectedChurchId(currentUser.churchId);
       }
     }
     loadChurches();
   }, [currentUser]);
+
+  useEffect(() => {
+    if (activeChurchId) {
+      setSelectedChurchId(activeChurchId);
+    }
+  }, [activeChurchId]);
 
   const base = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
   

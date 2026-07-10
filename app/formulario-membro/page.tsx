@@ -313,18 +313,9 @@ export default function FormularioMembro() {
               <input type="text" name="address" value={form.address} onChange={onChange} placeholder="Bairro, Cidade" style={fieldStyle} required />
             </div>
 
-            {!isLocked ? (
-              <div>
-                <label style={labelStyle}>Igreja / Congregação *</label>
-                <select name="churchId" value={form.churchId} onChange={onChange} style={fieldStyle} required>
-                  {churches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
-              </div>
-            ) : (
-              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px 14px', fontSize: '0.85rem', color: '#475569' }}>
-                <strong>Igreja / Congregação:</strong> {churches.find(c => c.id === form.churchId)?.name}
-              </div>
-            )}
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px 14px', fontSize: '0.85rem', color: '#475569' }}>
+              <strong>Igreja / Congregação:</strong> {churches.find(c => c.id === form.churchId)?.name}
+            </div>
 
             <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px 14px', fontSize: '0.8rem', color: '#64748b', lineHeight: '1.5' }}>
               ℹ️ Após aprovação, a secretaria da igreja definirá seu <strong>ministério</strong> e <strong>função</strong>.
