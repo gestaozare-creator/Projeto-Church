@@ -38,7 +38,7 @@ interface Member {
 const KIDS_ROLES = ['Berçário (0-2)', 'Maternal (3-5)', 'Juniores (6-9)', 'Teens (10-12)', 'Apoio'];
 
 export default function InfantilDashboardPage() {
-  const { currentUser } = useAuth();
+  const { currentUser, activeChurchId } = useAuth();
   
   // Abas do Módulo Kids
   const [activeTab, setActiveTab] = useState<'monitor' | 'checkin' | 'checkout' | 'escala'>('monitor');
@@ -152,11 +152,12 @@ export default function InfantilDashboardPage() {
   // 1. MONITOR DE SALAS: Agrupamento em tempo real
   useEffect(() => {
     async function carregarDadosIniciais() {
-      // 1. Buscar membros do Kids (Infantil)
+      const resolvedChurchId = activeChurchId || currentUser?.churchId;
       const { data: membersDb } = await supabase
         .from('members')
         .select('id, name, function, status')
-        .eq('ministry', 'Infantil');
+        .eq('ministry', 'Infantil')
+        .eq('church_id', resolvedChurchId);
       if (membersDb) setDbMembers(membersDb);
 
       // 1.5. Buscar configurações das salas do banco
@@ -185,9 +186,11 @@ export default function InfantilDashboardPage() {
         setRoomRules(prev => ({ ...prev, ...rulesMap }));
       }
 
-      // 2 e 3. Buscar crianças cadastradas e check-ins ativos via API segura
       try {
-        const res = await fetch('/api/get-kids-data');
+        const churchIdParams = activeChurchId ? `?churchId=${activeChurchId}` : (currentUser?.churchId ? `?churchId=${currentUser.churchId}` : '');
+        if (!churchIdParams) return;
+        
+        const res = await fetch(`/api/get-kids-data${churchIdParams}`);
         const data = await res.json();
         
         if (data.success) {
@@ -279,7 +282,7 @@ export default function InfantilDashboardPage() {
     return () => {
       supabase.removeChannel(canalCheckins);
     };
-  }, []);
+  }, [activeChurchId, currentUser?.churchId]);
 
   // Agrupamento para renderização do Monitor de Salas
   const currentRoomStats = useMemo(() => {
@@ -301,11 +304,8 @@ export default function InfantilDashboardPage() {
   }, [checkins, escalasGlobais, activeDate]);
 
   const saveToConfig = async (newEscalas: any) => {
-    let resolvedChurchId = currentUser?.churchId;
-    if (!resolvedChurchId) {
-      const { data: firstChurch } = await supabase.from('churches').select('id').limit(1).single();
-      resolvedChurchId = firstChurch?.id || '1';
-    }
+    let resolvedChurchId = activeChurchId || currentUser?.churchId || '';
+    if (!resolvedChurchId) return;
     try {
       const resp = await fetch("/api/save-scale", {
         method: "POST",
@@ -373,6 +373,7 @@ export default function InfantilDashboardPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          churchId: activeChurchId || currentUser?.churchId,
           action: 'checkin',
           kid_id: kid.id.startsWith('k-vis-') ? null : kid.id,
           room: room,
@@ -418,6 +419,7 @@ export default function InfantilDashboardPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          churchId: activeChurchId || currentUser?.churchId || '',
           id: tempKidId,
           name: visitorData.kidName,
           birth_date: visitorData.birthDate,

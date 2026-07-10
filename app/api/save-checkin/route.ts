@@ -30,11 +30,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, checkin: updatedCheckin });
     } else {
       // It's a check-in
-      const { kid_id, room, security_code, status, service_date, service_time } = body;
+      const { kid_id, room, security_code, status, service_date, service_time, churchId } = body;
+      
+      if (!churchId) {
+        return NextResponse.json({ error: "churchId is required" }, { status: 400 });
+      }
+
       const { data: newCheckin, error } = await supabaseAdmin
         .from('kids_checkin')
         .insert({
           kid_id: kid_id || null,
+          church_id: churchId,
           room,
           security_code,
           status: status || 'presente',

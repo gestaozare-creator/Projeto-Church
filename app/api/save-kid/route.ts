@@ -11,7 +11,11 @@ export async function POST(req: Request) {
     }
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-    const { id, name, birth_date, parent_id, emergency_contact, allergies, parentName } = await req.json();
+    const { id, name, birth_date, parent_id, emergency_contact, allergies, parentName, churchId } = await req.json();
+
+    if (!churchId) {
+      return NextResponse.json({ error: "churchId is required" }, { status: 400 });
+    }
 
     // Serialize parent name and allergies into the allergies text field 
     // to bypass the 20-character limit on emergency_contact
@@ -24,6 +28,7 @@ export async function POST(req: Request) {
       .from('kids')
       .insert({
         id,
+        church_id: churchId,
         name,
         birth_date,
         parent_id: parent_id || null,

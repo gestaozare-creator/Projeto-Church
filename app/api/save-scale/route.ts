@@ -15,12 +15,8 @@ export async function POST(req: Request) {
     
     let targetChurchId = churchId;
 
-    // Se o churchId vier como '1' (fallback) mas não houver igreja com ID 1, pegamos a primeira igreja do banco
-    if (churchId === '1') {
-      const { data: firstChurch } = await supabaseAdmin.from('churches').select('id').limit(1).single();
-      if (firstChurch) {
-        targetChurchId = firstChurch.id;
-      }
+    if (!targetChurchId || targetChurchId === '1') {
+      return NextResponse.json({ error: "Invalid or missing churchId" }, { status: 400 });
     }
     
     // Fetch current config

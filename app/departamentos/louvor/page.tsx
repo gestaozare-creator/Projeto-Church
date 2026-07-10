@@ -19,7 +19,7 @@ const LOUVOR_ROLES = [
 ];
 
 export default function LouvorDashboardPage() {
-  const { currentUser } = useAuth();
+  const { currentUser, activeChurchId } = useAuth();
 
   // ESTADOS MENSAIS E TIMELINE
   const [selectedMonthStr, setSelectedMonthStr] = useState(
@@ -59,10 +59,12 @@ export default function LouvorDashboardPage() {
   useEffect(() => {
     async function loadData() {
       // 1. Carregar membros do Louvor
+      const resolvedChurchId = activeChurchId || currentUser?.churchId;
       const { data: membersDb } = await supabase
         .from("members")
         .select("id, name, function, status")
-        .eq("ministry", "Louvor");
+        .eq("ministry", "Louvor")
+        .eq("church_id", resolvedChurchId);
 
       if (membersDb) {
         setDbMembers(membersDb);
@@ -73,12 +75,7 @@ export default function LouvorDashboardPage() {
       const startDate = `${y}-${m}-01`;
       const endDate = `${y}-${m}-31`;
 
-      // Resolve o churchId corretamente (nunca null)
-      let resolvedChurchId = currentUser?.churchId;
-      if (!resolvedChurchId) {
-        const { data: firstChurch } = await supabase.from('churches').select('id').limit(1).single();
-        resolvedChurchId = firstChurch?.id || null;
-      }
+      if (!resolvedChurchId) return;
 
       const { data: churchDb } = await supabase
         .from("churches")
@@ -102,7 +99,7 @@ export default function LouvorDashboardPage() {
     }
 
     loadData();
-  }, [selectedMonthStr]);
+  }, [selectedMonthStr, activeChurchId, currentUser?.churchId]);
 
   useEffect(() => {
     const dates = getCultosDoMes(selectedMonthStr);
@@ -144,11 +141,9 @@ export default function LouvorDashboardPage() {
 
   const saveToConfig = async (newEscalas: any) => {
     // Resolve o churchId corretamente
-    let resolvedChurchId = currentUser?.churchId;
-    if (!resolvedChurchId) {
-      const { data: firstChurch } = await supabase.from('churches').select('id').limit(1).single();
-      resolvedChurchId = firstChurch?.id || '1';
-    }
+    let resolvedChurchId = activeChurchId || currentUser?.churchId || '';
+    if (!resolvedChurchId) return;
+
     try {
       const resp = await fetch("/api/save-scale", {
         method: "POST",
