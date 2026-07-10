@@ -18,7 +18,7 @@ export default function AniversariantesPage() {
   const filteredMembers = useMemo(() => {
     return allMembers.filter(m => {
       if (churchF !== 'ALL' && m.church_id !== churchF) return false;
-      if (m.status !== 'ativo' && m.status !== 'membro') return false; // Apenas membros ativos? Ou visitantes também? 
+      if (m.status === 'inativo') return false; // Inclui ativos, visitantes, em_conversao
       // Vamos incluir membros, em conversão, visitantes, desde que tenham data
       if (!m.birthDate) return false;
       return true;

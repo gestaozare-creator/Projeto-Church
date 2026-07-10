@@ -349,6 +349,7 @@ export default function DashboardSecretariaPage() {
     members: true,
     visitors: true,
     converting: true,
+    total: false,
   });
 
   useEffect(() => {

@@ -227,6 +227,17 @@ export default function FinanceiroDashboardPage() {
     return formatCurrency(value).replace(',00', '');
   };
 
+  const availableCultos = useMemo(() => {
+    let svcs: any[] = [];
+    if (church === 'ALL') {
+      svcs = churchServices || [];
+    } else {
+      svcs = churchServices?.filter(s => s.church_id === church) || [];
+    }
+    const names = new Set(svcs.map(s => s.name));
+    return Array.from(names).sort();
+  }, [church, churchServices]);
+
   const availableHorarios = useMemo(() => {
     let svcs: any[] = [];
     if (church === 'ALL') {
@@ -812,7 +823,7 @@ export default function FinanceiroDashboardPage() {
                 >Linha</button>
               </div>
               <div style={{ display: 'flex', gap: '6px', fontSize: '0.65rem', flexWrap: 'wrap' }}>
-                {evolucaoCultos.cultos.map((culto, idx) => (
+                {evolucaoCultos.cultos.map((culto: string, idx: number) => (
                   <div key={culto} style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><div style={{ width: '8px', height: '8px', background: getCultoColor(idx), borderRadius: '2px' }}/> {culto}</div>
                 ))}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><div style={{ width: '8px', height: '8px', background: '#888888', borderRadius: '2px' }}/> Outros</div>
@@ -828,7 +839,7 @@ export default function FinanceiroDashboardPage() {
               <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1, gap: '4px', paddingBottom: '10px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                 {evolucaoCultos.data.map((d, i) => (
                   <div key={i} style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: '2px', height: '100%' }}>
-                    {evolucaoCultos.cultos.map((culto, idx) => (
+                    {evolucaoCultos.cultos.map((culto: string, idx: number) => (
                       d.curr[culto] != null && <div key={culto} style={{ width: '6px', height: `${(d.curr[culto]! / evolucaoCultos.max) * 90}%`, background: getCultoColor(idx), borderRadius: '2px 2px 0 0', transition: 'height 0.4s' }} title={`${culto}: ${formatShortCurrency(d.curr[culto]!)}`} />
                     ))}
                     {d.curr['Outros'] != null && <div key="Outros" style={{ width: '6px', height: `${(d.curr['Outros']! / evolucaoCultos.max) * 90}%`, background: '#888888', borderRadius: '2px 2px 0 0', transition: 'height 0.4s' }} title={`Outros: ${formatShortCurrency(d.curr['Outros']!)}`} />}
@@ -840,13 +851,13 @@ export default function FinanceiroDashboardPage() {
                 <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', display: 'block' }}>
                   {showCompareCultos && (
                     <>
-                      {evolucaoCultos.cultos.map((culto, idx) => (
+                      {evolucaoCultos.cultos.map((culto: string, idx: number) => (
                         <path key={`prev-${culto}`} d={buildEvolucaoLinePath(culto, true)} fill="none" stroke={getCultoColor(idx)} strokeWidth="1.5" strokeDasharray="2,2" opacity="0.4" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
                       ))}
                       <path d={buildEvolucaoLinePath('Outros', true)} fill="none" stroke="#888888" strokeWidth="1.5" strokeDasharray="2,2" opacity="0.4" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
                     </>
                   )}
-                  {evolucaoCultos.cultos.map((culto, idx) => (
+                  {evolucaoCultos.cultos.map((culto: string, idx: number) => (
                     <path key={`curr-${culto}`} d={buildEvolucaoLinePath(culto)} fill="none" stroke={getCultoColor(idx)} strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
                   ))}
                   <path d={buildEvolucaoLinePath('Outros')} fill="none" stroke="#888888" strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
@@ -877,7 +888,7 @@ export default function FinanceiroDashboardPage() {
 
                   return (
                     <div key={`dots-${i}`} style={{ position: 'absolute', left, top: 0, width: 0, height: '100%', pointerEvents: 'none' }}>
-                      {evolucaoCultos.cultos.map((culto, idx) => {
+                      {evolucaoCultos.cultos.map((culto: string, idx: number) => {
                         if (d.curr[culto] == null) return null;
                         const top = `${90 - (d.curr[culto]! / evolucaoCultos.max) * 80}%`;
                         return (
@@ -891,7 +902,7 @@ export default function FinanceiroDashboardPage() {
                       {isHovered && (
                         <div style={{ position: 'absolute', top: '-60px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(20,20,30,0.95)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 14px', borderRadius: '8px', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '6px', whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', pointerEvents: 'none' }}>
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, textAlign: 'center', marginBottom: '2px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '4px' }}>{d.monthStr}</div>
-                          {evolucaoCultos.cultos.map((culto, idx) => {
+                          {evolucaoCultos.cultos.map((culto: string, idx: number) => {
                             if (d.curr[culto] == null) return null;
                             return (
                               <div key={`tt-${culto}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', fontSize: '0.75rem' }}>
