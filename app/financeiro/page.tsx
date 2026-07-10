@@ -238,6 +238,33 @@ export default function FinanceiroDashboardPage() {
     return Array.from(names).sort();
   }, [church, churchServices]);
 
+  const cultosDaysMap = useMemo(() => {
+    let svcs: any[] = [];
+    if (church === 'ALL') {
+      svcs = churchServices || [];
+    } else {
+      svcs = churchServices?.filter(s => s.church_id === church) || [];
+    }
+    const map = new Map<string, string>();
+    svcs.forEach(s => {
+      if (s.name && s.dayOfWeek) {
+        map.set(s.name.toLowerCase(), s.dayOfWeek);
+      }
+    });
+    return map;
+  }, [church, churchServices]);
+
+  const availableDiasCulto = useMemo(() => {
+    let svcs: any[] = [];
+    if (church === 'ALL') {
+      svcs = churchServices || [];
+    } else {
+      svcs = churchServices?.filter(s => s.church_id === church) || [];
+    }
+    const dias = new Set(svcs.map(s => s.dayOfWeek).filter(Boolean));
+    return Array.from(dias).sort();
+  }, [church, churchServices]);
+
   const availableHorarios = useMemo(() => {
     let svcs: any[] = [];
     if (church === 'ALL') {
@@ -300,17 +327,17 @@ export default function FinanceiroDashboardPage() {
     
     filteredTransactions.filter(t => t.type === 'receita' && t.status === 'confirmado').forEach(t => {
       const desc = t.description.toLowerCase();
-      let matchedCulto = 'Outros';
+      let matchedDia = 'Outros';
       
       for (const culto of availableCultos) {
         if (desc.includes(culto.toLowerCase())) {
-          matchedCulto = culto;
+          matchedDia = cultosDaysMap.get(culto.toLowerCase()) || culto;
           break;
         }
       }
       
-      const current = map.get(matchedCulto) || 0;
-      map.set(matchedCulto, current + t.amount);
+      const current = map.get(matchedDia) || 0;
+      map.set(matchedDia, current + t.amount);
       total += t.amount;
     });
 
@@ -324,7 +351,7 @@ export default function FinanceiroDashboardPage() {
       });
 
     return { total, slices };
-  }, [filteredTransactions, availableCultos]);
+  }, [filteredTransactions, availableCultos, cultosDaysMap]);
 
   // 3. Lógica para Formas de Pagamento (Entradas)
   const pagamentosReceitaData = useMemo(() => {
@@ -398,21 +425,21 @@ export default function FinanceiroDashboardPage() {
       const amount = t.amount;
       const target = y === chartYear ? monthsData[m].curr : monthsData[m].prev;
       
-      let matchedCulto = 'Outros';
+      let matchedDia = 'Outros';
       for (const culto of availableCultos) {
         if (desc.includes(culto.toLowerCase())) {
-          matchedCulto = culto;
+          matchedDia = cultosDaysMap.get(culto.toLowerCase()) || culto;
           break;
         }
       }
       
-      if (target[matchedCulto] == null) target[matchedCulto] = 0;
-      target[matchedCulto]! += amount;
-      if (target[matchedCulto]! > maxValue) maxValue = target[matchedCulto]!;
+      if (target[matchedDia] == null) target[matchedDia] = 0;
+      target[matchedDia]! += amount;
+      if (target[matchedDia]! > maxValue) maxValue = target[matchedDia]!;
     });
     
-    return { data: monthsData, max: maxValue || 1, cultos: availableCultos };
-  }, [chartTransactions, chartYear, availableCultos]);
+    return { data: monthsData, max: maxValue || 1, cultos: availableDiasCulto };
+  }, [chartTransactions, chartYear, availableCultos, cultosDaysMap, availableDiasCulto]);
 
   const CULTOS_COLORS = ['#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#1abc9c', '#e74c3c'];
   const getCultoColor = (idx: number, isOutros = false) => isOutros ? '#888888' : CULTOS_COLORS[idx % CULTOS_COLORS.length];
