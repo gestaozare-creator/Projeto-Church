@@ -28,13 +28,17 @@ function DonutChart({
   data, 
   total, 
   formatValue = (v: number) => v.toString(),
-  formatCenterTotal = (v: number) => v.toString()
+  formatCenterTotal = (v: number) => v.toString(),
+  onClickSlice,
+  activeSlice
 }: { 
   title: string; 
   data: { key: string; label: string; value: number; color: string }[];
   total: number;
   formatValue?: (v: number) => string;
   formatCenterTotal?: (v: number) => string;
+  onClickSlice?: (key: string) => void;
+  activeSlice?: string | null;
 }) {
   const [hoveredSlice, setHoveredSlice] = useState<string | null>(null);
 
@@ -95,15 +99,18 @@ function DonutChart({
                 <g mask={`url(#donutMask-${title.replace(/[^a-z0-9]/gi, '')})`}>
                   {slices.map((slice, i) => {
                     const isHovered = hoveredSlice === slice.key;
-                    const scale = isHovered ? 'scale(1.08)' : 'scale(1)';
+                    const isActive = activeSlice === slice.key;
+                    const scale = isHovered ? 'scale(1.08)' : isActive ? 'scale(1.05)' : 'scale(1)';
+                    const opacity = (activeSlice && !isActive) ? 0.3 : 1;
                     return (
                       <path 
                         key={i} 
                         d={slice.pathData} 
                         fill={slice.color} 
-                        style={{ cursor: 'pointer', transform: scale, transformOrigin: 'center', transition: 'transform 0.2s' }}
+                        style={{ cursor: onClickSlice ? 'pointer' : 'default', transform: scale, transformOrigin: 'center', transition: 'transform 0.2s, opacity 0.2s', opacity }}
                         onMouseEnter={() => setHoveredSlice(slice.key)}
                         onMouseLeave={() => setHoveredSlice(null)}
+                        onClick={() => onClickSlice && onClickSlice(slice.key)}
                       />
                     );
                   })}
@@ -130,12 +137,15 @@ function DonutChart({
               {data.map((item, i) => {
                 if (item.value === 0) return null;
                 const isHovered = hoveredSlice === item.key;
+                const isActive = activeSlice === item.key;
+                const opacity = (hoveredSlice && !isHovered) ? 0.3 : (activeSlice && !isActive && !hoveredSlice) ? 0.3 : 1;
                 return (
                   <div 
                     key={i} 
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', opacity: (hoveredSlice && !isHovered) ? 0.3 : 1, transition: 'opacity 0.2s' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: onClickSlice ? 'pointer' : 'default', opacity, transition: 'opacity 0.2s' }}
                     onMouseEnter={() => setHoveredSlice(item.key)}
                     onMouseLeave={() => setHoveredSlice(null)}
+                    onClick={() => onClickSlice && onClickSlice(item.key)}
                   >
                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: item.color, flexShrink: 0 }} />
                     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
@@ -196,6 +206,7 @@ export default function FinanceiroDashboardPage() {
   const [church, setChurch] = useState(canSeeAllChurches ? 'ALL' : (currentUser?.churchId || 'ALL'));
   const [startDate, setStartDate] = useState(firstDayStr);
   const [endDate, setEndDate] = useState(lastDayStr);
+  const [selectedDia, setSelectedDia] = useState<string | null>(null);
   
   const [cultoFilter, setCultoFilter] = useState('ALL');
   const [horarioFilter, setHorarioFilter] = useState('ALL');
@@ -370,12 +381,27 @@ export default function FinanceiroDashboardPage() {
     return { total, slices };
   }, [filteredTransactions, availableCultos, cultosDaysMap]);
 
+  const selectedDiaTransactions = useMemo(() => {
+    if (!selectedDia) return filteredTransactions;
+    return filteredTransactions.filter(t => {
+      const desc = t.description.toLowerCase();
+      let matchedDia = 'Outros';
+      for (const culto of availableCultos) {
+        if (desc.includes(culto.toLowerCase())) {
+          matchedDia = cultosDaysMap.get(culto.toLowerCase()) || culto;
+          break;
+        }
+      }
+      return matchedDia === selectedDia;
+    });
+  }, [filteredTransactions, selectedDia, availableCultos, cultosDaysMap]);
+
   // Detalhamento por Horário de Culto
   const receitasHorarioData = useMemo(() => {
     const map = new Map<string, number>();
     let total = 0;
     
-    filteredTransactions.filter(t => t.type === 'receita' && t.status === 'confirmado').forEach(t => {
+    selectedDiaTransactions.filter(t => t.type === 'receita' && t.status === 'confirmado').forEach(t => {
       const desc = t.description.toLowerCase();
       let matchedTime = 'Outros';
       
@@ -401,13 +427,13 @@ export default function FinanceiroDashboardPage() {
       });
 
     return { total, slices };
-  }, [filteredTransactions, availableCultos, cultosTimeMap]);
+  }, [selectedDiaTransactions, availableCultos, cultosTimeMap]);
 
   // 3. Lógica para Formas de Pagamento (Entradas)
   const pagamentosReceitaData = useMemo(() => {
     const map = new Map<string, number>();
     let total = 0;
-    filteredTransactions.filter(t => t.type === 'receita' && t.status === 'confirmado').forEach(t => {
+    selectedDiaTransactions.filter(t => t.type === 'receita' && t.status === 'confirmado').forEach(t => {
       const current = map.get(t.paymentMethod) || 0;
       map.set(t.paymentMethod, current + t.amount);
       total += t.amount;
@@ -417,7 +443,7 @@ export default function FinanceiroDashboardPage() {
       key, label: key, value: val, color: colors[i % colors.length]
     }));
     return { total, slices };
-  }, [filteredTransactions]);
+  }, [selectedDiaTransactions]);
 
   // 4. Lógica para Formas de Pagamento (Saídas)
   const pagamentosSaidaData = useMemo(() => {
@@ -439,14 +465,14 @@ export default function FinanceiroDashboardPage() {
   const receitasPorCategoria = useMemo(() => {
     const map = new Map<string, number>();
     let max = 0;
-    filteredTransactions.filter(t => t.type === 'receita').forEach(t => {
+    selectedDiaTransactions.filter(t => t.type === 'receita').forEach(t => {
       const current = map.get(t.category) || 0;
       const newVal = current + t.amount;
       map.set(t.category, newVal);
       if (newVal > max) max = newVal;
     });
     return { data: Array.from(map.entries()).sort((a,b) => b[1] - a[1]), max };
-  }, [filteredTransactions]);
+  }, [selectedDiaTransactions]);
 
   const chartTransactions = useMemo(() => {
     return dbTransactions.filter(t => {
@@ -769,7 +795,14 @@ export default function FinanceiroDashboardPage() {
 
       {/* LINHA 1: ENTRADAS */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', flexShrink: 0 }}>
-        <DonutChart title="✝️ Entradas por Dia" data={receitasCultoData.slices} total={receitasCultoData.total} formatCenterTotal={formatShortCurrency} />
+        <DonutChart 
+          title="✝️ Entradas por Dia" 
+          data={receitasCultoData.slices} 
+          total={receitasCultoData.total} 
+          formatCenterTotal={formatShortCurrency} 
+          activeSlice={selectedDia}
+          onClickSlice={(key) => setSelectedDia(prev => prev === key ? null : key)}
+        />
         <DonutChart title="🕒 Entradas por Horário" data={receitasHorarioData.slices} total={receitasHorarioData.total} formatCenterTotal={formatShortCurrency} />
         
         {/* Detalhamento Entradas */}
