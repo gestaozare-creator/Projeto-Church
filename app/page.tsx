@@ -45,14 +45,8 @@ export default function Home() {
     return allMembers.filter(m => m.church_id === targetId);
   }, [allMembers, church, canSeeAllChurches, currentUser]);
 
-  const [startDate, setStartDate] = useState(() => {
-    const d = new Date();
-    return new Date(d.getFullYear(), 0, 1).toISOString().split('T')[0];
-  });
-  const [endDate, setEndDate] = useState(() => {
-    const d = new Date();
-    return new Date(d.getFullYear(), 11, 31).toISOString().split('T')[0];
-  });
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [cultoFilter, setCultoFilter] = useState('ALL');
   const [horarioFilter, setHorarioFilter] = useState('ALL');
 
