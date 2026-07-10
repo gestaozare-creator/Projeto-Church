@@ -255,6 +255,22 @@ export default function FinanceiroDashboardPage() {
     return map;
   }, [church, churchServices]);
 
+  const cultosTimeMap = useMemo(() => {
+    let svcs: any[] = [];
+    if (church === 'ALL') {
+      svcs = churchServices || [];
+    } else {
+      svcs = churchServices?.filter(s => s.church_id === church) || [];
+    }
+    const map = new Map<string, string>();
+    svcs.forEach(s => {
+      if (s.name && s.time) {
+        map.set(s.name.toLowerCase(), s.time);
+      }
+    });
+    return map;
+  }, [church, churchServices]);
+
   const availableDiasCulto = useMemo(() => {
     let svcs: any[] = [];
     if (church === 'ALL') {
@@ -353,6 +369,39 @@ export default function FinanceiroDashboardPage() {
 
     return { total, slices };
   }, [filteredTransactions, availableCultos, cultosDaysMap]);
+
+  // Detalhamento por Horário de Culto
+  const receitasHorarioData = useMemo(() => {
+    const map = new Map<string, number>();
+    let total = 0;
+    
+    filteredTransactions.filter(t => t.type === 'receita' && t.status === 'confirmado').forEach(t => {
+      const desc = t.description.toLowerCase();
+      let matchedTime = 'Outros';
+      
+      for (const culto of availableCultos) {
+        if (desc.includes(culto.toLowerCase())) {
+          matchedTime = cultosTimeMap.get(culto.toLowerCase()) || culto;
+          break;
+        }
+      }
+      
+      const current = map.get(matchedTime) || 0;
+      map.set(matchedTime, current + t.amount);
+      total += t.amount;
+    });
+
+    const colors = ['#e67e22', '#1abc9c', '#9b59b6', '#3498db', '#f1c40f', '#e74c3c'];
+    let colorIdx = 0;
+    const slices = Array.from(map.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([key, val]) => {
+        const color = key === 'Outros' ? '#888888' : colors[colorIdx++ % colors.length];
+        return { key, color, label: key, value: val };
+      });
+
+    return { total, slices };
+  }, [filteredTransactions, availableCultos, cultosTimeMap]);
 
   // 3. Lógica para Formas de Pagamento (Entradas)
   const pagamentosReceitaData = useMemo(() => {
@@ -720,7 +769,9 @@ export default function FinanceiroDashboardPage() {
 
       {/* LINHA 1: ENTRADAS */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', flexShrink: 0 }}>
-        <DonutChart title="✝️ Entradas por Culto" data={receitasCultoData.slices} total={receitasCultoData.total} formatCenterTotal={formatShortCurrency} />
+        <DonutChart title="✝️ Entradas por Dia" data={receitasCultoData.slices} total={receitasCultoData.total} formatCenterTotal={formatShortCurrency} />
+        <DonutChart title="🕒 Entradas por Horário" data={receitasHorarioData.slices} total={receitasHorarioData.total} formatCenterTotal={formatShortCurrency} />
+        
         {/* Detalhamento Entradas */}
         <div className="glass" style={{ padding: '20px', borderRadius: '14px', display: 'flex', flexDirection: 'column', height: '100%' }}>
           <h4 style={{ fontSize: '0.85rem', margin: '0 0 16px 0', color: '#2ecc71' }}>🟢 Detalhamento de Entradas (Por Categoria)</h4>
