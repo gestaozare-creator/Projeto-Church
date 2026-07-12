@@ -14,6 +14,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const showLocalMenus = !canSeeAllChurches || !!activeChurchId;
+  const canSeeRelatorios = currentUser && ['superadmin', 'pastor_diretor', 'admin', 'financeiro'].includes(currentUser.role);
 
   useEffect(() => {
     if (activeChurchId) {
@@ -186,6 +187,23 @@ function AppContent({ children }: { children: React.ReactNode }) {
                     {activeMenu === 'rede' && (
                       <div className="sub-menu">
                         <Link href="/rede" className={`sub-link ${pathname === '/rede' ? 'active' : ''}`}>📊 Painel da Rede</Link>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* RELATÓRIOS — Acesso restrito */}
+                {canSeeRelatorios && showLocalMenus && (
+                  <div className="nav-item">
+                    <div 
+                      className={`nav-link ${activeMenu === 'relatorios' ? 'active' : ''}`} 
+                      onClick={() => toggleMenu('relatorios')}
+                    >
+                      📄 Relatórios
+                    </div>
+                    {activeMenu === 'relatorios' && (
+                      <div className="sub-menu">
+                        <Link href="/relatorios" className={`sub-link ${pathname === '/relatorios' ? 'active' : ''}`}>📊 Resumo Mensal</Link>
                       </div>
                     )}
                   </div>
