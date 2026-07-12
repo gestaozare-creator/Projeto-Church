@@ -132,7 +132,7 @@ export default function RelatoriosPage() {
     
     try {
       const html2pdf = (await import('html2pdf.js')).default;
-      const opt = {
+      const opt: any = {
         margin:       10,
         filename:     `Relatorio_${monthNames[month]}_${year}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
