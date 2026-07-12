@@ -160,6 +160,10 @@
   gap: 15px;
 }
 
+.tables-row.finance-tables {
+  grid-template-columns: 6fr 4fr;
+}
+
 .tables-row.one-col-print {
   grid-template-columns: 1fr;
 }

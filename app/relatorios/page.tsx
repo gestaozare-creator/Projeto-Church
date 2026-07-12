@@ -417,11 +417,11 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
                       <h4 style={{ marginBottom: '10px', color: '#555', borderBottom: '1px solid #ddd', paddingBottom: '5px' }}>
                         📊 Resumo de Entradas por Culto
                       </h4>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                         {financeiroList.filter(f => f.receitas > 0).map((f, idx) => (
-                          <div key={idx} style={{ background: '#f4f4f4', border: '1px solid #ddd', borderRadius: '6px', padding: '8px 12px', flex: '1 1 auto', minWidth: '150px' }}>
-                            <div style={{ fontSize: '0.75rem', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>{f.culto}</div>
-                            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#27ae60' }}>{formatCurrency(f.receitas)}</div>
+                          <div key={idx} style={{ background: '#f4f4f4', border: '1px solid #ddd', borderRadius: '4px', padding: '4px 8px', flex: '1 1 auto', minWidth: '130px' }}>
+                            <div style={{ fontSize: '0.65rem', color: '#666', textTransform: 'uppercase', marginBottom: '2px' }}>{f.culto}</div>
+                            <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#27ae60' }}>{formatCurrency(f.receitas)}</div>
                           </div>
                         ))}
                       </div>
@@ -475,8 +475,8 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
                       <table className="rel-table">
                         <thead>
                           <tr>
-                            <th>Despesa / Destino</th>
                             <th>Data</th>
+                            <th>Despesa / Destino</th>
                             <th style={{ textAlign: 'right' }}>Valor</th>
                           </tr>
                         </thead>
@@ -486,11 +486,11 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
                           ) : (
                             expenses.map(t => (
                               <tr key={t.id}>
+                                <td>{formatDate(t.date)}</td>
                                 <td>
-                                  <div style={{ fontWeight: 'bold' }}>{t.category || 'Saída'}</div>
+                                  <div style={{ fontWeight: 'bold' }}>{t.category || 'Despesa'}</div>
                                   <div style={{ fontSize: '0.75rem', color: '#666' }}>{t.description}</div>
                                 </td>
-                                <td>{formatDate(t.date)}</td>
                                 <td style={{ textAlign: 'right' }} className="text-red">{formatCurrency(t.amount)}</td>
                               </tr>
                             ))
