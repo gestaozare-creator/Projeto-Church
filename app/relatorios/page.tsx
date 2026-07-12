@@ -35,7 +35,7 @@ export default function RelatoriosPage() {
 
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [month, setMonth] = useState<number>(new Date().getMonth());
-  const [reportType, setReportType] = useState<ReportType>('TODOS');
+  const [reportType, setReportType] = useState<ReportType>('SECRETARIA');
   
   const [churchName, setChurchName] = useState<string>('');
   const [members, setMembers] = useState<MemberData[]>([]);
@@ -184,14 +184,22 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
         
         <div className="relatorios-filters">
           <div className="filter-group">
-            <label>Tipo:</label>
-            <select value={reportType} onChange={e => setReportType(e.target.value as ReportType)} className="glass-input" style={{ width: '150px' }}>
-              <option value="TODOS">Completo</option>
-              <option value="SECRETARIA">Apenas Secretaria</option>
-              <option value="FINANCEIRO">Apenas Financeiro</option>
-              <option value="RECEITAS">Apenas Receitas</option>
-              <option value="DESPESAS">Apenas Despesas</option>
-            </select>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                onClick={() => setReportType('SECRETARIA')} 
+                className={`glass-button ${reportType === 'SECRETARIA' ? 'active-filter' : ''}`}
+                style={{ padding: '10px 15px', borderRadius: '8px', border: reportType === 'SECRETARIA' ? '1px solid #3498db' : '1px solid rgba(255,255,255,0.2)', background: reportType === 'SECRETARIA' ? 'rgba(52, 152, 219, 0.2)' : 'rgba(255,255,255,0.1)' }}
+              >
+                📁 Secretaria
+              </button>
+              <button 
+                onClick={() => setReportType('FINANCEIRO')} 
+                className={`glass-button ${reportType === 'FINANCEIRO' ? 'active-filter' : ''}`}
+                style={{ padding: '10px 15px', borderRadius: '8px', border: reportType === 'FINANCEIRO' ? '1px solid #2ecc71' : '1px solid rgba(255,255,255,0.2)', background: reportType === 'FINANCEIRO' ? 'rgba(46, 204, 113, 0.2)' : 'rgba(255,255,255,0.1)' }}
+              >
+                💰 Financeiro
+              </button>
+            </div>
           </div>
 
           <div className="filter-group">
@@ -241,7 +249,7 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
               <div className="relatorio-section">
                 <h3 className="section-title">🔥 Crescimento de Almas (Por Cultos)</h3>
                 
-                <div className={`tables-row ${reportType === 'SECRETARIA' ? 'one-col-print' : ''}`}>
+                <div className="tables-row">
                   {/* VISITANTES */}
                   <div className="table-wrapper">
                     <h4 className="table-subtitle highlight-orange">👋 Visitantes ({visitors.length})</h4>
