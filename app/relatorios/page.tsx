@@ -28,6 +28,7 @@ interface TransactionData {
   type: 'INCOME' | 'EXPENSE' | 'receita' | 'despesa';
   date: string;
   category: string;
+  payment_method?: string;
 }
 
 type ReportType = 'TODOS' | 'SECRETARIA' | 'FINANCEIRO' | 'RECEITAS' | 'DESPESAS';
