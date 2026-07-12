@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 import './relatorios.css';
 
 const monthNames = [
@@ -43,12 +44,29 @@ export default function RelatoriosPage() {
   const [transactions, setTransactions] = useState<TransactionData[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [churchList, setChurchList] = useState<any[]>([]);
+  const [selectedChurch, setSelectedChurch] = useState<string>('');
+
   const isAllowed = currentUser && ['superadmin', 'pastor_diretor', 'admin', 'financeiro'].includes(currentUser.role);
+
+  useEffect(() => {
+    if (canSeeAllChurches) {
+      supabase.from('churches').select('id, name').order('name').then(({ data }) => {
+        if (data && data.length > 0) {
+          setChurchList(data);
+          if (!selectedChurch && !activeChurchId) {
+            setSelectedChurch(data[0].id);
+          }
+        }
+      });
+    }
+  }, [canSeeAllChurches, activeChurchId, selectedChurch]);
 
   useEffect(() => {
     if (!currentUser || !isAllowed) return;
 
-    const churchToFetch = activeChurchId || currentUser.churchId;
+    const churchToFetch = selectedChurch || activeChurchId || currentUser.churchId;
+    if (!churchToFetch) return; // Wait until we have a church to fetch
 
     const fetchData = async () => {
       setLoading(true);
@@ -70,7 +88,7 @@ export default function RelatoriosPage() {
     };
 
     fetchData();
-  }, [year, month, currentUser, activeChurchId, canSeeAllChurches, isAllowed]);
+  }, [year, month, currentUser, activeChurchId, canSeeAllChurches, isAllowed, selectedChurch]);
 
   if (!currentUser) return null;
 
@@ -183,6 +201,22 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
         </div>
         
         <div className="relatorios-filters">
+          {canSeeAllChurches && churchList.length > 0 && (
+            <div className="filter-group">
+              <label>Igreja:</label>
+              <select 
+                value={selectedChurch || activeChurchId || ''} 
+                onChange={e => setSelectedChurch(e.target.value)} 
+                className="glass-input" 
+                style={{ width: '180px' }}
+              >
+                {churchList.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="filter-group">
             <div style={{ display: 'flex', gap: '10px' }}>
               <button 
