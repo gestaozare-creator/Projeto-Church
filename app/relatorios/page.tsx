@@ -11,6 +11,8 @@ const monthNames = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
+const daysOfWeek = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+
 interface MemberData {
   id: string;
   name: string;
@@ -103,8 +105,16 @@ export default function RelatoriosPage() {
     );
   }
 
+  const formatCultoKey = (culto?: string, horario?: string) => {
+    let diaEHora = horario || 'S/ Horário';
+    let nomeCulto = culto || 'Geral';
+    // Se o horário não tiver "feira" ou "Domingo"/"Sábado", e for apenas uma hora, podemos tentar inferir, 
+    // mas geralmente o BD de membros já traz "Quinta-feira às 15:00".
+    return `${diaEHora} - ${nomeCulto}`;
+  };
+
   const visitantesPorCulto = visitors.reduce((acc, v) => {
-    const chave = `${v.culto || 'Geral'} - ${v.horario || 'S/ Horário'}`;
+    const chave = formatCultoKey(v.culto, v.horario);
     if(!acc[chave]) acc[chave] = { total: 0, em_conversao: 0 };
     acc[chave].total++;
     if(v.status === 'em_conversao' || v.status === 'Em Consolidação' || v.status === 'Novo' || v.status === 'Ativo') {
@@ -113,21 +123,61 @@ export default function RelatoriosPage() {
     return acc;
   }, {} as Record<string, { total: number, em_conversao: number }>);
 
-  const visitantesList = Object.keys(visitantesPorCulto).map(chave => ({
+  const visitantesList = Object.keys(visitantesPorCulto).sort().map(chave => ({
     culto: chave,
     ...visitantesPorCulto[chave]
   }));
 
   const membrosPorCulto = members.reduce((acc, m) => {
-    const chave = `${m.culto || 'Geral'} - ${m.horario || 'S/ Horário'}`;
+    const chave = formatCultoKey(m.culto, m.horario);
     if(!acc[chave]) acc[chave] = 0;
     acc[chave]++;
     return acc;
   }, {} as Record<string, number>);
 
-  const membrosList = Object.keys(membrosPorCulto).map(chave => ({
+  const membrosList = Object.keys(membrosPorCulto).sort().map(chave => ({
     culto: chave,
     total: membrosPorCulto[chave]
+  }));
+
+  // Agrupamento Financeiro por Dia/Horário
+  const extractDayTimeFromTransaction = (t: TransactionData) => {
+    // Ex: "teste - Culto de Culto da Familia às 19:30"
+    const regexTime = /(?:às|as)\s+(\d{2}:\d{2})/i;
+    const matchTime = t.description?.match(regexTime);
+    let time = matchTime ? matchTime[1] : '';
+
+    const regexCulto = /Culto de (.*?)(?:\s+às|\s*$)/i;
+    const matchCulto = t.description?.match(regexCulto);
+    let cultoName = matchCulto ? matchCulto[1].trim() : 'Geral/Outros';
+
+    let dayOfWeek = '';
+    if (t.date) {
+      const d = new Date(t.date + 'T12:00:00Z'); // Força o fuso para evitar pular dia
+      if (!isNaN(d.getTime())) {
+        dayOfWeek = daysOfWeek[d.getUTCDay()];
+      }
+    }
+
+    if (!time && !dayOfWeek) return 'Outras Movimentações (S/ Culto)';
+    if (!time) return `${dayOfWeek} (S/ Horário) - ${cultoName}`;
+    return `${dayOfWeek} às ${time} - ${cultoName}`;
+  };
+
+  const financeiroAgrupado = transactions.reduce((acc, t) => {
+    const chave = extractDayTimeFromTransaction(t);
+    if (!acc[chave]) acc[chave] = { receitas: 0, despesas: 0 };
+    if (t.type === 'INCOME' || t.type === 'receita') {
+      acc[chave].receitas += Number(t.amount);
+    } else {
+      acc[chave].despesas += Number(t.amount);
+    }
+    return acc;
+  }, {} as Record<string, { receitas: number, despesas: number }>);
+
+  const financeiroList = Object.keys(financeiroAgrupado).sort().map(chave => ({
+    culto: chave,
+    ...financeiroAgrupado[chave]
   }));
 
   const incomes = transactions.filter(t => t.type === 'INCOME' || t.type === 'receita');
@@ -354,6 +404,40 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
                 )}
                 
                 <div className={`tables-row finance-tables ${(showReceitas && !showDespesas) || (!showReceitas && showDespesas) ? 'one-col-print' : ''}`}>
+                  {/* Resumo Agrupado (Novo) */}
+                  {reportType === 'FINANCEIRO' && financeiroList.length > 0 && (
+                    <div className="table-wrapper" style={{ gridColumn: '1 / -1', marginBottom: '15px' }}>
+                      <div className="table-header-flex">
+                        <h4 className="table-subtitle">📊 Resumo Agrupado por Dia/Horário de Culto</h4>
+                      </div>
+                      <table className="rel-table">
+                        <thead>
+                          <tr>
+                            <th>Dia da Semana / Horário / Culto</th>
+                            <th style={{ textAlign: 'right' }}>Total Entradas</th>
+                            <th style={{ textAlign: 'right' }}>Total Saídas</th>
+                            <th style={{ textAlign: 'right' }}>Saldo do Culto</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {financeiroList.map((f, idx) => {
+                            const saldo = f.receitas - f.despesas;
+                            return (
+                              <tr key={idx}>
+                                <td><strong>{f.culto}</strong></td>
+                                <td style={{ textAlign: 'right' }} className="text-green">{formatCurrency(f.receitas)}</td>
+                                <td style={{ textAlign: 'right' }} className="text-red">{formatCurrency(f.despesas)}</td>
+                                <td style={{ textAlign: 'right', fontWeight: 'bold', color: saldo >= 0 ? '#27ae60' : '#c0392b' }}>
+                                  {formatCurrency(saldo)}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
                   {/* ENTRADAS */}
                   {showReceitas && (
                     <div className="table-wrapper">
