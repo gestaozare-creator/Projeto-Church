@@ -22,12 +22,14 @@ export async function GET(req: Request) {
     const monthNum = parseInt(month, 10);
     const yearNum = parseInt(year, 10);
     
-    // Calculate start and end dates for the selected month
-    const startDate = new Date(yearNum, monthNum, 1);
-    const endDate = new Date(yearNum, monthNum + 1, 0, 23, 59, 59);
-
-    const startDateStr = startDate.toISOString().split('T')[0];
-    const endDateStr = endDate.toISOString().split('T')[0];
+    // Manually construct YYYY-MM-DD strings to avoid UTC timezone shifts
+    const monthFormatted = (monthNum + 1).toString().padStart(2, '0');
+    const startDateStr = `${yearNum}-${monthFormatted}-01`;
+    // Find the last day of the month by rolling back 1 day from the next month
+    const nextMonth = monthNum + 1 > 11 ? 0 : monthNum + 1;
+    const nextMonthYear = monthNum + 1 > 11 ? yearNum + 1 : yearNum;
+    const lastDay = new Date(nextMonthYear, nextMonth, 0).getDate();
+    const endDateStr = `${yearNum}-${monthFormatted}-${lastDay.toString().padStart(2, '0')}`;
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -40,11 +42,12 @@ export async function GET(req: Request) {
 
     const churchName = churchData?.name || 'Igreja';
 
-    // 1. Fetch Members
+    // 1. Fetch Members (Excluding Visitors)
     const { data: members, error: memError } = await supabaseAdmin
       .from('members')
-      .select('id, name, phone, integration_date, created_at, status, culto, horario')
-      .eq('church_id', churchId);
+      .select('id, name, phone, integration_date, created_at, status, culto, horario, function')
+      .eq('church_id', churchId)
+      .neq('function', 'Visitante');
 
     if (memError) throw memError;
 
@@ -55,15 +58,21 @@ export async function GET(req: Request) {
       return d.getFullYear() === yearNum && d.getMonth() === monthNum;
     }) || [];
 
-    // 2. Fetch Visitors
+    // 2. Fetch Visitors (From members table where function = 'Visitante')
     const { data: visitors, error: visError } = await supabaseAdmin
-      .from('visitors')
-      .select('id, name, phone, created_at, status, culto, horario')
+      .from('members')
+      .select('id, name, phone, created_at, status, culto, horario, function')
       .eq('church_id', churchId)
-      .gte('created_at', startDateStr)
-      .lte('created_at', endDateStr + 'T23:59:59');
+      .eq('function', 'Visitante');
 
     if (visError) throw visError;
+
+    const filteredVisitors = visitors?.filter((v: any) => {
+      const dateStr = v.created_at;
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      return d.getFullYear() === yearNum && d.getMonth() === monthNum;
+    }) || [];
 
     // 3. Fetch Transactions
     const { data: transactions, error: transError } = await supabaseAdmin
@@ -80,7 +89,7 @@ export async function GET(req: Request) {
       success: true, 
       churchName,
       members: filteredMembers,
-      visitors: visitors || [],
+      visitors: filteredVisitors,
       transactions: transactions || []
     });
 
