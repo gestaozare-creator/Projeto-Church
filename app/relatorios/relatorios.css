@@ -1,128 +1,214 @@
-.reports-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 25px;
+.relatorios-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.report-card {
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  overflow: hidden;
-  border-radius: 16px;
-  background: var(--card-bg, rgba(255, 255, 255, 0.03));
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: transform 0.2s;
-}
-
-.report-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-.report-card.empty {
-  opacity: 0.6;
-}
-
-.report-header {
+.relatorios-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
-  background: rgba(0, 0, 0, 0.15);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 30px;
+  background: var(--card-bg, rgba(255, 255, 255, 0.03));
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
-.report-header h3 {
-  margin: 0;
-  font-size: 1.1rem;
-  color: #fff;
-}
-
-.report-actions {
+.relatorios-filters {
   display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.report-actions button {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.btn-print, .btn-whatsapp {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
   color: #fff;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
+  padding: 10px 15px;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: bold;
   transition: all 0.2s;
 }
+.btn-print:hover { background: rgba(255,255,255,0.2); }
+.btn-whatsapp:hover { background: rgba(39, 174, 96, 0.4); border-color: #2ecc71; }
 
-.report-actions button:hover {
-  background: rgba(255, 255, 255, 0.2);
+.relatorio-section {
+  margin-bottom: 30px;
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
-.report-body {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.section-title {
+  margin: 0 0 20px 0;
+  font-size: 1.4rem;
+  border-bottom: 1px dashed rgba(255,255,255,0.1);
+  padding-bottom: 10px;
 }
 
-.report-section h4 {
-  margin: 0 0 10px 0;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.report-stat-grid {
+.tables-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 30px;
 }
 
-.report-stat {
-  display: flex;
-  flex-direction: column;
-  background: rgba(0, 0, 0, 0.1);
-  padding: 12px;
+@media (max-width: 1000px) {
+  .tables-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.table-wrapper {
+  background: rgba(0,0,0,0.2);
   border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.05);
+  overflow: hidden;
 }
 
-.stat-label {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
+.table-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
-.stat-value {
+.table-subtitle {
+  margin: 0;
+  padding: 12px 15px;
+  font-size: 1.1rem;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.table-header-flex .table-subtitle {
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+.table-total {
   font-size: 1.2rem;
   font-weight: bold;
 }
 
+.rel-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rel-table th, .rel-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.9rem;
+}
+
+.rel-table th {
+  color: var(--text-secondary);
+  font-weight: normal;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  background: rgba(255,255,255,0.02);
+}
+
+.empty-state {
+  text-align: center !important;
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: 30px !important;
+}
+
+.finance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.finance-balance {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background: rgba(0,0,0,0.3);
+  padding: 15px 25px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.05);
+  margin-top: -10px;
+}
+
+.finance-balance span {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.finance-balance strong {
+  font-size: 2rem;
+}
+
+.finance-balance.positive strong { color: #2ecc71; }
+.finance-balance.negative strong { color: #e74c3c; }
+
 .highlight-blue { color: #3498db; }
 .highlight-orange { color: #e67e22; }
-.text-green { color: #2ecc71; }
-.text-red { color: #e74c3c; }
+.text-green { color: #2ecc71 !important; }
+.text-red { color: #e74c3c !important; }
 
+/* Impressão Limpa */
 @media print {
-  body * {
-    visibility: hidden;
-  }
-  .report-body, .report-body * {
-    visibility: visible;
-  }
-  .report-body {
-    position: absolute;
-    left: 0;
-    top: 50px;
-    width: 100%;
+  body {
+    background: #fff;
     color: #000;
   }
-  .stat-label { color: #555; }
-  .text-green { color: #27ae60; }
-  .text-red { color: #c0392b; }
-  .report-stat {
-    background: #f9f9f9;
-    border: 1px solid #eee;
+  .no-print {
+    display: none !important;
   }
+  .print-area {
+    width: 100%;
+  }
+  .print-only-title {
+    display: block !important;
+  }
+  .relatorio-section {
+    background: #fff;
+    border: 1px solid #ccc;
+    box-shadow: none;
+    margin-bottom: 40px;
+    page-break-inside: avoid;
+  }
+  .table-wrapper {
+    background: #fff;
+    border: 1px solid #ccc;
+  }
+  .table-subtitle, .table-header-flex {
+    background: #f9f9f9;
+    border-bottom: 1px solid #ccc;
+    color: #000;
+  }
+  .rel-table th, .rel-table td {
+    border-bottom: 1px solid #eee;
+    color: #333;
+  }
+  .rel-table th {
+    background: #f0f0f0;
+    color: #000;
+  }
+  .finance-balance {
+    background: #f9f9f9;
+    border: 1px solid #ccc;
+  }
+  .text-green, .finance-balance.positive strong { color: #27ae60 !important; }
+  .text-red, .finance-balance.negative strong { color: #c0392b !important; }
+  .highlight-blue, .highlight-orange { color: #000; }
 }

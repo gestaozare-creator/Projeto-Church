@@ -1,21 +1,30 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/navigation';
-import './relatorios.css'; // Let's create this file next
+import './relatorios.css';
 
 const monthNames = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
-interface MonthlyData {
-  monthIndex: number;
-  newMembers: number;
-  newVisitors: number;
-  income: number;
-  expense: number;
+interface MemberData {
+  id: string;
+  name: string;
+  phone: string;
+  integration_date: string;
+  created_at: string;
+}
+
+interface TransactionData {
+  id: string;
+  description: string;
+  amount: number;
+  type: 'INCOME' | 'EXPENSE';
+  date: string;
+  category: string;
 }
 
 export default function RelatoriosPage() {
@@ -23,27 +32,30 @@ export default function RelatoriosPage() {
   const router = useRouter();
 
   const [year, setYear] = useState<number>(new Date().getFullYear());
-  const [data, setData] = useState<MonthlyData[]>([]);
+  const [month, setMonth] = useState<number>(new Date().getMonth());
+  
+  const [members, setMembers] = useState<MemberData[]>([]);
+  const [visitors, setVisitors] = useState<MemberData[]>([]);
+  const [transactions, setTransactions] = useState<TransactionData[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Verifica permissão
   const isAllowed = currentUser && ['superadmin', 'pastor_diretor', 'admin', 'financeiro'].includes(currentUser.role);
 
   useEffect(() => {
-    if (!currentUser) return;
-    if (!isAllowed) {
-      return; // Será renderizado o bloqueio abaixo
-    }
+    if (!currentUser || !isAllowed) return;
 
     const churchToFetch = activeChurchId || (canSeeAllChurches ? '1' : currentUser.churchId);
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/get-relatorios-data?churchId=${churchToFetch}&year=${year}`);
+        const res = await fetch(`/api/get-relatorios-data?churchId=${churchToFetch}&year=${year}&month=${month}`);
         const result = await res.json();
         if (result.success) {
-          setData(result.data);
+          setMembers(result.members || []);
+          setVisitors(result.visitors || []);
+          setTransactions(result.transactions || []);
         } else {
           console.error(result.error);
         }
@@ -54,7 +66,7 @@ export default function RelatoriosPage() {
     };
 
     fetchData();
-  }, [year, currentUser, activeChurchId, canSeeAllChurches, isAllowed]);
+  }, [year, month, currentUser, activeChurchId, canSeeAllChurches, isAllowed]);
 
   if (!currentUser) return null;
 
@@ -69,38 +81,38 @@ export default function RelatoriosPage() {
     );
   }
 
-  const handlePrint = (monthIndex: number) => {
-    const printContents = document.getElementById(`print-month-${monthIndex}`)?.innerHTML;
-    const originalContents = document.body.innerHTML;
+  const incomes = transactions.filter(t => t.type === 'INCOME');
+  const expenses = transactions.filter(t => t.type === 'EXPENSE');
+  
+  const totalIncome = incomes.reduce((acc, t) => acc + Number(t.amount), 0);
+  const totalExpense = expenses.reduce((acc, t) => acc + Number(t.amount), 0);
+  const balance = totalIncome - totalExpense;
 
-    if (printContents) {
-      document.body.innerHTML = `
-        <div style="padding: 40px; font-family: sans-serif;">
-          <h1 style="text-align: center; margin-bottom: 30px;">Relatório Mensal - ${monthNames[monthIndex]} ${year}</h1>
-          ${printContents}
-        </div>
-      `;
-      window.print();
-      document.body.innerHTML = originalContents;
-      window.location.reload(); // To restore React event listeners
-    }
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '-';
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleDateString('pt-BR');
   };
 
-  const handleWhatsApp = (month: MonthlyData) => {
-    const balance = month.income - month.expense;
+  const formatCurrency = (val: number) => val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleWhatsApp = () => {
     const isPositive = balance >= 0;
-    
-    const formatCurrency = (val: number) => val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const text = `*RELATÓRIO DETALHADO - ${monthNames[month].toUpperCase()} ${year}* 📊
 
-    const text = `*RELATÓRIO MENSAL - ${monthNames[month.monthIndex].toUpperCase()} ${year}* 📊
-
-*Crescimento da Igreja* 📈
-👥 Novos Membros: ${month.newMembers}
-👋 Novos Visitantes: ${month.newVisitors}
+*Crescimento (Almas)* 🔥
+👥 Novos Membros: ${members.length}
+👋 Novos Visitantes: ${visitors.length}
+_(Visitantes são a porta de entrada para novos membros)_
 
 *Resumo Financeiro* 💰
-🟢 Entradas: ${formatCurrency(month.income)}
-🔴 Saídas: ${formatCurrency(month.expense)}
+🟢 Entradas: ${formatCurrency(totalIncome)}
+🔴 Saídas: ${formatCurrency(totalExpense)}
 ${isPositive ? '🔵 Saldo Positivo:' : '🔴 Saldo Negativo:'} ${formatCurrency(balance)}
 
 Gerado pelo _Projeto Church_`;
@@ -110,86 +122,182 @@ Gerado pelo _Projeto Church_`;
   };
 
   return (
-    <div className="fade-in" style={{ padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '30px' }}>
+    <div className="fade-in relatorios-container">
+      <div className="relatorios-header no-print">
         <div>
-          <h2 style={{ fontSize: '1.8rem', margin: '0 0 5px 0' }}>📄 Relatórios Consolidados</h2>
+          <h2 style={{ fontSize: '1.8rem', margin: '0 0 5px 0' }}>📄 Relatório Detalhado</h2>
           <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>
-            Acompanhe o crescimento de almas e o panorama financeiro de cada mês.
+            Acompanhamento linha a linha de membros, visitantes e caixa.
           </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <label style={{ fontWeight: 'bold' }}>Ano de Referência:</label>
-          <select 
-            value={year} 
-            onChange={e => setYear(Number(e.target.value))}
-            className="glass-input"
-            style={{ padding: '10px', borderRadius: '8px', minWidth: '100px' }}
-          >
-            {[...Array(5)].map((_, i) => {
-              const y = new Date().getFullYear() - i;
-              return <option key={y} value={y}>{y}</option>;
-            })}
-          </select>
+        
+        <div className="relatorios-filters">
+          <div className="filter-group">
+            <label>Mês:</label>
+            <select value={month} onChange={e => setMonth(Number(e.target.value))} className="glass-input">
+              {monthNames.map((m, i) => (
+                <option key={i} value={i}>{m}</option>
+              ))}
+            </select>
+          </div>
+          
+          <div className="filter-group">
+            <label>Ano:</label>
+            <select value={year} onChange={e => setYear(Number(e.target.value))} className="glass-input">
+              {[...Array(5)].map((_, i) => {
+                const y = new Date().getFullYear() - i;
+                return <option key={y} value={y}>{y}</option>;
+              })}
+            </select>
+          </div>
+
+          <button onClick={handlePrint} className="btn-print" title="Gerar PDF (Imprimir)">🖨️ PDF</button>
+          <button onClick={handleWhatsApp} className="btn-whatsapp" title="Enviar Resumo">💬 WhatsApp</button>
         </div>
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-secondary)' }}>Carregando relatórios...</div>
+        <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-secondary)' }}>Carregando dados detalhados...</div>
       ) : (
-        <div className="reports-grid">
-          {data.map((month) => {
-            const balance = month.income - month.expense;
-            const hasData = month.newMembers > 0 || month.newVisitors > 0 || month.income > 0 || month.expense > 0;
+        <div className="print-area">
+          <div className="print-only-title" style={{ display: 'none', textAlign: 'center', marginBottom: '20px' }}>
+            <h1>Relatório Mensal - {monthNames[month]} de {year}</h1>
+          </div>
 
-            return (
-              <div key={month.monthIndex} className={`report-card glass ${!hasData ? 'empty' : ''}`}>
-                <div className="report-header">
-                  <h3>{monthNames[month.monthIndex]}</h3>
-                  <div className="report-actions">
-                    <button onClick={() => handlePrint(month.monthIndex)} title="Gerar PDF (Imprimir)">🖨️ PDF</button>
-                    <button onClick={() => handleWhatsApp(month)} title="Enviar WhatsApp">💬 WhatsApp</button>
-                  </div>
-                </div>
-
-                <div id={`print-month-${month.monthIndex}`} className="report-body">
-                  <div className="report-section">
-                    <h4>🔥 Crescimento de Almas</h4>
-                    <div className="report-stat-grid">
-                      <div className="report-stat">
-                        <span className="stat-label">Novos Membros</span>
-                        <span className="stat-value highlight-blue">+{month.newMembers}</span>
-                      </div>
-                      <div className="report-stat">
-                        <span className="stat-label">Novos Visitantes</span>
-                        <span className="stat-value highlight-orange">+{month.newVisitors}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="report-section">
-                    <h4>💰 Panorama Financeiro</h4>
-                    <div className="report-stat-grid">
-                      <div className="report-stat">
-                        <span className="stat-label">Entradas</span>
-                        <span className="stat-value text-green">{month.income.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                      </div>
-                      <div className="report-stat">
-                        <span className="stat-label">Saídas</span>
-                        <span className="stat-value text-red">{month.expense.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                      </div>
-                    </div>
-                    <div className="report-balance" style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed rgba(255,255,255,0.1)' }}>
-                      <span className="stat-label" style={{ display: 'block', marginBottom: '4px' }}>Saldo do Mês</span>
-                      <span className={`stat-value ${balance >= 0 ? 'text-green' : 'text-red'}`} style={{ fontSize: '1.5rem' }}>
-                        {balance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+          {/* SESSÃO ALMAS */}
+          <div className="relatorio-section glass">
+            <h3 className="section-title">🔥 Crescimento de Almas (Pessoas Adicionadas no Mês)</h3>
+            
+            <div className="tables-row">
+              {/* VISITANTES */}
+              <div className="table-wrapper">
+                <h4 className="table-subtitle highlight-orange">👋 Visitantes ({visitors.length})</h4>
+                <table className="rel-table">
+                  <thead>
+                    <tr>
+                      <th>Nome</th>
+                      <th>Data</th>
+                      <th>Contato</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visitors.length === 0 ? (
+                      <tr><td colSpan={3} className="empty-state">Nenhum visitante registrado.</td></tr>
+                    ) : (
+                      visitors.map(v => (
+                        <tr key={v.id}>
+                          <td>{v.name}</td>
+                          <td>{formatDate(v.created_at)}</td>
+                          <td>{v.phone || '-'}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
-            );
-          })}
+
+              {/* MEMBROS */}
+              <div className="table-wrapper">
+                <h4 className="table-subtitle highlight-blue">👥 Novos Membros ({members.length})</h4>
+                <table className="rel-table">
+                  <thead>
+                    <tr>
+                      <th>Nome</th>
+                      <th>Data</th>
+                      <th>Contato</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {members.length === 0 ? (
+                      <tr><td colSpan={3} className="empty-state">Nenhum membro integrado.</td></tr>
+                    ) : (
+                      members.map(m => (
+                        <tr key={m.id}>
+                          <td>{m.name}</td>
+                          <td>{formatDate(m.integration_date || m.created_at)}</td>
+                          <td>{m.phone || '-'}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* SESSÃO FINANCEIRA */}
+          <div className="relatorio-section glass">
+            <div className="finance-header">
+              <h3 className="section-title">💰 Detalhamento Financeiro (Livro Caixa)</h3>
+              <div className={`finance-balance ${balance >= 0 ? 'positive' : 'negative'}`}>
+                <span>Saldo do Mês:</span>
+                <strong>{formatCurrency(balance)}</strong>
+              </div>
+            </div>
+            
+            <div className="tables-row">
+              {/* ENTRADAS */}
+              <div className="table-wrapper">
+                <div className="table-header-flex">
+                  <h4 className="table-subtitle text-green">🟢 Entradas</h4>
+                  <span className="table-total text-green">{formatCurrency(totalIncome)}</span>
+                </div>
+                <table className="rel-table">
+                  <thead>
+                    <tr>
+                      <th>Descrição</th>
+                      <th>Data</th>
+                      <th style={{ textAlign: 'right' }}>Valor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {incomes.length === 0 ? (
+                      <tr><td colSpan={3} className="empty-state">Nenhuma entrada registrada.</td></tr>
+                    ) : (
+                      incomes.map(t => (
+                        <tr key={t.id}>
+                          <td>{t.description || t.category || 'Entrada'}</td>
+                          <td>{formatDate(t.date)}</td>
+                          <td style={{ textAlign: 'right' }} className="text-green">{formatCurrency(t.amount)}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* SAIDAS */}
+              <div className="table-wrapper">
+                <div className="table-header-flex">
+                  <h4 className="table-subtitle text-red">🔴 Saídas</h4>
+                  <span className="table-total text-red">{formatCurrency(totalExpense)}</span>
+                </div>
+                <table className="rel-table">
+                  <thead>
+                    <tr>
+                      <th>Descrição</th>
+                      <th>Data</th>
+                      <th style={{ textAlign: 'right' }}>Valor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {expenses.length === 0 ? (
+                      <tr><td colSpan={3} className="empty-state">Nenhuma saída registrada.</td></tr>
+                    ) : (
+                      expenses.map(t => (
+                        <tr key={t.id}>
+                          <td>{t.description || t.category || 'Saída'}</td>
+                          <td>{formatDate(t.date)}</td>
+                          <td style={{ textAlign: 'right' }} className="text-red">{formatCurrency(t.amount)}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          
         </div>
       )}
     </div>

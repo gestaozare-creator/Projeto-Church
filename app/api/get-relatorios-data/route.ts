@@ -13,91 +13,67 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const churchId = searchParams.get('churchId');
     const year = searchParams.get('year') || new Date().getFullYear().toString();
+    const month = searchParams.get('month') || new Date().getMonth().toString();
 
     if (!churchId) {
       return NextResponse.json({ error: "churchId is required" }, { status: 400 });
     }
 
+    const monthNum = parseInt(month, 10);
+    const yearNum = parseInt(year, 10);
+    
+    // Calculate start and end dates for the selected month
+    const startDate = new Date(yearNum, monthNum, 1);
+    const endDate = new Date(yearNum, monthNum + 1, 0, 23, 59, 59);
+
+    const startDateStr = startDate.toISOString().split('T')[0];
+    const endDateStr = endDate.toISOString().split('T')[0];
+
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // 1. Fetch Members for this church
+    // 1. Fetch Members
+    // Membros integrados ou criados nesse mês
     const { data: members, error: memError } = await supabaseAdmin
       .from('members')
-      .select('id, integration_date, created_at')
+      .select('id, name, phone, integration_date, created_at, status')
       .eq('church_id', churchId);
 
     if (memError) throw memError;
 
-    // 2. Fetch Visitors for this church
+    const filteredMembers = members?.filter((m: any) => {
+      const dateStr = m.integration_date || m.created_at;
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      return d.getFullYear() === yearNum && d.getMonth() === monthNum;
+    }) || [];
+
+    // 2. Fetch Visitors
     const { data: visitors, error: visError } = await supabaseAdmin
       .from('visitors')
-      .select('id, created_at')
-      .eq('church_id', churchId);
+      .select('id, name, phone, created_at, status')
+      .eq('church_id', churchId)
+      .gte('created_at', startDateStr)
+      .lte('created_at', endDateStr + 'T23:59:59');
 
     if (visError) throw visError;
 
-    // 3. Fetch Transactions for this church for the specific year
-    const startDate = `${year}-01-01`;
-    const endDate = `${year}-12-31`;
-
+    // 3. Fetch Transactions
     const { data: transactions, error: transError } = await supabaseAdmin
       .from('transactions')
-      .select('id, amount, type, date, status, paid_date')
+      .select('id, amount, type, date, status, description, category, payment_method, member_id, supplier_id')
       .eq('church_id', churchId)
-      .gte('date', startDate)
-      .lte('date', endDate);
+      .eq('status', 'PAID')
+      .gte('date', startDateStr)
+      .lte('date', endDateStr);
 
     if (transError) throw transError;
 
-    // Grouping logic (1 to 12)
-    const monthlyData = Array.from({ length: 12 }, (_, i) => ({
-      monthIndex: i, // 0 to 11
-      newMembers: 0,
-      newVisitors: 0,
-      income: 0,
-      expense: 0
-    }));
-
-    // Process members
-    members?.forEach((m: any) => {
-      const dateStr = m.integration_date || m.created_at;
-      if (dateStr && dateStr.startsWith(year)) {
-        const month = new Date(dateStr).getMonth();
-        if (month >= 0 && month <= 11) {
-          monthlyData[month].newMembers += 1;
-        }
-      }
+    return NextResponse.json({ 
+      success: true, 
+      members: filteredMembers,
+      visitors: visitors || [],
+      transactions: transactions || []
     });
-
-    // Process visitors
-    visitors?.forEach((v: any) => {
-      const dateStr = v.created_at;
-      if (dateStr && dateStr.startsWith(year)) {
-        const month = new Date(dateStr).getMonth();
-        if (month >= 0 && month <= 11) {
-          monthlyData[month].newVisitors += 1;
-        }
-      }
-    });
-
-    // Process transactions
-    transactions?.forEach((t: any) => {
-      // consider date or paid_date, usually date is the reference month
-      const dateStr = t.date;
-      if (dateStr && dateStr.startsWith(year) && t.status === 'PAID') {
-        const month = new Date(dateStr).getMonth();
-        if (month >= 0 && month <= 11) {
-          const amt = Number(t.amount) || 0;
-          if (t.type === 'INCOME') {
-            monthlyData[month].income += amt;
-          } else if (t.type === 'EXPENSE') {
-            monthlyData[month].expense += amt;
-          }
-        }
-      }
-    });
-
-    return NextResponse.json({ success: true, data: monthlyData });
 
   } catch (error: any) {
     console.error("API Error fetching relatorios data:", error);
