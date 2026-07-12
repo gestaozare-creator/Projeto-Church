@@ -43,6 +43,56 @@
 .btn-print:hover { background: rgba(255,255,255,0.2); }
 .btn-whatsapp:hover { background: rgba(39, 174, 96, 0.4); border-color: #2ecc71; }
 
+.tab-btn {
+  padding: 10px 15px;
+  border-radius: 8px;
+  background: var(--card-bg, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  color: var(--text-color, #fff);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  background: var(--card-bg-hover, rgba(255, 255, 255, 0.1));
+}
+
+.tab-btn.active-sec {
+  background: rgba(52, 152, 219, 0.15);
+  border-color: #3498db;
+  color: #3498db;
+}
+
+.tab-btn.active-fin {
+  background: rgba(46, 204, 113, 0.15);
+  border-color: #2ecc71;
+  color: #2ecc71;
+}
+
+/* Modo claro ajustes para abas */
+[data-theme="light"] .tab-btn {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  color: #333;
+}
+[data-theme="light"] .tab-btn.active-sec {
+  background: #ebf5fb;
+  border-color: #3498db;
+  color: #2980b9;
+}
+[data-theme="light"] .tab-btn.active-fin {
+  background: #eaaf3; /* light green */
+  border-color: #2ecc71;
+  color: #27ae60;
+}
+[data-theme="light"] .btn-print, [data-theme="light"] .btn-whatsapp {
+  background: #eee;
+  color: #333;
+  border: 1px solid #ccc;
+}
+[data-theme="light"] .btn-print:hover { background: #ddd; }
+[data-theme="light"] .btn-whatsapp:hover { background: #d5f5e3; border-color: #2ecc71; }
+
 .a4-wrapper {
   display: flex;
   justify-content: center;
@@ -54,16 +104,15 @@
   min-height: 297mm;
   background: #ffffff;
   color: #333333;
-  padding: 12mm 15mm; /* Margens reduzidas */
+  padding: 12mm 15mm;
   border-radius: 4px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   font-family: Arial, sans-serif;
-  position: relative; /* Para a assinatura ir pro final se precisar */
+  position: relative;
   display: flex;
   flex-direction: column;
 }
 
-/* Redefinir cores de texto no A4 para contraste com fundo branco */
 .a4-page h1, .a4-page h2, .a4-page h3, .a4-page h4 {
   color: #111;
 }
@@ -76,7 +125,7 @@
 }
 
 .a4-header h1 {
-  font-size: 1.3rem; /* Menor */
+  font-size: 1.3rem;
   margin: 5px 0 0 0;
   text-transform: uppercase;
 }
@@ -87,7 +136,7 @@
   color: #2c3e50;
 }
 .a4-header h3 {
-  font-size: 1rem; /* Menor */
+  font-size: 1rem;
   color: #555;
   margin: 2px 0 0 0;
   font-weight: normal;
@@ -95,7 +144,7 @@
 
 .relatorio-section {
   margin-bottom: 30px;
-  flex-grow: 1; /* Empurra a assinatura pro final */
+  flex-grow: 1;
 }
 
 .section-title {

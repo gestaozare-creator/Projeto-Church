@@ -48,7 +48,7 @@ export default function RelatoriosPage() {
   useEffect(() => {
     if (!currentUser || !isAllowed) return;
 
-    const churchToFetch = activeChurchId || (canSeeAllChurches ? '1' : currentUser.churchId);
+    const churchToFetch = activeChurchId || currentUser.churchId;
 
     const fetchData = async () => {
       setLoading(true);
@@ -187,15 +187,13 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
             <div style={{ display: 'flex', gap: '10px' }}>
               <button 
                 onClick={() => setReportType('SECRETARIA')} 
-                className={`glass-button ${reportType === 'SECRETARIA' ? 'active-filter' : ''}`}
-                style={{ padding: '10px 15px', borderRadius: '8px', border: reportType === 'SECRETARIA' ? '1px solid #3498db' : '1px solid rgba(255,255,255,0.2)', background: reportType === 'SECRETARIA' ? 'rgba(52, 152, 219, 0.2)' : 'rgba(255,255,255,0.1)' }}
+                className={`tab-btn ${reportType === 'SECRETARIA' ? 'active-sec' : ''}`}
               >
                 📁 Secretaria
               </button>
               <button 
                 onClick={() => setReportType('FINANCEIRO')} 
-                className={`glass-button ${reportType === 'FINANCEIRO' ? 'active-filter' : ''}`}
-                style={{ padding: '10px 15px', borderRadius: '8px', border: reportType === 'FINANCEIRO' ? '1px solid #2ecc71' : '1px solid rgba(255,255,255,0.2)', background: reportType === 'FINANCEIRO' ? 'rgba(46, 204, 113, 0.2)' : 'rgba(255,255,255,0.1)' }}
+                className={`tab-btn ${reportType === 'FINANCEIRO' ? 'active-fin' : ''}`}
               >
                 💰 Financeiro
               </button>
