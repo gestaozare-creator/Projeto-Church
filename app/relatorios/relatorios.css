@@ -43,36 +43,78 @@
 .btn-print:hover { background: rgba(255,255,255,0.2); }
 .btn-whatsapp:hover { background: rgba(39, 174, 96, 0.4); border-color: #2ecc71; }
 
-.relatorio-section {
+.a4-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.a4-page {
+  width: 210mm;
+  min-height: 297mm;
+  background: #ffffff;
+  color: #333333;
+  padding: 20mm;
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  font-family: Arial, sans-serif;
+}
+
+/* Redefinir cores de texto no A4 para contraste com fundo branco */
+.a4-page h1, .a4-page h2, .a4-page h3, .a4-page h4 {
+  color: #111;
+}
+
+.a4-header {
+  text-align: center;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 20px;
   margin-bottom: 30px;
-  padding: 25px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.a4-header h1 {
+  font-size: 1.8rem;
+  margin: 0;
+  text-transform: uppercase;
+}
+.a4-header h2 {
+  font-size: 1.2rem;
+  color: #555;
+  margin: 5px 0 0 0;
+}
+
+.relatorio-section {
+  margin-bottom: 40px;
 }
 
 .section-title {
-  margin: 0 0 20px 0;
-  font-size: 1.4rem;
-  border-bottom: 1px dashed rgba(255,255,255,0.1);
+  margin: 0 0 15px 0;
+  font-size: 1.3rem;
+  border-bottom: 1px dashed #ccc;
   padding-bottom: 10px;
 }
 
 .tables-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 30px;
+  gap: 20px;
 }
 
 @media (max-width: 1000px) {
+  .a4-page {
+    width: 100%;
+    min-height: auto;
+    padding: 15px;
+  }
   .tables-row {
     grid-template-columns: 1fr;
   }
 }
 
 .table-wrapper {
-  background: rgba(0,0,0,0.2);
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.05);
+  background: #fdfdfd;
+  border-radius: 6px;
+  border: 1px solid #ddd;
   overflow: hidden;
 }
 
@@ -80,17 +122,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 15px;
-  background: rgba(0,0,0,0.3);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding: 10px 15px;
+  background: #f4f4f4;
+  border-bottom: 1px solid #ddd;
 }
 
 .table-subtitle {
   margin: 0;
-  padding: 12px 15px;
-  font-size: 1.1rem;
-  background: rgba(0,0,0,0.3);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding: 10px 15px;
+  font-size: 1rem;
+  background: #f4f4f4;
+  border-bottom: 1px solid #ddd;
 }
 .table-header-flex .table-subtitle {
   padding: 0;
@@ -98,7 +140,7 @@
   border: none;
 }
 .table-total {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: bold;
 }
 
@@ -108,25 +150,25 @@
 }
 
 .rel-table th, .rel-table td {
-  padding: 12px 15px;
+  padding: 10px 15px;
   text-align: left;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  font-size: 0.9rem;
+  border-bottom: 1px solid #eee;
+  font-size: 0.85rem;
 }
 
 .rel-table th {
-  color: var(--text-secondary);
-  font-weight: normal;
+  color: #666;
+  font-weight: bold;
   text-transform: uppercase;
-  font-size: 0.8rem;
-  background: rgba(255,255,255,0.02);
+  font-size: 0.75rem;
+  background: #f9f9f9;
 }
 
 .empty-state {
   text-align: center !important;
-  color: var(--text-secondary);
+  color: #999;
   font-style: italic;
-  padding: 30px !important;
+  padding: 20px !important;
 }
 
 .finance-header {
@@ -134,81 +176,34 @@
   justify-content: space-between;
   align-items: flex-start;
   flex-wrap: wrap;
+  margin-bottom: 15px;
 }
 
 .finance-balance {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  background: rgba(0,0,0,0.3);
-  padding: 15px 25px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.05);
-  margin-top: -10px;
+  background: #f9f9f9;
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  margin-top: -5px;
 }
 
 .finance-balance span {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
-  color: var(--text-secondary);
+  color: #666;
 }
 
 .finance-balance strong {
-  font-size: 2rem;
+  font-size: 1.8rem;
 }
 
-.finance-balance.positive strong { color: #2ecc71; }
-.finance-balance.negative strong { color: #e74c3c; }
+.finance-balance.positive strong { color: #27ae60; }
+.finance-balance.negative strong { color: #c0392b; }
 
-.highlight-blue { color: #3498db; }
-.highlight-orange { color: #e67e22; }
-.text-green { color: #2ecc71 !important; }
-.text-red { color: #e74c3c !important; }
-
-/* Impressão Limpa */
-@media print {
-  body {
-    background: #fff;
-    color: #000;
-  }
-  .no-print {
-    display: none !important;
-  }
-  .print-area {
-    width: 100%;
-  }
-  .print-only-title {
-    display: block !important;
-  }
-  .relatorio-section {
-    background: #fff;
-    border: 1px solid #ccc;
-    box-shadow: none;
-    margin-bottom: 40px;
-    page-break-inside: avoid;
-  }
-  .table-wrapper {
-    background: #fff;
-    border: 1px solid #ccc;
-  }
-  .table-subtitle, .table-header-flex {
-    background: #f9f9f9;
-    border-bottom: 1px solid #ccc;
-    color: #000;
-  }
-  .rel-table th, .rel-table td {
-    border-bottom: 1px solid #eee;
-    color: #333;
-  }
-  .rel-table th {
-    background: #f0f0f0;
-    color: #000;
-  }
-  .finance-balance {
-    background: #f9f9f9;
-    border: 1px solid #ccc;
-  }
-  .text-green, .finance-balance.positive strong { color: #27ae60 !important; }
-  .text-red, .finance-balance.negative strong { color: #c0392b !important; }
-  .highlight-blue, .highlight-orange { color: #000; }
-}
+.highlight-blue { color: #2980b9; }
+.highlight-orange { color: #d35400; }
+.text-green { color: #27ae60 !important; }
+.text-red { color: #c0392b !important; }

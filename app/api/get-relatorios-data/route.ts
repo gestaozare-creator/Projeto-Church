@@ -32,10 +32,9 @@ export async function GET(req: Request) {
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     // 1. Fetch Members
-    // Membros integrados ou criados nesse mês
     const { data: members, error: memError } = await supabaseAdmin
       .from('members')
-      .select('id, name, phone, integration_date, created_at, status')
+      .select('id, name, phone, integration_date, created_at, status, culto, horario')
       .eq('church_id', churchId);
 
     if (memError) throw memError;
@@ -50,7 +49,7 @@ export async function GET(req: Request) {
     // 2. Fetch Visitors
     const { data: visitors, error: visError } = await supabaseAdmin
       .from('visitors')
-      .select('id, name, phone, created_at, status')
+      .select('id, name, phone, created_at, status, culto, horario')
       .eq('church_id', churchId)
       .gte('created_at', startDateStr)
       .lte('created_at', endDateStr + 'T23:59:59');
@@ -62,7 +61,7 @@ export async function GET(req: Request) {
       .from('transactions')
       .select('id, amount, type, date, status, description, category, payment_method, member_id, supplier_id')
       .eq('church_id', churchId)
-      .eq('status', 'PAID')
+      .in('status', ['PAID', 'confirmado', 'pago', 'realizado'])
       .gte('date', startDateStr)
       .lte('date', endDateStr);
 
