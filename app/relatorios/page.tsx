@@ -160,8 +160,14 @@ export default function RelatoriosPage() {
     }
 
     if (!time && !dayOfWeek) return 'Outras Movimentações (S/ Culto)';
-    if (!time) return `${dayOfWeek} (S/ Horário) - ${cultoName}`;
-    return `${dayOfWeek} às ${time} - ${cultoName}`;
+    if (!time) return `${dayOfWeek} (S/ Horário)`;
+    return `${dayOfWeek} às ${time}`;
+  };
+
+  const extractCultoName = (t: TransactionData) => {
+    const regexCulto = /Culto de (.*?)(?:\s+às|\s*$)/i;
+    const matchCulto = t.description?.match(regexCulto);
+    return matchCulto ? matchCulto[1].trim() : 'Geral/Outros';
   };
 
   const financeiroAgrupado = transactions.reduce((acc, t) => {
@@ -406,35 +412,18 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
                 <div className={`tables-row finance-tables ${(showReceitas && !showDespesas) || (!showReceitas && showDespesas) ? 'one-col-print' : ''}`}>
                   {/* Resumo Agrupado (Novo) */}
                   {reportType === 'FINANCEIRO' && financeiroList.length > 0 && (
-                    <div className="table-wrapper" style={{ gridColumn: '1 / -1', marginBottom: '15px' }}>
-                      <div className="table-header-flex">
-                        <h4 className="table-subtitle">📊 Resumo Agrupado por Dia/Horário de Culto</h4>
+                    <div style={{ gridColumn: '1 / -1', marginBottom: '15px' }}>
+                      <h4 style={{ marginBottom: '10px', color: '#555', borderBottom: '1px solid #ddd', paddingBottom: '5px' }}>
+                        📊 Resumo de Entradas por Culto
+                      </h4>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                        {financeiroList.filter(f => f.receitas > 0).map((f, idx) => (
+                          <div key={idx} style={{ background: '#f4f4f4', border: '1px solid #ddd', borderRadius: '6px', padding: '8px 12px', flex: '1 1 auto', minWidth: '150px' }}>
+                            <div style={{ fontSize: '0.75rem', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>{f.culto}</div>
+                            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#27ae60' }}>{formatCurrency(f.receitas)}</div>
+                          </div>
+                        ))}
                       </div>
-                      <table className="rel-table">
-                        <thead>
-                          <tr>
-                            <th>Dia da Semana / Horário / Culto</th>
-                            <th style={{ textAlign: 'right' }}>Total Entradas</th>
-                            <th style={{ textAlign: 'right' }}>Total Saídas</th>
-                            <th style={{ textAlign: 'right' }}>Saldo do Culto</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {financeiroList.map((f, idx) => {
-                            const saldo = f.receitas - f.despesas;
-                            return (
-                              <tr key={idx}>
-                                <td><strong>{f.culto}</strong></td>
-                                <td style={{ textAlign: 'right' }} className="text-green">{formatCurrency(f.receitas)}</td>
-                                <td style={{ textAlign: 'right' }} className="text-red">{formatCurrency(f.despesas)}</td>
-                                <td style={{ textAlign: 'right', fontWeight: 'bold', color: saldo >= 0 ? '#27ae60' : '#c0392b' }}>
-                                  {formatCurrency(saldo)}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
                     </div>
                   )}
 
@@ -442,28 +431,30 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
                   {showReceitas && (
                     <div className="table-wrapper">
                       <div className="table-header-flex">
-                        <h4 className="table-subtitle text-green">🟢 Entradas</h4>
+                        <h4 className="table-subtitle text-green">🟢 Entradas Detalhadas</h4>
                         <span className="table-total text-green">{formatCurrency(totalIncome)}</span>
                       </div>
                       <table className="rel-table">
                         <thead>
                           <tr>
-                            <th>Tipo / Culto / Horário</th>
                             <th>Data</th>
+                            <th>Categoria / Culto</th>
+                            <th>Forma Pag.</th>
                             <th style={{ textAlign: 'right' }}>Valor</th>
                           </tr>
                         </thead>
                         <tbody>
                           {incomes.length === 0 ? (
-                            <tr><td colSpan={3} className="empty-state">Nenhuma entrada registrada.</td></tr>
+                            <tr><td colSpan={4} className="empty-state">Nenhuma entrada registrada.</td></tr>
                           ) : (
                             incomes.map(t => (
                               <tr key={t.id}>
+                                <td>{formatDate(t.date)}</td>
                                 <td>
                                   <div style={{ fontWeight: 'bold' }}>{t.category || 'Entrada'}</div>
-                                  <div style={{ fontSize: '0.75rem', color: '#666' }}>{t.description}</div>
+                                  <div style={{ fontSize: '0.75rem', color: '#666' }}>{extractDayTimeFromTransaction(t)}</div>
                                 </td>
-                                <td>{formatDate(t.date)}</td>
+                                <td>{t.payment_method || '-'}</td>
                                 <td style={{ textAlign: 'right' }} className="text-green">{formatCurrency(t.amount)}</td>
                               </tr>
                             ))
