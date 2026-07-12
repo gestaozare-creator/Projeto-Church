@@ -31,6 +31,15 @@ export async function GET(req: Request) {
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Fetch Church Name
+    const { data: churchData } = await supabaseAdmin
+      .from('churches')
+      .select('name')
+      .eq('id', churchId)
+      .single();
+
+    const churchName = churchData?.name || 'Igreja';
+
     // 1. Fetch Members
     const { data: members, error: memError } = await supabaseAdmin
       .from('members')
@@ -69,6 +78,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ 
       success: true, 
+      churchName,
       members: filteredMembers,
       visitors: visitors || [],
       transactions: transactions || []

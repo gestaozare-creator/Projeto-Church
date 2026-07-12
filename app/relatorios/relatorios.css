@@ -54,10 +54,13 @@
   min-height: 297mm;
   background: #ffffff;
   color: #333333;
-  padding: 20mm;
+  padding: 12mm 15mm; /* Margens reduzidas */
   border-radius: 4px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   font-family: Arial, sans-serif;
+  position: relative; /* Para a assinatura ir pro final se precisar */
+  display: flex;
+  flex-direction: column;
 }
 
 /* Redefinir cores de texto no A4 para contraste com fundo branco */
@@ -68,36 +71,48 @@
 .a4-header {
   text-align: center;
   border-bottom: 2px solid #ddd;
-  padding-bottom: 20px;
-  margin-bottom: 30px;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 .a4-header h1 {
-  font-size: 1.8rem;
-  margin: 0;
+  font-size: 1.3rem; /* Menor */
+  margin: 5px 0 0 0;
   text-transform: uppercase;
 }
-.a4-header h2 {
-  font-size: 1.2rem;
+.a4-header h2.church-name {
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: 800;
+  color: #2c3e50;
+}
+.a4-header h3 {
+  font-size: 1rem; /* Menor */
   color: #555;
-  margin: 5px 0 0 0;
+  margin: 2px 0 0 0;
+  font-weight: normal;
 }
 
 .relatorio-section {
-  margin-bottom: 40px;
+  margin-bottom: 30px;
+  flex-grow: 1; /* Empurra a assinatura pro final */
 }
 
 .section-title {
-  margin: 0 0 15px 0;
-  font-size: 1.3rem;
+  margin: 0 0 10px 0;
+  font-size: 1.1rem;
   border-bottom: 1px dashed #ccc;
-  padding-bottom: 10px;
+  padding-bottom: 5px;
 }
 
 .tables-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 15px;
+}
+
+.tables-row.one-col-print {
+  grid-template-columns: 1fr;
 }
 
 @media (max-width: 1000px) {
@@ -122,15 +137,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 15px;
+  padding: 8px 12px;
   background: #f4f4f4;
   border-bottom: 1px solid #ddd;
 }
 
 .table-subtitle {
   margin: 0;
-  padding: 10px 15px;
-  font-size: 1rem;
+  padding: 8px 12px;
+  font-size: 0.95rem;
   background: #f4f4f4;
   border-bottom: 1px solid #ddd;
 }
@@ -140,7 +155,7 @@
   border: none;
 }
 .table-total {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: bold;
 }
 
@@ -150,17 +165,17 @@
 }
 
 .rel-table th, .rel-table td {
-  padding: 10px 15px;
+  padding: 8px 10px;
   text-align: left;
   border-bottom: 1px solid #eee;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 
 .rel-table th {
   color: #666;
   font-weight: bold;
   text-transform: uppercase;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   background: #f9f9f9;
 }
 
@@ -168,7 +183,7 @@
   text-align: center !important;
   color: #999;
   font-style: italic;
-  padding: 20px !important;
+  padding: 15px !important;
 }
 
 .finance-header {
@@ -176,7 +191,7 @@
   justify-content: space-between;
   align-items: flex-start;
   flex-wrap: wrap;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .finance-balance {
@@ -184,20 +199,20 @@
   flex-direction: column;
   align-items: flex-end;
   background: #f9f9f9;
-  padding: 10px 20px;
+  padding: 8px 15px;
   border-radius: 6px;
   border: 1px solid #ddd;
   margin-top: -5px;
 }
 
 .finance-balance span {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   color: #666;
 }
 
 .finance-balance strong {
-  font-size: 1.8rem;
+  font-size: 1.4rem;
 }
 
 .finance-balance.positive strong { color: #27ae60; }
@@ -207,3 +222,33 @@
 .highlight-orange { color: #d35400; }
 .text-green { color: #27ae60 !important; }
 .text-red { color: #c0392b !important; }
+
+/* Assinatura */
+.signature-block {
+  margin-top: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  text-align: center;
+  page-break-inside: avoid;
+}
+
+.signature-line {
+  width: 250px;
+  height: 1px;
+  background-color: #333;
+  margin-bottom: 10px;
+}
+
+.signature-block p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.signature-block span {
+  font-size: 0.8rem;
+  color: #666;
+}
