@@ -36,12 +36,22 @@ export async function GET(req: Request) {
     // Fetch Church Name and Logo
     const { data: churchData } = await supabaseAdmin
       .from('churches')
-      .select('name, logo_url, ministries(logo_url)')
+      .select('name, logo_url, ministry_id')
       .eq('id', churchId)
       .single();
 
+    let ministryLogo = '';
+    if (churchData?.ministry_id && !churchData?.logo_url) {
+      const { data: minData } = await supabaseAdmin
+        .from('ministries')
+        .select('logo_url')
+        .eq('id', churchData.ministry_id)
+        .single();
+      ministryLogo = minData?.logo_url || '';
+    }
+
     const churchName = churchData?.name || 'Igreja';
-    const churchLogo = churchData?.logo_url || churchData?.ministries?.logo_url || '';
+    const churchLogo = churchData?.logo_url || ministryLogo || '';
 
     // 1. Fetch Members (Excluding Visitors)
     const { data: members, error: memError } = await supabaseAdmin
