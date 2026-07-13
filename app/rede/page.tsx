@@ -6,6 +6,12 @@ import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 import { BRAZIL_STATES } from '@/lib/brazil-map-data';
 import RankingAlmas from '@/components/RankingAlmas';
+import InteligenciaFinanceiraDashboard from '@/app/relatorios/InteligenciaFinanceiraDashboard';
+
+const monthNames = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+];
 
 interface Church {
   id: string;
@@ -59,6 +65,8 @@ export default function RedePage() {
   const [mapSelected, setMapSelected] = useState<string | null>(null);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [reportYear, setReportYear] = useState<number>(new Date().getFullYear());
+  const [reportMonth, setReportMonth] = useState<number>(new Date().getMonth());
 
   // Normaliza nome de estado para sigla UF (suporta banco com nome completo ou sigla)
   const stateNameToUF = useMemo(() => {
@@ -684,6 +692,45 @@ export default function RedePage() {
         )}
       </div>
     )}
+
+      {/* ======================== TAB: RELATÓRIOS ======================== */}
+      {activeTab === 'relatorios' && (
+        <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="glass" style={{ padding: '20px', borderRadius: '14px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem' }}>Filtros do Relatório</h3>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <label style={{ color: 'var(--text-secondary)' }}>Mês:</label>
+              <select 
+                value={reportMonth} 
+                onChange={e => setReportMonth(Number(e.target.value))} 
+                style={{ padding: '8px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
+              >
+                {monthNames.map((m, i) => (
+                  <option key={i} value={i}>{m}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <label style={{ color: 'var(--text-secondary)' }}>Ano:</label>
+              <select 
+                value={reportYear} 
+                onChange={e => setReportYear(Number(e.target.value))} 
+                style={{ padding: '8px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
+              >
+                {[...Array(5)].map((_, i) => {
+                  const y = new Date().getFullYear() - i;
+                  return <option key={y} value={y}>{y}</option>;
+                })}
+              </select>
+            </div>
+          </div>
+          
+          <InteligenciaFinanceiraDashboard 
+            year={reportYear} 
+            month={reportMonth} 
+          />
+        </div>
+      )}
 
       {/* ======================== TAB: RANKING ======================== */}
       {activeTab === 'ranking' && (
