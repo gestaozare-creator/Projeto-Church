@@ -123,7 +123,7 @@ export default function InteligenciaFinanceiraDashboard({ year, month }: Intelig
                 <Tooltip 
                   cursor={{fill: 'rgba(255,255,255,0.05)'}} 
                   contentStyle={{backgroundColor: '#1a1a2e', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px'}}
-                  formatter={(value: number) => formatCurrency(value)}
+                  formatter={(value: any) => formatCurrency(Number(value))}
                 />
                 <Bar dataKey="receitaAtual" radius={[0, 4, 4, 0]}>
                   {churches.slice(0, 5).map((entry, index) => (
