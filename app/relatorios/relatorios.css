@@ -301,3 +301,29 @@
   font-size: 0.8rem;
   color: #666;
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  #a4-report-page, #a4-report-page * {
+    visibility: visible;
+  }
+  
+  #a4-report-page {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 1cm;
+  }
+}

@@ -202,42 +202,44 @@ export default function RelatoriosPage() {
 
   const formatCurrency = (val: number) => val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-  const handlePdfGeneration = async () => {
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleWhatsApp = async () => {
     const element = document.getElementById('a4-report-page');
     if (!element) return;
     
     try {
       const html2pdf = (await import('html2pdf.js')).default;
+      const filename = `Relatorio_${churchName}_${monthNames[month]}_${year}.pdf`;
       const opt: any = {
-        margin:       10, // Menos margem
-        filename:     `Relatorio_${churchName}_${monthNames[month]}_${year}.pdf`,
+        margin:       10,
+        filename:     filename,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
       
-      html2pdf().set(opt).from(element).save();
+      // Generate PDF as blob
+      const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+      const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Relatório',
+          text: `Relatório de ${churchName} - ${monthNames[month]} de ${year}`
+        });
+      } else {
+        // Fallback para Desktop: baixa o arquivo e avisa o usuário
+        html2pdf().set(opt).from(element).save();
+        alert("O seu navegador não suporta compartilhamento direto. O PDF foi baixado automaticamente. Por favor, anexe-o no seu WhatsApp Web.");
+      }
     } catch (e) {
       console.error("Erro ao gerar PDF", e);
-      alert("Não foi possível gerar o PDF. A biblioteca html2pdf.js pode não ter sido carregada corretamente.");
+      alert("Não foi possível gerar o PDF para compartilhar.");
     }
-  };
-
-  const handleWhatsApp = () => {
-    const isPositive = balance >= 0;
-    const text = `*RELATÓRIO ${churchName.toUpperCase()} - ${monthNames[month].toUpperCase()} ${year}* 📊
-
-*Almas* 🔥
-👥 Novos Membros: ${members.length}
-👋 Visitantes: ${visitors.length}
-
-*Financeiro* 💰
-🟢 Entradas: ${formatCurrency(totalIncome)}
-🔴 Saídas: ${formatCurrency(totalExpense)}
-${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
-
-    const encodedText = encodeURIComponent(text);
-    window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
   };
 
   // Renderização condicional das sessões
@@ -309,8 +311,8 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
             </select>
           </div>
 
-          <button onClick={handlePdfGeneration} className="btn-print" title="Baixar PDF">🖨️ Gerar PDF</button>
-          <button onClick={handleWhatsApp} className="btn-whatsapp" title="Enviar Resumo">💬 WhatsApp</button>
+          <button onClick={handlePrint} className="btn-print" title="Imprimir Relatório">🖨️ Imprimir</button>
+          <button onClick={handleWhatsApp} className="btn-whatsapp" title="Enviar PDF no WhatsApp">💬 Enviar para o WhatsApp</button>
         </div>
       </div>
       {loading ? (
