@@ -424,11 +424,11 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
                       <h4 style={{ marginBottom: '10px', color: '#555', borderBottom: '1px solid #ddd', paddingBottom: '5px' }}>
                         📊 Resumo de Entradas por Culto
                       </h4>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '4px' }}>
                         {financeiroList.filter(f => f.receitas > 0).map((f, idx) => (
-                          <div key={idx} style={{ background: '#f4f4f4', border: '1px solid #ddd', borderRadius: '4px', padding: '4px 8px', flex: '1 1 auto', minWidth: '130px' }}>
-                            <div style={{ fontSize: '0.65rem', color: '#666', textTransform: 'uppercase', marginBottom: '2px' }}>{f.culto}</div>
-                            <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#27ae60' }}>{formatCurrency(f.receitas)}</div>
+                          <div key={idx} style={{ background: '#f4f4f4', border: '1px solid #ddd', borderRadius: '4px', padding: '4px', flex: '1', minWidth: '0', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.55rem', color: '#666', textTransform: 'uppercase', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={f.culto}>{f.culto}</div>
+                            <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#27ae60' }}>{formatCurrency(f.receitas)}</div>
                           </div>
                         ))}
                       </div>
