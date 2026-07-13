@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
+import ContabilidadeDashboard from './ContabilidadeDashboard';
 import './relatorios.css';
 
 const monthNames = [
@@ -31,7 +32,7 @@ interface TransactionData {
   payment_method?: string;
 }
 
-type ReportType = 'TODOS' | 'SECRETARIA' | 'FINANCEIRO' | 'RECEITAS' | 'DESPESAS';
+type ReportType = 'TODOS' | 'SECRETARIA' | 'FINANCEIRO' | 'RECEITAS' | 'DESPESAS' | 'CONTABILIDADE';
 
 export default function RelatoriosPage() {
   const { currentUser, activeChurchId, canSeeAllChurches } = useAuth();
@@ -303,6 +304,13 @@ export default function RelatoriosPage() {
               >
                 💰 Financeiro
               </button>
+              <button 
+                onClick={() => setReportType('CONTABILIDADE')} 
+                className={`tab-btn ${reportType === 'CONTABILIDADE' ? 'active-contabil' : ''}`}
+                style={{ background: reportType === 'CONTABILIDADE' ? '#2980b9' : 'transparent', color: reportType === 'CONTABILIDADE' ? '#fff' : 'var(--text-secondary)' }}
+              >
+                🗂️ Contabilidade
+              </button>
             </div>
           </div>
 
@@ -329,7 +337,9 @@ export default function RelatoriosPage() {
           <button onClick={handleWhatsApp} className="btn-whatsapp" title="Enviar PDF no WhatsApp">💬 Enviar para o WhatsApp</button>
         </div>
       </div>
-      {loading ? (
+      {reportType === 'CONTABILIDADE' ? (
+        <ContabilidadeDashboard churchId={selectedChurch || activeChurchId || currentUser?.churchId || ''} year={year} />
+      ) : loading ? (
         <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-secondary)' }}>Carregando dados detalhados...</div>
       ) : (
         <div className="a4-wrapper">
