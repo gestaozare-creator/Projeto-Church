@@ -1105,11 +1105,13 @@ export default function DashboardSecretariaPage() {
         style={{
           display: "flex",
           gap: "20px",
-          flexWrap: "wrap",
+          flexWrap: "nowrap",
+          overflowX: "auto",
+          paddingBottom: "10px",
         }}
       >
         {/* Profissões */}
-        <div style={{ flex: "1 1 300px", display: "flex", flexDirection: "column" }}>
+        <div style={{ flex: "1 0 300px", display: "flex", flexDirection: "column" }}>
           <DonutChart
             title="👷 Profissões"
             data={professionsData}
@@ -1121,7 +1123,7 @@ export default function DashboardSecretariaPage() {
         <div
           className="glass"
           style={{
-            flex: "1 1 300px",
+            flex: "1 0 300px",
             padding: "20px",
             borderRadius: "14px",
             display: "flex",
@@ -1239,7 +1241,7 @@ export default function DashboardSecretariaPage() {
         <div
           className="glass"
           style={{
-            flex: "2.3 1 500px",
+            flex: "2.3 0 500px",
             padding: "20px",
             borderRadius: "14px",
             display: "flex",
