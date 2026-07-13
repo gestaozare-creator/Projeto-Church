@@ -127,7 +127,7 @@ export default function ContabilidadeDashboard({ churchId, year }: Contabilidade
       a.remove();
       window.URL.revokeObjectURL(downloadUrl);
 
-      // 6. Save State in Supabase
+      // 6. Save State via API (Bypassing RLS)
       const { data: userData } = await supabase.auth.getUser();
       const userMeta = userData?.user?.user_metadata || {};
       const userName = userMeta.name || 'Usuário';
@@ -140,24 +140,18 @@ export default function ContabilidadeDashboard({ churchId, year }: Contabilidade
         generated_by: userName
       };
 
-      const updatedHistory = [...reportsStatus.filter(r => !(r.month === monthIndex && r.year === year)), newStatus];
-      
-      const { data: latestChurch } = await supabase.from('churches').select('config').eq('id', churchId).single();
-      const currentConfig = latestChurch?.config || {};
-      
-      const { error: updateError } = await supabase
-        .from('churches')
-        .update({
-          config: {
-            ...currentConfig,
-            accountingReports: updatedHistory
-          }
-        })
-        .eq('id', churchId);
+      const saveRes = await fetch('/api/save-accounting-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ churchId, newReport: newStatus })
+      });
 
-      if (updateError) throw updateError;
-      
-      setReportsStatus(updatedHistory);
+      const saveResult = await saveRes.json();
+      if (!saveRes.ok || !saveResult.success) {
+        throw new Error(saveResult.error || 'Failed to save status');
+      }
+
+      setReportsStatus(saveResult.accountingReports);
 
     } catch (err) {
       console.error(err);
