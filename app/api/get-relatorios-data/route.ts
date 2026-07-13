@@ -36,12 +36,12 @@ export async function GET(req: Request) {
     // Fetch Church Name and Logo
     const { data: churchData } = await supabaseAdmin
       .from('churches')
-      .select('name, logo_url')
+      .select('name, logo_url, ministries(logo_url)')
       .eq('id', churchId)
       .single();
 
     const churchName = churchData?.name || 'Igreja';
-    const churchLogo = churchData?.logo_url || '';
+    const churchLogo = churchData?.logo_url || churchData?.ministries?.logo_url || '';
 
     // 1. Fetch Members (Excluding Visitors)
     const { data: members, error: memError } = await supabaseAdmin
