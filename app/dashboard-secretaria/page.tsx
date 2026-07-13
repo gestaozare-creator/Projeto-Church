@@ -1096,11 +1096,7 @@ export default function DashboardSecretariaPage() {
           data={employmentStatusData}
           total={totalMembersCount}
         />
-        <DonutChart
-          title="👷 Profissões"
-          data={professionsData}
-          total={totalMembersCount}
-        />
+
 
               </div>
 
@@ -1112,6 +1108,15 @@ export default function DashboardSecretariaPage() {
           flexWrap: "wrap",
         }}
       >
+        {/* Profissões */}
+        <div style={{ flex: "1 1 300px", display: "flex", flexDirection: "column" }}>
+          <DonutChart
+            title="👷 Profissões"
+            data={professionsData}
+            total={totalMembersCount}
+          />
+        </div>
+
         {/* Funil de Visitantes */}
         <div
           className="glass"
