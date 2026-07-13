@@ -312,7 +312,7 @@ export default function RelatoriosPage() {
               >
                 🗂️ Contabilidade
               </button>
-              {currentUser?.role === 'pastor_diretor' && (
+              {['pastor_diretor', 'superadmin'].includes(currentUser?.role) && (
                 <button 
                   onClick={() => setReportType('INTELIGENCIA')} 
                   className={`tab-btn ${reportType === 'INTELIGENCIA' ? 'active' : ''}`}
