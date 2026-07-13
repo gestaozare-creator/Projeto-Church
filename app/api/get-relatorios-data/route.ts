@@ -33,10 +33,10 @@ export async function GET(req: Request) {
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch Church Name and Logo
+    // Fetch Church Name, Logo, and Pastor
     const { data: churchData } = await supabaseAdmin
       .from('churches')
-      .select('name, logo_url, ministry_id')
+      .select('name, logo_url, ministry_id, pastor_name')
       .eq('id', churchId)
       .single();
 
@@ -52,6 +52,7 @@ export async function GET(req: Request) {
 
     const churchName = churchData?.name || 'Igreja';
     const churchLogo = churchData?.logo_url || ministryLogo || '';
+    const pastorName = churchData?.pastor_name || 'Responsável';
 
     // 1. Fetch Members (Excluding Visitors)
     const { data: members, error: memError } = await supabaseAdmin
@@ -100,6 +101,7 @@ export async function GET(req: Request) {
       success: true, 
       churchName,
       churchLogo,
+      pastorName,
       members: filteredMembers,
       visitors: filteredVisitors,
       transactions: transactions || []

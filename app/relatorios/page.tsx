@@ -43,6 +43,7 @@ export default function RelatoriosPage() {
   
   const [churchName, setChurchName] = useState<string>('');
   const [churchLogo, setChurchLogo] = useState<string>('');
+  const [pastorName, setPastorName] = useState<string>('');
   const [members, setMembers] = useState<MemberData[]>([]);
   const [visitors, setVisitors] = useState<MemberData[]>([]);
   const [transactions, setTransactions] = useState<TransactionData[]>([]);
@@ -80,6 +81,7 @@ export default function RelatoriosPage() {
         if (result.success) {
           setChurchName(result.churchName || 'Igreja');
           setChurchLogo(result.churchLogo || '');
+          setPastorName(result.pastorName || 'Responsável');
           setMembers(result.members || []);
           setVisitors(result.visitors || []);
           setTransactions(result.transactions || []);
@@ -325,7 +327,7 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
             <div className="a4-header">
               <h1 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
                 {churchLogo && (
-                  <img src={churchLogo} alt="Logo" style={{ height: '40px', objectFit: 'contain' }} />
+                  <img src={churchLogo} alt="Logo" style={{ height: '55px', objectFit: 'contain' }} />
                 )}
                 <span>
                   {churchName} - {reportType === 'SECRETARIA' && 'Relatório de Secretaria'}
@@ -509,10 +511,9 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
             )}
             
             {/* ASSINATURA */}
-            <div className="signature-block">
-              <div className="signature-line"></div>
-              <p>Assinatura do Responsável</p>
-              <span>{churchName}</span>
+            <div style={{ marginTop: '50px', paddingTop: '20px', borderTop: '1px solid #ccc', textAlign: 'center', width: '300px', marginLeft: 'auto', marginRight: 'auto' }}>
+              <p style={{ margin: '0', fontWeight: 'bold' }}>{pastorName}</p>
+              <p style={{ margin: '0', fontSize: '0.8rem', color: '#666' }}>Pastor Responsável</p>
             </div>
 
           </div>
