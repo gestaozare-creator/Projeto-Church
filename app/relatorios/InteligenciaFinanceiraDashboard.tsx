@@ -2,8 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend
+  ComposedChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend
 } from 'recharts';
+
+interface HistoryData {
+  name: string;
+  receitas: number | null;
+  despesas: number | null;
+  saldo: number | null;
+  ticketMedio: number | null;
+}
 
 interface ChurchData {
   id: string;
@@ -20,6 +28,7 @@ interface ChurchData {
   contasAPagar: number;
   contasAPagarValor: number;
   cultos: { name: string; value: number }[];
+  historyData: HistoryData[];
 }
 
 interface GlobalData {
@@ -31,23 +40,119 @@ interface GlobalData {
   ticketMedio: number;
 }
 
-interface HistoryData {
-  name: string;
-  receitas: number;
-  despesas: number;
-  saldo: number;
-  ticketMedio: number;
-}
-
 interface InteligenciaFinanceiraProps {
   year: number;
   month: number;
 }
 
+const formatCurrency = (val: number) => {
+  if (val === null || val === undefined) return '';
+  return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+};
+
+// Componente para a linha individual da igreja
+const ChurchRow = ({ c }: { c: ChurchData }) => {
+  const [linesVisibility, setLinesVisibility] = useState({
+    receitas: true,
+    despesas: true,
+    saldo: false,
+    ticketMedio: false
+  });
+
+  const handleLegendClick = (e: any) => {
+    const { dataKey } = e;
+    setLinesVisibility(prev => ({
+      ...prev,
+      [dataKey]: !prev[dataKey as keyof typeof linesVisibility]
+    }));
+  };
+
+  return (
+    <div className="glass" style={{ display: 'flex', gap: '20px', padding: '20px', borderRadius: '12px', borderLeft: c.saldoAtual >= 0 ? '4px solid #2ecc71' : '4px solid #e74c3c' }}>
+      
+      {/* Lado Esquerdo: Card Resumo (Tamanho Fixo) */}
+      <div style={{ width: '320px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
+          {c.logo ? (
+            <img src={c.logo} alt={c.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '50%' }} />
+          ) : (
+            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>⛪</div>
+          )}
+          <h3 style={{ margin: 0, fontSize: '1.2rem' }}>{c.name}</h3>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem' }}>
+          <span style={{ color: 'var(--text-secondary)' }}>Entradas:</span>
+          <strong style={{ color: '#2ecc71' }}>{formatCurrency(c.receitaAtual)}</strong>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem' }}>
+          <span style={{ color: 'var(--text-secondary)' }}>Saídas:</span>
+          <strong style={{ color: '#e74c3c' }}>{formatCurrency(c.despesaAtual)}</strong>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', fontSize: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>
+          <span style={{ color: '#fff' }}>Saldo:</span>
+          <strong style={{ color: c.saldoAtual >= 0 ? '#3498db' : '#e74c3c' }}>{formatCurrency(c.saldoAtual)}</strong>
+        </div>
+
+        <div style={{ display: 'flex', gap: '10px', marginTop: 'auto' }}>
+          <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '8px', textAlign: 'center' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Vencidas ({c.contasVencidas})</div>
+            <strong style={{ color: c.contasVencidas > 0 ? '#e74c3c' : 'var(--text-secondary)', fontSize: '0.9rem' }}>
+              {formatCurrency(c.contasVencidasValor)}
+            </strong>
+          </div>
+          <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '8px', textAlign: 'center' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>A Pagar ({c.contasAPagar})</div>
+            <strong style={{ color: '#f1c40f', fontSize: '0.9rem' }}>
+              {formatCurrency(c.contasAPagarValor)}
+            </strong>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '15px', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+          Ticket Médio: <strong style={{ color: '#fff' }}>{formatCurrency(c.ticketMedio)}</strong>
+        </div>
+      </div>
+
+      {/* Lado Direito: Gráfico de Linhas (Ocupa o resto do espaço) */}
+      <div style={{ flex: 1, minWidth: 0, height: '280px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '10px', textAlign: 'right' }}>
+          Evolução (12 Meses) — Clique na legenda para filtrar
+        </div>
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={c.historyData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+            <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{fontSize: 10}} />
+            <YAxis yAxisId="left" tickFormatter={(v) => `R$${(v/1000).toFixed(0)}k`} stroke="var(--text-secondary)" tick={{fontSize: 10}} />
+            <YAxis yAxisId="right" orientation="right" hide={true} />
+            
+            <Tooltip 
+              cursor={{fill: 'rgba(255,255,255,0.05)'}} 
+              contentStyle={{backgroundColor: '#1a1a2e', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff'}}
+              itemStyle={{ color: '#fff' }}
+              labelStyle={{ color: 'var(--text-secondary)', marginBottom: '5px' }}
+              formatter={(value: any, name: any) => value !== null ? [formatCurrency(Number(value)), name] : ['Sem dados', name]}
+            />
+            <Legend 
+              wrapperStyle={{ fontSize: '11px', paddingTop: '10px', cursor: 'pointer' }} 
+              onClick={handleLegendClick}
+            />
+            
+            <Line yAxisId="left" type="monotone" dataKey="receitas" name="Entradas" hide={!linesVisibility.receitas} stroke="#2ecc71" strokeWidth={3} dot={{ r: 3 }} connectNulls={false} />
+            <Line yAxisId="left" type="monotone" dataKey="despesas" name="Saídas" hide={!linesVisibility.despesas} stroke="#e74c3c" strokeWidth={3} dot={{ r: 3 }} connectNulls={false} />
+            <Line yAxisId="left" type="monotone" dataKey="saldo" name="Saldo" hide={!linesVisibility.saldo} stroke="#3498db" strokeWidth={3} dot={{ r: 3 }} connectNulls={false} />
+            <Line yAxisId="right" type="monotone" dataKey="ticketMedio" name="Ticket Médio" hide={!linesVisibility.ticketMedio} stroke="#f1c40f" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3 }} connectNulls={false} />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+
+    </div>
+  );
+};
+
 export default function InteligenciaFinanceiraDashboard({ year, month }: InteligenciaFinanceiraProps) {
   const [churches, setChurches] = useState<ChurchData[]>([]);
   const [globalData, setGlobalData] = useState<GlobalData | null>(null);
-  const [historyData, setHistoryData] = useState<HistoryData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -59,7 +164,6 @@ export default function InteligenciaFinanceiraDashboard({ year, month }: Intelig
         if (result.success) {
           setChurches(result.churchesData || []);
           setGlobalData(result.globalData || null);
-          setHistoryData(result.historyData || []);
         } else {
           console.error(result.error);
         }
@@ -71,10 +175,6 @@ export default function InteligenciaFinanceiraDashboard({ year, month }: Intelig
 
     fetchData();
   }, [year, month]);
-
-  const formatCurrency = (val: number) => {
-    return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  };
 
   const getRankingMedal = (index: number) => {
     if (index === 0) return '🥇';
@@ -90,10 +190,10 @@ export default function InteligenciaFinanceiraDashboard({ year, month }: Intelig
   if (!globalData) return null;
 
   return (
-    <div style={{ width: '100%', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div style={{ width: '100%', maxWidth: '1600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       
       {/* 1. HUD (Head-Up Display) */}
-      <h2 style={{ marginBottom: '10px', fontSize: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>Visão Global da Rede</h2>
+      <h2 style={{ marginBottom: '0', fontSize: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>Visão Global da Rede</h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '10px' }}>
         <div className="glass" style={{ padding: '20px', borderRadius: '12px' }}>
           <h4 style={{ color: 'var(--text-secondary)', margin: '0 0 10px 0', fontSize: '0.9rem' }}>Receita Total</h4>
@@ -124,107 +224,27 @@ export default function InteligenciaFinanceiraDashboard({ year, month }: Intelig
         </div>
       </div>
 
-      {/* 3 COLUNAS PRINCIPAIS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px', marginTop: '10px' }}>
+      {/* ÁREA MISTA: RAIO-X DAS IGREJAS (ESQUERDA) + RANKING (DIREITA) */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginTop: '10px' }}>
         
-        {/* COLUNA 1: Resumo das Igrejas */}
+        {/* LADO ESQUERDO: Lista de Igrejas com Gráficos Individuais */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>⛪ Igrejas da Rede</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '600px', overflowY: 'auto', paddingRight: '10px' }} className="custom-scrollbar">
+          <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>
+            🔍 Raio-X por Igreja
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '800px', overflowY: 'auto', paddingRight: '10px' }} className="custom-scrollbar">
             {churches.map(c => (
-              <div key={c.id} className="glass" style={{ padding: '20px', borderRadius: '12px', borderLeft: c.saldoAtual >= 0 ? '4px solid #2ecc71' : '4px solid #e74c3c' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
-                  {c.logo ? (
-                    <img src={c.logo} alt={c.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '50%' }} />
-                  ) : (
-                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>⛪</div>
-                  )}
-                  <h3 style={{ margin: 0, fontSize: '1.2rem' }}>{c.name}</h3>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Entradas:</span>
-                  <strong style={{ color: '#2ecc71' }}>{formatCurrency(c.receitaAtual)}</strong>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Saídas:</span>
-                  <strong style={{ color: '#e74c3c' }}>{formatCurrency(c.despesaAtual)}</strong>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', fontSize: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>
-                  <span style={{ color: '#fff' }}>Saldo:</span>
-                  <strong style={{ color: c.saldoAtual >= 0 ? '#3498db' : '#e74c3c' }}>{formatCurrency(c.saldoAtual)}</strong>
-                </div>
-
-                <div style={{ marginBottom: '15px' }}>
-                  <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 8px 0' }}>Cultos / Top Entradas:</h4>
-                  {c.cultos.slice(0, 2).map((culto, idx) => (
-                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '4px' }}>
-                      <span style={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: '160px' }}>{culto.name}</span>
-                      <strong>{formatCurrency(culto.value)}</strong>
-                    </div>
-                  ))}
-                  {c.cultos.length === 0 && <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)' }}>Sem entradas</div>}
-                </div>
-
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '8px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Vencidas ({c.contasVencidas})</div>
-                    <strong style={{ color: c.contasVencidas > 0 ? '#e74c3c' : 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                      {formatCurrency(c.contasVencidasValor)}
-                    </strong>
-                  </div>
-                  <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '8px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>A Pagar ({c.contasAPagar})</div>
-                    <strong style={{ color: '#f1c40f', fontSize: '0.9rem' }}>
-                      {formatCurrency(c.contasAPagarValor)}
-                    </strong>
-                  </div>
-                </div>
-
-                <div style={{ marginTop: '15px', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                  Ticket Médio: <strong style={{ color: '#fff' }}>{formatCurrency(c.ticketMedio)}</strong>
-                </div>
-              </div>
+              <ChurchRow key={c.id} c={c} />
             ))}
           </div>
         </div>
 
-        {/* COLUNA 2: Evolução Mês a Mês */}
+        {/* LADO DIREITO: Ranking de Arrecadação */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>📈 Evolução Global (12 Meses)</h3>
-          <div className="glass" style={{ padding: '20px', borderRadius: '12px', height: '600px', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ flex: 1, minHeight: 0 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={historyData} margin={{ top: 20, right: 0, left: 0, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                  <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{fontSize: 10}} angle={-45} textAnchor="end" height={60} />
-                  <YAxis yAxisId="left" tickFormatter={(v) => `R$${(v/1000).toFixed(0)}k`} stroke="var(--text-secondary)" tick={{fontSize: 10}} width={50} />
-                  <YAxis yAxisId="right" orientation="right" tickFormatter={(v) => `R$${(v/1).toFixed(0)}`} stroke="#f1c40f" tick={{fontSize: 10}} width={50} />
-                  
-                  <Tooltip 
-                    cursor={{fill: 'rgba(255,255,255,0.05)'}} 
-                    contentStyle={{backgroundColor: '#1a1a2e', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff'}}
-                    itemStyle={{ color: '#fff' }}
-                    labelStyle={{ color: 'var(--text-secondary)', marginBottom: '5px' }}
-                    formatter={(value: any, name: any) => [formatCurrency(Number(value)), name]}
-                  />
-                  <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                  
-                  <Bar yAxisId="left" dataKey="receitas" name="Entradas" fill="#2ecc71" radius={[4, 4, 0, 0]} maxBarSize={30} />
-                  <Bar yAxisId="left" dataKey="despesas" name="Saídas" fill="#e74c3c" radius={[4, 4, 0, 0]} maxBarSize={30} />
-                  
-                  <Line yAxisId="left" type="monotone" dataKey="saldo" name="Saldo" stroke="#3498db" strokeWidth={3} dot={{ r: 4, fill: '#3498db', strokeWidth: 2, stroke: '#1a1a2e' }} />
-                  <Line yAxisId="right" type="monotone" dataKey="ticketMedio" name="Ticket Médio" stroke="#f1c40f" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, fill: '#f1c40f', strokeWidth: 0 }} />
-                </ComposedChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-
-        {/* COLUNA 3: Ranking de Arrecadação */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>🏆 Ranking de Arrecadação</h3>
-          <div className="glass custom-scrollbar" style={{ padding: '0', borderRadius: '12px', maxHeight: '600px', overflowY: 'auto' }}>
+          <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>
+            🏆 Ranking de Arrecadação
+          </h3>
+          <div className="glass custom-scrollbar" style={{ padding: '0', borderRadius: '12px', maxHeight: '800px', overflowY: 'auto' }}>
             {churches.map((c, idx) => (
               <div key={c.id} style={{ 
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', 

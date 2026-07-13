@@ -57,6 +57,10 @@ export async function GET(req: Request) {
       .lte('date', endCurrentStr);
 
     const todayStr = new Date().toISOString().split('T')[0];
+    const currentDate = new Date();
+    // Mes atual do calendário (para saber o que é "futuro")
+    const currentCalendarMonthKey = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}`;
+
     const daysOfWeek = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
 
     const extractDayTimeFromTransaction = (t: any): string => {
@@ -78,20 +82,6 @@ export async function GET(req: Request) {
     let globalReceitaPrev = 0; // Para MoM
     let globalEntradasCount = 0;
 
-    // Inicializa histórico mensal (12 meses até o atual)
-    const historyMap: Record<string, { monthName: string, sortKey: string, receitas: number, despesas: number, entradasCount: number }> = {};
-    for (let i = 11; i >= 0; i--) {
-      const d = new Date(yearNum, monthNum - i, 1);
-      const k = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-      historyMap[k] = {
-        monthName: `${monthNames[d.getMonth()]} ${d.getFullYear().toString().substring(2)}`,
-        sortKey: k,
-        receitas: 0,
-        despesas: 0,
-        entradasCount: 0
-      };
-    }
-
     const prevMonthNum = monthNum - 1 < 0 ? 11 : monthNum - 1;
     const prevYearNum = monthNum - 1 < 0 ? yearNum - 1 : yearNum;
     const prevKey = `${prevYearNum}-${(prevMonthNum + 1).toString().padStart(2, '0')}`;
@@ -111,6 +101,20 @@ export async function GET(req: Request) {
       let contasAPagarValor = 0;
 
       const cultosMap: Record<string, number> = {};
+      
+      // Inicializar historico da igreja
+      const localHistoryMap: Record<string, { monthName: string, sortKey: string, receitas: number, despesas: number, entradasCount: number }> = {};
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(yearNum, monthNum - i, 1);
+        const k = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+        localHistoryMap[k] = {
+          monthName: `${monthNames[d.getMonth()]} ${d.getFullYear().toString().substring(2)}`,
+          sortKey: k,
+          receitas: 0,
+          despesas: 0,
+          entradasCount: 0
+        };
+      }
 
       tChurch.forEach(t => {
         const amt = Number(t.amount);
@@ -122,18 +126,18 @@ export async function GET(req: Request) {
         if (!t.date) return;
         const tMonthKey = t.date.substring(0, 7); // YYYY-MM
 
-        // Somar ao histórico global
-        if (historyMap[tMonthKey]) {
+        // Somar ao histórico local
+        if (localHistoryMap[tMonthKey]) {
           if (isIncome && isPaid) {
-            historyMap[tMonthKey].receitas += amt;
-            historyMap[tMonthKey].entradasCount++;
+            localHistoryMap[tMonthKey].receitas += amt;
+            localHistoryMap[tMonthKey].entradasCount++;
           }
           if (isExpense && isPaid) {
-            historyMap[tMonthKey].despesas += amt;
+            localHistoryMap[tMonthKey].despesas += amt;
           }
         }
 
-        // Dados do mês atual da igreja
+        // Dados do mês atual selecionado
         if (tMonthKey === currKey) {
           if (isIncome && isPaid) {
             receitaAtual += amt;
@@ -158,12 +162,30 @@ export async function GET(req: Request) {
           }
         }
 
-        // Dados do mês anterior da igreja (MoM local/global)
+        // Dados do mês anterior selecionado (MoM)
         if (tMonthKey === prevKey) {
           if (isIncome && isPaid) {
             receitaAnterior += amt;
           }
         }
+      });
+
+      // Transformar o mapa em array ordenado e aplicar null para meses futuros
+      const historyData = Object.values(localHistoryMap).sort((a, b) => a.sortKey.localeCompare(b.sortKey)).map(h => {
+        // Se a chave do mês é estritamente maior que o mês do calendário real HOJE, e também maior que o último registro pago?
+        // O pedido foi: "até o mês vigente pode ser zero para manter a linha, e depois do mês vigente tem que ser nada"
+        // Vamos definir o mês vigente como o menor entre "o mês que estamos visualizando (currKey)" e "o mês real de hoje (currentCalendarMonthKey)"
+        // Na verdade, se o relatorio é de Julho, meses após Julho no "balde" não existem, pq o limite do DB é endCurrentStr. 
+        // Mas se o usuário selecionar um mes MAIOR que o atual (ex: dezembro de 2026), e estivermos em Julho, os meses Ago-Dez devem ser null.
+        const isFuture = h.sortKey > currentCalendarMonthKey;
+        
+        return {
+          name: h.monthName,
+          receitas: isFuture ? null : h.receitas,
+          despesas: isFuture ? null : h.despesas,
+          saldo: isFuture ? null : (h.receitas - h.despesas),
+          ticketMedio: isFuture ? null : (h.entradasCount > 0 ? h.receitas / h.entradasCount : 0)
+        };
       });
 
       globalReceita += receitaAtual;
@@ -189,24 +211,13 @@ export async function GET(req: Request) {
         contasVencidasValor,
         contasAPagar,
         contasAPagarValor,
-        cultos: cultosList
+        cultos: cultosList,
+        historyData
       };
     });
 
     const globalTicketMedio = globalEntradasCount > 0 ? globalReceita / globalEntradasCount : 0;
     const globalGrowth = globalReceitaPrev > 0 ? ((globalReceita - globalReceitaPrev) / globalReceitaPrev) * 100 : 0;
-
-    const historyData = Object.values(historyMap).sort((a, b) => a.sortKey.localeCompare(b.sortKey)).map(h => ({
-      name: h.monthName,
-      receitas: h.receitas,
-      despesas: h.despesas,
-      saldo: h.receitas - h.despesas,
-      ticketMedio: h.entradasCount > 0 ? h.receitas / h.entradasCount : 0
-    }));
-
-    // Correção: Como iteramos por tChurch e somamos em historyMap para cada igreja,
-    // transactions foram somadas repetidas vezes? NÃO! tChurch itera sobre transações de UMA igreja,
-    // mas a mesma transação pertence a uma única igreja (filter). Então está seguro e correto!
 
     return NextResponse.json({ 
       success: true, 
@@ -218,8 +229,7 @@ export async function GET(req: Request) {
         receitaPrev: globalReceitaPrev,
         growth: globalGrowth,
         ticketMedio: globalTicketMedio
-      },
-      historyData
+      }
     });
 
   } catch (error: any) {
