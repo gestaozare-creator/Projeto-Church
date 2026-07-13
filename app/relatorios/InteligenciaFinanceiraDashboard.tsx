@@ -206,7 +206,7 @@ export default function InteligenciaFinanceiraDashboard({ year, month }: Intelig
                     contentStyle={{backgroundColor: '#1a1a2e', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff'}}
                     itemStyle={{ color: '#fff' }}
                     labelStyle={{ color: 'var(--text-secondary)', marginBottom: '5px' }}
-                    formatter={(value: any, name: string) => [formatCurrency(Number(value)), name]}
+                    formatter={(value: any, name: any) => [formatCurrency(Number(value)), name]}
                   />
                   <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
                   
@@ -224,7 +224,7 @@ export default function InteligenciaFinanceiraDashboard({ year, month }: Intelig
         {/* COLUNA 3: Ranking de Arrecadação */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>🏆 Ranking de Arrecadação</h3>
-          <div className="glass" style={{ padding: '0', borderRadius: '12px', maxHeight: '600px', overflowY: 'auto' }} className="custom-scrollbar">
+          <div className="glass custom-scrollbar" style={{ padding: '0', borderRadius: '12px', maxHeight: '600px', overflowY: 'auto' }}>
             {churches.map((c, idx) => (
               <div key={c.id} style={{ 
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
