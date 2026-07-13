@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import ContabilidadeDashboard from './ContabilidadeDashboard';
+import InteligenciaFinanceiraDashboard from './InteligenciaFinanceiraDashboard';
 import './relatorios.css';
 
 const monthNames = [
@@ -32,7 +33,7 @@ interface TransactionData {
   payment_method?: string;
 }
 
-type ReportType = 'TODOS' | 'SECRETARIA' | 'FINANCEIRO' | 'RECEITAS' | 'DESPESAS' | 'CONTABILIDADE';
+type ReportType = 'TODOS' | 'SECRETARIA' | 'FINANCEIRO' | 'RECEITAS' | 'DESPESAS' | 'CONTABILIDADE' | 'INTELIGENCIA';
 
 export default function RelatoriosPage() {
   const { currentUser, activeChurchId, canSeeAllChurches } = useAuth();
@@ -311,6 +312,15 @@ export default function RelatoriosPage() {
               >
                 🗂️ Contabilidade
               </button>
+              {currentUser?.role === 'pastor_diretor' && (
+                <button 
+                  onClick={() => setReportType('INTELIGENCIA')} 
+                  className={`tab-btn ${reportType === 'INTELIGENCIA' ? 'active' : ''}`}
+                  style={{ background: reportType === 'INTELIGENCIA' ? '#9b59b6' : 'transparent', color: reportType === 'INTELIGENCIA' ? '#fff' : 'var(--text-secondary)' }}
+                >
+                  🧠 Inteligência Financeira
+                </button>
+              )}
             </div>
           </div>
 
@@ -339,6 +349,8 @@ export default function RelatoriosPage() {
       </div>
       {reportType === 'CONTABILIDADE' ? (
         <ContabilidadeDashboard churchId={selectedChurch || activeChurchId || currentUser?.churchId || ''} year={year} />
+      ) : reportType === 'INTELIGENCIA' ? (
+        <InteligenciaFinanceiraDashboard year={year} month={month} />
       ) : loading ? (
         <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-secondary)' }}>Carregando dados detalhados...</div>
       ) : (
