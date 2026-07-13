@@ -214,18 +214,27 @@ export default function RelatoriosPage() {
       const html2pdf = (await import('html2pdf.js')).default;
       const filename = `Relatorio_${churchName}_${monthNames[month]}_${year}.pdf`;
       const opt: any = {
-        margin:       10,
+        margin:       0, // Sem margem externa, usa o padding do CSS
         filename:     filename,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, windowWidth: 1024 },
+        html2canvas:  { scale: 2, useCORS: true, scrollX: 0, scrollY: 0, windowWidth: 800 },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
       
-      // Força a largura para formato A4 durante a geração para evitar cortes
+      // Força a largura e tira margens para o html2canvas não cortar nem descentralizar
       const originalWidth = element.style.width;
       const originalMaxWidth = element.style.maxWidth;
-      element.style.width = '21cm';
-      element.style.maxWidth = '21cm';
+      const originalMargin = element.style.margin;
+      const originalPosition = element.style.position;
+      const originalLeft = element.style.left;
+      const originalTop = element.style.top;
+      
+      element.style.width = '794px'; // Exatos 210mm em 96dpi
+      element.style.maxWidth = '794px';
+      element.style.margin = '0';
+      element.style.position = 'absolute';
+      element.style.left = '0';
+      element.style.top = '0';
       
       // Generate PDF as blob
       const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
@@ -233,6 +242,10 @@ export default function RelatoriosPage() {
       // Restaura o tamanho original
       element.style.width = originalWidth;
       element.style.maxWidth = originalMaxWidth;
+      element.style.margin = originalMargin;
+      element.style.position = originalPosition;
+      element.style.left = originalLeft;
+      element.style.top = originalTop;
 
       const file = new File([pdfBlob], filename, { type: 'application/pdf' });
 
