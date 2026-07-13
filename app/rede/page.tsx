@@ -695,8 +695,8 @@ export default function RedePage() {
 
       {/* ======================== TAB: RELATÓRIOS ======================== */}
       {activeTab === 'relatorios' && (
-        <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div className="glass" style={{ padding: '20px', borderRadius: '14px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+        <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+          <div className="glass" style={{ padding: '20px', borderRadius: '14px', display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
             <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem' }}>Filtros do Relatório</h3>
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               <label style={{ color: 'var(--text-secondary)' }}>Mês:</label>

@@ -74,11 +74,11 @@ export default function InteligenciaFinanceiraDashboard({ year, month }: Intelig
   if (!globalData) return null;
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       
       {/* 1. HUD (Head-Up Display) */}
       <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>Visão Global da Rede</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '10px' }}>
         <div className="glass" style={{ padding: '20px', borderRadius: '12px' }}>
           <h4 style={{ color: 'var(--text-secondary)', margin: '0 0 10px 0', fontSize: '0.9rem' }}>Receita Total</h4>
           <h2 style={{ margin: 0, fontSize: '1.8rem', color: '#2ecc71' }}>{formatCurrency(globalData.receita)}</h2>
@@ -110,7 +110,7 @@ export default function InteligenciaFinanceiraDashboard({ year, month }: Intelig
 
       {/* 2. Área de Analytics (Gráficos e Rankings) */}
       <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>Performance e Ranking</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px', marginBottom: '10px' }}>
         
         <div className="glass" style={{ padding: '20px', borderRadius: '12px' }}>
           <h4 style={{ color: 'var(--text-secondary)', margin: '0 0 20px 0' }}>🏆 Top 5 Igrejas (Arrecadação)</h4>
