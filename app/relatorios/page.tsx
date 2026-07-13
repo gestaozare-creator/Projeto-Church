@@ -314,7 +314,6 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
           <button onClick={handleWhatsApp} className="btn-whatsapp" title="Enviar Resumo">💬 WhatsApp</button>
         </div>
       </div>
-
       {loading ? (
         <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-secondary)' }}>Carregando dados detalhados...</div>
       ) : (
@@ -322,13 +321,12 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
           <div id="a4-report-page" className="a4-page glass">
             
             <div className="a4-header">
-              <h2 className="church-name">{churchName}</h2>
               <h1>
-                {reportType === 'SECRETARIA' && 'Relatório de Secretaria'}
+                {churchName} - {reportType === 'SECRETARIA' && 'Relatório de Secretaria'}
                 {reportType === 'FINANCEIRO' && 'Relatório Financeiro'}
                 {reportType === 'RECEITAS' && 'Relatório de Entradas'}
                 {reportType === 'DESPESAS' && 'Relatório de Saídas'}
-                {reportType === 'TODOS' && 'Relatório Geral (Desempenho e Financeiro)'}
+                {reportType === 'TODOS' && 'Relatório Geral'}
               </h1>
               <h3>{monthNames[month]} de {year}</h3>
             </div>

@@ -104,7 +104,7 @@
   min-height: 297mm;
   background: #ffffff;
   color: #333333;
-  padding: 12mm 15mm;
+  padding: 12mm 8mm; /* Reduced side padding for more space */
   border-radius: 4px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   font-family: Arial, sans-serif;
@@ -125,13 +125,9 @@
 }
 
 .a4-header h1 {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   margin: 5px 0 0 0;
   text-transform: uppercase;
-}
-.a4-header h2.church-name {
-  font-size: 1.5rem;
-  margin: 0;
   font-weight: 800;
   color: #2c3e50;
 }
