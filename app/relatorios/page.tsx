@@ -42,6 +42,7 @@ export default function RelatoriosPage() {
   const [reportType, setReportType] = useState<ReportType>('SECRETARIA');
   
   const [churchName, setChurchName] = useState<string>('');
+  const [churchLogo, setChurchLogo] = useState<string>('');
   const [members, setMembers] = useState<MemberData[]>([]);
   const [visitors, setVisitors] = useState<MemberData[]>([]);
   const [transactions, setTransactions] = useState<TransactionData[]>([]);
@@ -78,6 +79,7 @@ export default function RelatoriosPage() {
         const result = await res.json();
         if (result.success) {
           setChurchName(result.churchName || 'Igreja');
+          setChurchLogo(result.churchLogo || '');
           setMembers(result.members || []);
           setVisitors(result.visitors || []);
           setTransactions(result.transactions || []);
@@ -321,12 +323,17 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
           <div id="a4-report-page" className="a4-page glass">
             
             <div className="a4-header">
-              <h1>
-                {churchName} - {reportType === 'SECRETARIA' && 'Relatório de Secretaria'}
-                {reportType === 'FINANCEIRO' && 'Relatório Financeiro'}
-                {reportType === 'RECEITAS' && 'Relatório de Entradas'}
-                {reportType === 'DESPESAS' && 'Relatório de Saídas'}
-                {reportType === 'TODOS' && 'Relatório Geral'}
+              <h1 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
+                {churchLogo && (
+                  <img src={churchLogo} alt="Logo" style={{ height: '40px', objectFit: 'contain' }} />
+                )}
+                <span>
+                  {churchName} - {reportType === 'SECRETARIA' && 'Relatório de Secretaria'}
+                  {reportType === 'FINANCEIRO' && 'Relatório Financeiro'}
+                  {reportType === 'RECEITAS' && 'Relatório de Entradas'}
+                  {reportType === 'DESPESAS' && 'Relatório de Saídas'}
+                  {reportType === 'TODOS' && 'Relatório Geral'}
+                </span>
               </h1>
               <h3>{monthNames[month]} de {year}</h3>
             </div>
