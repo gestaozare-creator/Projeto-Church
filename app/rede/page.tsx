@@ -696,26 +696,26 @@ export default function RedePage() {
       {/* ======================== TAB: RELATÓRIOS ======================== */}
       {activeTab === 'relatorios' && (
         <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
-          <div className="glass" style={{ padding: '20px', borderRadius: '14px', display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem' }}>Filtros do Relatório</h3>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <label style={{ color: 'var(--text-secondary)' }}>Mês:</label>
+          <div className="glass" style={{ position: 'sticky', top: '0', zIndex: 11, padding: '12px 20px', borderRadius: '10px', display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.05rem' }}>Filtros</h3>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Mês:</label>
               <select 
                 value={reportMonth} 
                 onChange={e => setReportMonth(Number(e.target.value))} 
-                style={{ padding: '8px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
+                style={{ padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.85rem' }}
               >
                 {monthNames.map((m, i) => (
                   <option key={i} value={i}>{m}</option>
                 ))}
               </select>
             </div>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <label style={{ color: 'var(--text-secondary)' }}>Ano:</label>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Ano:</label>
               <select 
                 value={reportYear} 
                 onChange={e => setReportYear(Number(e.target.value))} 
-                style={{ padding: '8px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
+                style={{ padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.85rem' }}
               >
                 {[...Array(5)].map((_, i) => {
                   const y = new Date().getFullYear() - i;

@@ -199,34 +199,35 @@ export default function InteligenciaFinanceiraDashboard({ year, month }: Intelig
   return (
     <div style={{ width: '100%', maxWidth: '1600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       
-      {/* 1. HUD (Head-Up Display) */}
-      <h2 style={{ marginBottom: '0', fontSize: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>Visão Global da Rede</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '10px' }}>
-        <div className="glass" style={{ padding: '20px', borderRadius: '12px' }}>
-          <h4 style={{ color: 'var(--text-secondary)', margin: '0 0 10px 0', fontSize: '0.9rem' }}>Receita Total</h4>
-          <h2 style={{ margin: 0, fontSize: '1.8rem', color: '#2ecc71' }}>{formatCurrency(globalData.receita)}</h2>
-          <div style={{ marginTop: '10px', fontSize: '0.85rem', color: globalData.growth >= 0 ? '#2ecc71' : '#e74c3c' }}>
-            {globalData.growth >= 0 ? '📈' : '📉'} {Math.abs(globalData.growth).toFixed(1)}% vs Mês Anterior
+      {/* 1. HUD (Head-Up Display) - STICKY TOP */}
+      <div style={{ position: 'sticky', top: '65px', zIndex: 10, background: 'var(--bg-base)', paddingTop: '10px', paddingBottom: '10px', margin: '-10px -10px 0 -10px', paddingLeft: '10px', paddingRight: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+          <div className="glass" style={{ padding: '15px', borderRadius: '10px' }}>
+            <h4 style={{ color: 'var(--text-secondary)', margin: '0 0 5px 0', fontSize: '0.8rem' }}>Receita Total</h4>
+            <h2 style={{ margin: 0, fontSize: '1.4rem', color: '#2ecc71' }}>{formatCurrency(globalData.receita)}</h2>
+            <div style={{ marginTop: '5px', fontSize: '0.75rem', color: globalData.growth >= 0 ? '#2ecc71' : '#e74c3c' }}>
+              {globalData.growth >= 0 ? '📈' : '📉'} {Math.abs(globalData.growth).toFixed(1)}% vs Mês Anterior
+            </div>
           </div>
-        </div>
-        
-        <div className="glass" style={{ padding: '20px', borderRadius: '12px' }}>
-          <h4 style={{ color: 'var(--text-secondary)', margin: '0 0 10px 0', fontSize: '0.9rem' }}>Despesa Total</h4>
-          <h2 style={{ margin: 0, fontSize: '1.8rem', color: '#e74c3c' }}>{formatCurrency(globalData.despesa)}</h2>
-        </div>
+          
+          <div className="glass" style={{ padding: '15px', borderRadius: '10px' }}>
+            <h4 style={{ color: 'var(--text-secondary)', margin: '0 0 5px 0', fontSize: '0.8rem' }}>Despesa Total</h4>
+            <h2 style={{ margin: 0, fontSize: '1.4rem', color: '#e74c3c' }}>{formatCurrency(globalData.despesa)}</h2>
+          </div>
 
-        <div className="glass" style={{ padding: '20px', borderRadius: '12px' }}>
-          <h4 style={{ color: 'var(--text-secondary)', margin: '0 0 10px 0', fontSize: '0.9rem' }}>Saldo Consolidado</h4>
-          <h2 style={{ margin: 0, fontSize: '1.8rem', color: globalData.saldo >= 0 ? '#3498db' : '#e74c3c' }}>
-            {formatCurrency(globalData.saldo)}
-          </h2>
-        </div>
+          <div className="glass" style={{ padding: '15px', borderRadius: '10px' }}>
+            <h4 style={{ color: 'var(--text-secondary)', margin: '0 0 5px 0', fontSize: '0.8rem' }}>Saldo Consolidado</h4>
+            <h2 style={{ margin: 0, fontSize: '1.4rem', color: globalData.saldo >= 0 ? '#3498db' : '#e74c3c' }}>
+              {formatCurrency(globalData.saldo)}
+            </h2>
+          </div>
 
-        <div className="glass" style={{ padding: '20px', borderRadius: '12px' }}>
-          <h4 style={{ color: 'var(--text-secondary)', margin: '0 0 10px 0', fontSize: '0.9rem' }}>Ticket Médio (Entradas)</h4>
-          <h2 style={{ margin: 0, fontSize: '1.8rem', color: '#f1c40f' }}>{formatCurrency(globalData.ticketMedio)}</h2>
-          <div style={{ marginTop: '10px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            Baseado no volume total de doações
+          <div className="glass" style={{ padding: '15px', borderRadius: '10px' }}>
+            <h4 style={{ color: 'var(--text-secondary)', margin: '0 0 5px 0', fontSize: '0.8rem' }}>Ticket Médio</h4>
+            <h2 style={{ margin: 0, fontSize: '1.4rem', color: '#f1c40f' }}>{formatCurrency(globalData.ticketMedio)}</h2>
+            <div style={{ marginTop: '5px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+              Por doação
+            </div>
           </div>
         </div>
       </div>
@@ -236,22 +237,22 @@ export default function InteligenciaFinanceiraDashboard({ year, month }: Intelig
         
         {/* LADO ESQUERDO: Lista de Igrejas com Gráficos Individuais */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>
             🔍 Raio-X por Igreja
           </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '800px', overflowY: 'auto', paddingRight: '10px' }} className="custom-scrollbar">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingRight: '10px' }} className="custom-scrollbar">
             {churches.map(c => (
               <ChurchRow key={c.id} c={c} />
             ))}
           </div>
         </div>
 
-        {/* LADO DIREITO: Ranking de Arrecadação */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>
+        {/* LADO DIREITO: Ranking de Arrecadação (STICKY) */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', position: 'sticky', top: '175px', height: 'calc(100vh - 195px)' }}>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>
             🏆 Ranking de Arrecadação
           </h3>
-          <div className="glass custom-scrollbar" style={{ padding: '0', borderRadius: '12px', maxHeight: '800px', overflowY: 'auto' }}>
+          <div className="glass custom-scrollbar" style={{ padding: '0', borderRadius: '12px', flex: 1, overflowY: 'auto' }}>
             {churches.map((c, idx) => (
               <div key={c.id} style={{ 
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
