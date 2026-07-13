@@ -132,6 +132,13 @@ const ChurchRow = ({ c }: { c: ChurchData }) => {
               itemStyle={{ color: '#fff' }}
               labelStyle={{ color: 'var(--text-secondary)', marginBottom: '5px' }}
               formatter={(value: any, name: any) => value !== null ? [formatCurrency(Number(value)), name] : ['Sem dados', name]}
+              itemSorter={(item: any) => {
+                if (item.dataKey === 'receitas') return 1;
+                if (item.dataKey === 'despesas') return 2;
+                if (item.dataKey === 'saldo') return 3;
+                if (item.dataKey === 'ticketMedio') return 4;
+                return 5;
+              }}
             />
             <Legend 
               wrapperStyle={{ fontSize: '11px', paddingTop: '10px', cursor: 'pointer' }} 

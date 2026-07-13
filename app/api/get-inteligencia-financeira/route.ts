@@ -30,9 +30,8 @@ export async function GET(req: Request) {
     const lastDayCurrent = new Date(nextMonthYear1, nextMonth1, 0).getDate();
     const endCurrentStr = `${yearNum}-${currentMonthFormatted}-${lastDayCurrent.toString().padStart(2, '0')}`;
 
-    // 12 meses atrás
-    const d12 = new Date(yearNum, monthNum - 11, 1);
-    const start12MonthsAgoStr = `${d12.getFullYear()}-${(d12.getMonth() + 1).toString().padStart(2, '0')}-01`;
+    // Ano calendário (Janeiro a Dezembro)
+    const start12MonthsAgoStr = `${yearNum}-01-01`;
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -102,13 +101,13 @@ export async function GET(req: Request) {
 
       const cultosMap: Record<string, number> = {};
       
-      // Inicializar historico da igreja
+      // Inicializar historico da igreja (Jan a Dez do ano selecionado)
       const localHistoryMap: Record<string, { monthName: string, sortKey: string, receitas: number, despesas: number, entradasCount: number }> = {};
-      for (let i = 11; i >= 0; i--) {
-        const d = new Date(yearNum, monthNum - i, 1);
-        const k = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(yearNum, i, 1);
+        const k = `${yearNum}-${(i + 1).toString().padStart(2, '0')}`;
         localHistoryMap[k] = {
-          monthName: `${monthNames[d.getMonth()]} ${d.getFullYear().toString().substring(2)}`,
+          monthName: `${monthNames[i]}`,
           sortKey: k,
           receitas: 0,
           despesas: 0,
