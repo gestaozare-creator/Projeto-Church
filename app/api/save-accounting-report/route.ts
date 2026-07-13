@@ -30,7 +30,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: fetchError.message }, { status: 500 });
     }
 
-    const currentConfig = churchData?.config || {};
+    let currentConfig = churchData?.config || {};
+    if (typeof currentConfig === 'string') {
+      try {
+        currentConfig = JSON.parse(currentConfig);
+      } catch (e) {
+        currentConfig = {};
+      }
+    }
     const existingReports = currentConfig.accountingReports || [];
 
     // Remove any previous entry for this month/year and append the new one

@@ -40,7 +40,10 @@ export default function ContabilidadeDashboard({ churchId, year }: Contabilidade
       
       if (data) {
         setChurchName(data.name || 'Igreja');
-        const config = data.config || {};
+        let config = data.config || {};
+        if (typeof config === 'string') {
+          try { config = JSON.parse(config); } catch (e) { config = {}; }
+        }
         if (config.accountingReports) {
           setReportsStatus(config.accountingReports);
         } else {
@@ -116,18 +119,10 @@ export default function ContabilidadeDashboard({ churchId, year }: Contabilidade
         }
       }
 
-      // 5. Generate ZIP and Download
+      // 5. Generate ZIP Blob
       const zipBlob = await zip.generateAsync({ type: 'blob' });
-      const downloadUrl = window.URL.createObjectURL(zipBlob);
-      const a = document.createElement('a');
-      a.href = downloadUrl;
-      a.download = `Relatorio_Contabil_${churchName.replace(/\s+/g, '_')}_${monthNames[monthIndex]}_${year}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(downloadUrl);
 
-      // 6. Save State via API (Bypassing RLS)
+      // 6. Save State via API (Bypassing RLS) BEFORE triggering download
       const { data: userData } = await supabase.auth.getUser();
       const userMeta = userData?.user?.user_metadata || {};
       const userName = userMeta.name || 'Usuário';
@@ -146,11 +141,28 @@ export default function ContabilidadeDashboard({ churchId, year }: Contabilidade
         body: JSON.stringify({ churchId, newReport: newStatus })
       });
 
-      const saveResult = await saveRes.json();
+      let saveResult;
+      try {
+        saveResult = await saveRes.json();
+      } catch (e) {
+        throw new Error('Falha de comunicação com o servidor ao salvar o status.');
+      }
+
       if (!saveRes.ok || !saveResult.success) {
         throw new Error(saveResult.error || 'Failed to save status');
       }
 
+      // 7. Trigger Download
+      const downloadUrl = window.URL.createObjectURL(zipBlob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `Relatorio_Contabil_${churchName.replace(/\s+/g, '_')}_${monthNames[monthIndex]}_${year}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+
+      // 8. Update UI
       setReportsStatus(saveResult.accountingReports);
 
     } catch (err) {
