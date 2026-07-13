@@ -146,16 +146,7 @@ export default function RelatoriosPage() {
   }));
 
   // Agrupamento Financeiro por Dia/Horário
-  const extractDayTimeFromTransaction = (t: TransactionData) => {
-    // Ex: "teste - Culto de Culto da Familia às 19:30"
-    const regexTime = /(?:às|as)\s+(\d{2}:\d{2})/i;
-    const matchTime = t.description?.match(regexTime);
-    let time = matchTime ? matchTime[1] : '';
-
-    const regexCulto = /Culto de (.*?)(?:\s+às|\s*$)/i;
-    const matchCulto = t.description?.match(regexCulto);
-    let cultoName = matchCulto ? matchCulto[1].trim() : 'Geral/Outros';
-
+  const extractDayTimeFromTransaction = (t: TransactionData): string => {
     let dayOfWeek = '';
     if (t.date) {
       const d = new Date(t.date + 'T12:00:00Z'); // Força o fuso para evitar pular dia
@@ -164,9 +155,13 @@ export default function RelatoriosPage() {
       }
     }
 
-    if (!time && !dayOfWeek) return 'Outras Movimentações (S/ Culto)';
-    if (!time) return `${dayOfWeek} (S/ Horário)`;
-    return `${dayOfWeek} às ${time}`;
+    const isCulto = t.category?.toLowerCase().includes('culto') || t.description?.toLowerCase().includes('culto');
+    if (!isCulto) {
+      return 'Outras Entradas';
+    }
+
+    if (!dayOfWeek) return 'Cultos Sem Data';
+    return dayOfWeek;
   };
 
   const extractCultoName = (t: TransactionData) => {
@@ -424,11 +419,11 @@ ${isPositive ? '🔵 Saldo:' : '🔴 Saldo:'} ${formatCurrency(balance)}`;
                       <h4 style={{ marginBottom: '10px', color: '#555', borderBottom: '1px solid #ddd', paddingBottom: '5px' }}>
                         📊 Resumo de Entradas por Culto
                       </h4>
-                      <div style={{ display: 'flex', gap: '4px' }}>
+                      <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-start' }}>
                         {financeiroList.filter(f => f.receitas > 0).map((f, idx) => (
-                          <div key={idx} style={{ background: '#f4f4f4', border: '1px solid #ddd', borderRadius: '4px', padding: '4px', flex: '1', minWidth: '0', textAlign: 'center' }}>
-                            <div style={{ fontSize: '0.55rem', color: '#666', textTransform: 'uppercase', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={f.culto}>{f.culto}</div>
-                            <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#27ae60' }}>{formatCurrency(f.receitas)}</div>
+                          <div key={idx} style={{ background: '#f4f4f4', border: '1px solid #ddd', borderRadius: '4px', padding: '4px 6px', flex: '0 1 120px', minWidth: '0', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.6rem', color: '#666', textTransform: 'uppercase', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={f.culto.toUpperCase()}>{f.culto.toUpperCase()}</div>
+                            <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#27ae60' }}>{formatCurrency(f.receitas)}</div>
                           </div>
                         ))}
                       </div>
