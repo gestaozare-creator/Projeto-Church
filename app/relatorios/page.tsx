@@ -217,12 +217,23 @@ export default function RelatoriosPage() {
         margin:       10,
         filename:     filename,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
+        html2canvas:  { scale: 2, useCORS: true, windowWidth: 1024 },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
       
+      // Força a largura para formato A4 durante a geração para evitar cortes
+      const originalWidth = element.style.width;
+      const originalMaxWidth = element.style.maxWidth;
+      element.style.width = '21cm';
+      element.style.maxWidth = '21cm';
+      
       // Generate PDF as blob
       const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+      
+      // Restaura o tamanho original
+      element.style.width = originalWidth;
+      element.style.maxWidth = originalMaxWidth;
+
       const file = new File([pdfBlob], filename, { type: 'application/pdf' });
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
