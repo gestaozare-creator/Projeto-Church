@@ -746,8 +746,8 @@ export default function InfantilDashboardPage() {
                       return (
                         <div key={k.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'rgba(0,0,0,0.1)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.02)' }}>
                           <div>
-                            <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#fff' }}>{k.name}</div>
-                            <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+                            <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{k.name}</div>
+                            <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
                               Idade: {age} anos • Sala Sugerida: <strong>{getRoomByAge(age)}</strong>
                             </div>
                             {k.allergies && <div style={{ fontSize: '0.7rem', color: '#fb7185', marginTop: '2px' }}>⚠️ Alergia: {k.allergies}</div>}
@@ -788,7 +788,7 @@ export default function InfantilDashboardPage() {
                   </div>
                   <button 
                     onClick={() => setShowPulseiraModal(c)}
-                    style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '5px 10px', borderRadius: '6px', fontSize: '0.72rem', cursor: 'pointer' }}>
+                    style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', padding: '5px 10px', borderRadius: '6px', fontSize: '0.72rem', cursor: 'pointer' }}>
                     🖨️ Re-imprimir Pulseira
                   </button>
                 </div>
@@ -814,11 +814,11 @@ export default function InfantilDashboardPage() {
                 placeholder="Ex: K-9382" 
                 value={checkoutCodeInput}
                 onChange={(e) => setCheckoutCodeInput(e.target.value)}
-                style={{ flex: 1, background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 18px', borderRadius: '8px', fontSize: '1.1rem', outline: 'none', textAlign: 'center', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '1px' }}
+                style={{ flex: 1, background: 'rgba(0,0,0,0.2)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 18px', borderRadius: '8px', fontSize: '1.1rem', outline: 'none', textAlign: 'center', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '1px' }}
               />
               <button 
                 onClick={handleSearchCheckout}
-                style={{ background: 'var(--primary-color)', color: '#fff', border: 'none', padding: '0 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+                style={{ background: 'var(--primary-color)', color: 'var(--text-primary)', border: 'none', padding: '0 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
                 Verificar
               </button>
             </div>
@@ -833,7 +833,7 @@ export default function InfantilDashboardPage() {
                   <span style={{ fontSize: '0.85rem', color: '#00cec9', fontWeight: 'bold' }}>{checkoutResult.room}</span>
                 </div>
 
-                <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fff' }}>{checkoutResult.kidName}</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{checkoutResult.kidName}</div>
 
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                   <strong>Responsável:</strong> {checkoutResult.parentName}<br />
@@ -1092,7 +1092,7 @@ export default function InfantilDashboardPage() {
             
             <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)' }}>
               <h4 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>👋 Cadastro Rápido de Visitante Kids</h4>
-              <button type="button" onClick={() => setShowQuickVisitorModal(false)} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+              <button type="button" onClick={() => setShowQuickVisitorModal(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
             </div>
 
             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -1103,7 +1103,7 @@ export default function InfantilDashboardPage() {
                   required
                   value={visitorData.kidName}
                   onChange={(e) => setVisitorData({ ...visitorData, kidName: e.target.value })}
-                  style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
+                  style={{ background: 'rgba(0,0,0,0.2)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
                 />
               </div>
 
@@ -1115,7 +1115,7 @@ export default function InfantilDashboardPage() {
                     required
                     value={visitorData.birthDate}
                     onChange={(e) => setVisitorData({ ...visitorData, birthDate: e.target.value })}
-                    style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
+                    style={{ background: 'rgba(0,0,0,0.2)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
                   />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -1126,7 +1126,7 @@ export default function InfantilDashboardPage() {
                     placeholder="(11) 99999-9999"
                     value={visitorData.parentPhone}
                     onChange={(e) => setVisitorData({ ...visitorData, parentPhone: e.target.value })}
-                    style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
+                    style={{ background: 'rgba(0,0,0,0.2)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
                   />
                 </div>
               </div>
@@ -1138,7 +1138,7 @@ export default function InfantilDashboardPage() {
                   required
                   value={visitorData.parentName}
                   onChange={(e) => setVisitorData({ ...visitorData, parentName: e.target.value })}
-                  style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
+                  style={{ background: 'rgba(0,0,0,0.2)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
                 />
               </div>
 
@@ -1149,7 +1149,7 @@ export default function InfantilDashboardPage() {
                   value={visitorData.allergies}
                   placeholder="Ex: Alergia a amendoim, intolerância..."
                   onChange={(e) => setVisitorData({ ...visitorData, allergies: e.target.value })}
-                  style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
+                  style={{ background: 'rgba(0,0,0,0.2)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
                 />
               </div>
             </div>
@@ -1158,7 +1158,7 @@ export default function InfantilDashboardPage() {
               <button 
                 type="button" 
                 onClick={() => setShowQuickVisitorModal(false)}
-                style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer' }}>
+                style={{ background: 'transparent', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer' }}>
                 Cancelar
               </button>
               <button 
@@ -1179,7 +1179,7 @@ export default function InfantilDashboardPage() {
             
             <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)' }}>
               <h4 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, color: '#00cec9' }}>🖨️ Prévia da Pulseira de Segurança Kids</h4>
-              <button onClick={() => setShowPulseiraModal(null)} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+              <button onClick={() => setShowPulseiraModal(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
             </div>
 
             <div style={{ padding: '25px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -1189,8 +1189,8 @@ export default function InfantilDashboardPage() {
                 <span style={{ position: 'absolute', top: '10px', right: '10px', background: '#00cec9', color: '#000', fontSize: '0.6rem', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>VIA DA CRIANÇA</span>
                 
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>DEPARTAMENTO KIDS</div>
-                <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff', marginTop: '4px' }}>{showPulseiraModal.kidName}</div>
-                <div style={{ fontSize: '0.8rem', color: '#fff', marginTop: '4px' }}>
+                <div style={{ fontSize: "2.2rem", fontWeight: "800", color: "var(--text-primary)", lineHeight: "1" }}>{showPulseiraModal.kidName}</div>
+                <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: "600", marginBottom: "4px" }}>
                   Sala: <strong>{showPulseiraModal.room}</strong> • Entrada: {showPulseiraModal.checkInTime}
                 </div>
                 

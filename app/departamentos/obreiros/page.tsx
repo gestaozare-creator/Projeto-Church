@@ -341,13 +341,13 @@ export default function ObreirosDashboardPage() {
               <div
                 key={func}
                 style={{
-                  background: "rgba(255,255,255,0.05)",
+                  background: "var(--bg-hover)",
                   padding: "8px 12px",
                   borderRadius: "8px",
-                  border: "1px solid rgba(255,255,255,0.1)",
+                  border: "1px solid var(--border-color)",
                 }}
               >
-                <strong style={{ color: "#f39c12" }}>{String(count)}</strong>{" "}
+                <strong style={{ color: "var(--primary-color)" }}>{String(count)}</strong>{" "}
                 <span
                   style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}
                 >
@@ -430,7 +430,7 @@ export default function ObreirosDashboardPage() {
                   <div
                     style={{
                       flex: 1,
-                      background: "rgba(255,255,255,0.05)",
+                      background: "var(--bg-hover)",
                       height: "10px",
                       borderRadius: "5px",
                     }}
@@ -438,7 +438,7 @@ export default function ObreirosDashboardPage() {
                     <div
                       style={{
                         width: `${Math.min((item.count / 10) * 100, 100)}%`,
-                        background: "#f39c12",
+                        background: "var(--primary-color)",
                         height: "100%",
                         borderRadius: "5px",
                         transition: "width 0.4s",
@@ -482,16 +482,11 @@ export default function ObreirosDashboardPage() {
             flexDirection: "column",
           }}
         >
-          <h3
-            style={{
-              fontSize: "1rem",
-              margin: "0 0 16px 0",
-              borderBottom: "1px solid rgba(255,255,255,0.1)",
-              paddingBottom: "10px",
-            }}
-          >
-            📅 Seleção de Data
-          </h3>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+            <h3 style={{ margin: 0, fontSize: "1rem", color: "var(--text-primary)" }}>
+              <span style={{ marginRight: "8px" }}>📅</span>Seleção de Data
+            </h3>
+          </div>
 
           <input
             type="month"
@@ -508,10 +503,10 @@ export default function ObreirosDashboardPage() {
 
           <div
             style={{
-              background: "rgba(0,0,0,0.1)",
+              background: "var(--bg-card)",
               padding: "12px",
               borderRadius: "10px",
-              border: "1px solid rgba(255,255,255,0.05)",
+              border: "1px solid var(--border-color)",
             }}
           >
             <div
@@ -573,20 +568,20 @@ export default function ObreirosDashboardPage() {
                       justifyContent: "center",
                       position: "relative",
                       background: isActive
-                        ? "#f39c12"
+                        ? "var(--primary-light)"
                         : hasScale
-                          ? "rgba(243, 156, 18, 0.2)"
-                          : "rgba(255,255,255,0.02)",
+                          ? "rgba(46, 204, 113, 0.1)"
+                          : "transparent",
                       border: isActive
-                        ? "1px solid #f39c12"
+                        ? "1px solid var(--primary-light)"
                         : isToday 
-                          ? "1px solid rgba(255, 255, 255, 0.45)"
-                          : "1px solid rgba(255,255,255,0.05)",
+                          ? "1px solid var(--text-primary)"
+                          : "1px solid transparent",
                       borderRadius: "6px",
                       cursor: "pointer",
                       fontSize: "0.8rem",
                       fontWeight: isActive || isToday ? "bold" : "normal",
-                      color: isActive ? "#fff" : isToday ? "#fff" : "var(--sidebar-text)",
+                      color: isActive ? "var(--text-primary)" : isToday ? "var(--text-primary)" : "var(--text-secondary)",
                       transition: "all 0.2s",
                     }}
                   >
@@ -722,7 +717,7 @@ export default function ObreirosDashboardPage() {
                             }}
                           >
                             <span
-                              style={{ fontSize: "0.75rem", color: "#fff" }}
+                              style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}
                             >
                               {member?.name}
                             </span>

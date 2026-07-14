@@ -342,10 +342,10 @@ export default function MidiaDashboardPage() {
               <div
                 key={func}
                 style={{
-                  background: "rgba(255,255,255,0.05)",
+                  background: "var(--bg-glass-dim)",
                   padding: "8px 12px",
                   borderRadius: "8px",
-                  border: "1px solid rgba(255,255,255,0.1)",
+                  border: "1px solid var(--border-color)",
                 }}
               >
                 <strong style={{ color: "#3498db" }}>{String(count)}</strong>{" "}
@@ -577,17 +577,17 @@ export default function MidiaDashboardPage() {
                         ? "var(--primary-light)"
                         : hasScale
                           ? "rgba(46, 204, 113, 0.1)"
-                          : "rgba(255,255,255,0.02)",
+                          : "transparent",
                       border: isActive
                         ? "1px solid var(--primary-light)"
                         : isToday 
-                          ? "1px solid rgba(255, 255, 255, 0.45)"
-                          : "1px solid rgba(255,255,255,0.05)",
+                          ? "1px solid var(--text-primary)"
+                          : "1px solid transparent",
                       borderRadius: "6px",
                       cursor: "pointer",
                       fontSize: "0.8rem",
                       fontWeight: isActive || isToday ? "bold" : "normal",
-                      color: isActive ? "#fff" : isToday ? "#fff" : "var(--sidebar-text)",
+                      color: isActive ? "#fff" : isToday ? "var(--text-primary)" : "var(--text-secondary)",
                       transition: "all 0.2s",
                     }}
                   >
@@ -723,7 +723,7 @@ export default function MidiaDashboardPage() {
                             }}
                           >
                             <span
-                              style={{ fontSize: "0.75rem", color: "#fff" }}
+                              style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}
                             >
                               {member?.name}
                             </span>

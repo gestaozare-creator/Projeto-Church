@@ -265,14 +265,14 @@ export default function RankingAlmas({ editable = false }: { editable?: boolean 
                     )
                   ) : null}
                 </div>
-                <div style={{ fontSize:'1.6rem', fontWeight:'900', lineHeight:1.1, color:'#fff' }}>{globalCurrent} <span style={{ fontSize:'0.85rem', fontWeight:'600', color:'var(--text-secondary)' }}>/ {globalTarget}</span></div>
+                <div style={{ fontSize:'1.6rem', fontWeight:'900', lineHeight:1.1, color:'var(--text-primary)' }}>{globalCurrent} <span style={{ fontSize:'0.85rem', fontWeight:'600', color:'var(--text-secondary)' }}>/ {globalTarget}</span></div>
                 <div style={{ fontSize:'0.65rem', color:'var(--text-secondary)', marginTop:'4px' }}>Almas · {year}</div>
               </div>
             </div>
             {/* Total Almas */}
             <div className="glass" style={{ padding:'18px 20px', borderRadius:'14px', display:'flex', flexDirection:'column', justifyContent:'center' }}>
               <div style={{ fontSize:'0.75rem', color:'var(--text-secondary)', textTransform:'uppercase', fontWeight:'700', marginBottom:'6px', letterSpacing:'0.5px' }}>Total de Almas</div>
-              <div style={{ fontSize:'2.2rem', fontWeight:'900', lineHeight:1, color:'var(--primary-light)' }}>{globalCurrent}</div>
+              <div style={{ fontSize:'2.2rem', fontWeight:'900', lineHeight:1, color:'var(--primary-color)' }}>{globalCurrent}</div>
               <div style={{ fontSize:'0.65rem', color:'var(--text-secondary)', marginTop:'8px', display:'flex', gap:'8px' }}>
                 <span>🔵 {churchStats.reduce((a,c) => a+c.membros, 0)} membros</span>
                 <span>🟡 {churchStats.reduce((a,c) => a+c.visitantes, 0)} visit.</span>
@@ -386,12 +386,12 @@ export default function RankingAlmas({ editable = false }: { editable?: boolean 
                           </div>
                         ) : (
                           <div style={{ fontSize:'0.65rem', color:'var(--text-secondary)', cursor:'pointer', display:'flex', alignItems:'center', gap:'3px' }} onClick={() => { setEditingGoal(stats.church.id); setEditValue(stats.goal); }}>
-                            Meta: <strong style={{ color:'#fff' }}>{stats.goal}</strong> <span style={{ opacity:0.4 }}>✏️</span>
+                            Meta: <strong style={{ color:'var(--text-primary)' }}>{stats.goal}</strong> <span style={{ opacity:0.4 }}>✏️</span>
                           </div>
                         )
                       ) : (
                         <div style={{ fontSize:'0.65rem', color:'var(--text-secondary)', display:'flex', alignItems:'center', gap:'3px' }}>
-                          Meta: <strong style={{ color:'#fff' }}>{stats.goal}</strong>
+                          Meta: <strong style={{ color:'var(--text-primary)' }}>{stats.goal}</strong>
                         </div>
                       )}
                     </div>
