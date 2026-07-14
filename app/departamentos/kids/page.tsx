@@ -577,7 +577,7 @@ export default function InfantilDashboardPage() {
           {isSupervisor && (
             <button 
               onClick={() => { setTempRoomRules({ ...roomRules }); setShowConfigModal(true); }}
-              style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 14px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}>
+              style={{ background: 'var(--bg-glass-dim)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', padding: '8px 14px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}>
               ⚙️ Configurações
             </button>
           )}
@@ -587,22 +587,22 @@ export default function InfantilDashboardPage() {
         <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '2px' }}>
           <button 
             onClick={() => setActiveTab('monitor')}
-            style={{ background: activeTab === 'monitor' ? 'var(--primary-color)' : 'transparent', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+            style={{ background: activeTab === 'monitor' ? 'var(--primary-color)' : 'transparent', color: activeTab === 'monitor' ? '#fff' : 'var(--text-secondary)', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
             📺 Monitor
           </button>
           <button 
             onClick={() => setActiveTab('checkin')}
-            style={{ background: activeTab === 'checkin' ? 'var(--primary-color)' : 'transparent', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+            style={{ background: activeTab === 'checkin' ? 'var(--primary-color)' : 'transparent', color: activeTab === 'checkin' ? '#fff' : 'var(--text-secondary)', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
             📥 Check-in
           </button>
           <button 
             onClick={() => setActiveTab('checkout')}
-            style={{ background: activeTab === 'checkout' ? 'var(--primary-color)' : 'transparent', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+            style={{ background: activeTab === 'checkout' ? 'var(--primary-color)' : 'transparent', color: activeTab === 'checkout' ? '#fff' : 'var(--text-secondary)', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
             📤 Check-out
           </button>
           <button 
             onClick={() => setActiveTab('escala')}
-            style={{ background: activeTab === 'escala' ? 'var(--primary-color)' : 'transparent', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+            style={{ background: activeTab === 'escala' ? 'var(--primary-color)' : 'transparent', color: activeTab === 'escala' ? '#fff' : 'var(--text-secondary)', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
             📅 Escala de Tios
           </button>
         </div>
@@ -623,7 +623,7 @@ export default function InfantilDashboardPage() {
               return (
                 <div key={key} className="glass" style={{ padding: '20px', borderRadius: '16px', borderLeft: `5px solid ${ratioExceeded ? '#e74c3c' : '#2ecc71'}`, display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <h4 style={{ fontSize: '1rem', margin: 0, color: '#fff' }}>{rule.label} ({rule.minAge} a {rule.maxAge} anos)</h4>
+                    <h4 style={{ fontSize: '1rem', margin: 0, color: 'var(--text-primary)' }}>{rule.label} ({rule.minAge} a {rule.maxAge} anos)</h4>
                     <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '10px' }}>
                       Capacidade: {rule.capacity}
                     </span>
