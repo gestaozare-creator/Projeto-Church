@@ -30,3 +30,9 @@
 
 ### 7. Responsividade em Dispositivos Móveis Antigos (Safari/iOS)
 * **Regra**: Quando precisar construir layouts em grade complexos em inline-styles React que devem renderizar perfeitamente no Mobile (como um calendário de 7 dias ou tabela horizontal), **EVITE** o uso de `display: "grid"` com a sintaxe `gridTemplateColumns: "repeat(7, 1fr)"`. Em vez disso, prefira **sempre** utilizar Flexbox: `display: "flex", flexWrap: "wrap"` onde cada item possui uma largura exata (`width: "14.28%"` para 7 colunas). Isso garante retrocompatibilidade absoluta em dispositivos móveis, sem risco das colunas serem achatadas num único bloco vertical.
+
+### 8. Separação Estrita de Membros vs Visitantes (Status)
+* **Regra**: O sistema usa um modelo unificado na tabela `members`. A diferenciação entre Membro e Visitante/Pessoa no Funil DEVE SEMPRE ser feita pela coluna `status` e não pela coluna `function`.
+  * **Membros** são todos aqueles com `status` igual a: `"ativo"`, `"inativo"` ou `"aguardando_aprovacao"`.
+  * **Visitantes / Pessoas em Conversão** são todos aqueles com `status` igual a: `"visitante"`, `"em_conversao"` ou `"pendente"`. 
+  * Qualquer painel, dashboard ou gráfico que precise totalizar "Membros" deve filtrar estritamente usando essas 3 strings de status válidas para evitar a inclusão de contatos em triagem ou consolidação nas estatísticas da membresia da Igreja.
