@@ -35,7 +35,7 @@ export interface Member {
   state?: string;
   function?: string;
   ministry?: string;
-  status?: 'ativo' | 'inativo' | 'visitante' | 'em_conversao' | 'pendente';
+  status?: 'ativo' | 'inativo' | 'visitante' | 'em_conversao' | 'pendente' | 'aguardando_aprovacao';
   integrationDate?: string;
   birthDate?: string;
   photoUrl?: string;
