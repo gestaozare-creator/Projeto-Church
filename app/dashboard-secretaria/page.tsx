@@ -411,7 +411,7 @@ export default function DashboardSecretariaPage() {
       if (membersDb && membersDb.length > 0) {
         // Filtramos apenas membros e lideranças (excluindo os visitantes do funil)
         const membersOnly = membersDb.filter(
-          (m) => m.status !== "visitante" && m.status !== "em_conversao"
+          (m) => m.status === "ativo" || m.status === "inativo" || m.status === "aguardando_aprovacao"
         );
         setMembers(
           membersOnly.map((m) => ({
@@ -431,7 +431,7 @@ export default function DashboardSecretariaPage() {
 
         // Visitantes (tanto cadastrados na triagem local quanto no formulário público online)
         const visitorsOnly = membersDb.filter(
-          (m) => m.status === "visitante" || m.status === "em_conversao"
+          (m) => m.status === "pendente" || m.status === "em_conversao" || m.status === "visitante"
         );
         setVisitors(
           visitorsOnly.map((v) => ({
