@@ -351,7 +351,8 @@ export default function Visitantes() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '12px' }}>
-
+      {/* STICKY HEADER SECTION */}
+      <div style={{ position: 'sticky', top: '-1px', zIndex: 50, paddingTop: '1px', paddingBottom: '12px', display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--bg-base)' }}>
       {/* HEADER + STATS */}
       <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch', flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: '200px' }}>
@@ -416,6 +417,7 @@ export default function Visitantes() {
           <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.75rem', opacity: 0.4 }}>🔍</span>
           <input type="text" placeholder="Buscar..." className="search-input glass-input" style={{ width: '100%', padding: '7px 7px 7px 28px', fontSize: '0.8rem' }} value={search} onChange={e => setSearch(e.target.value)} />
         </div>
+      </div>
       </div>
 
       {/* 2 COLUNAS KANBAN RESTAURADAS */}
