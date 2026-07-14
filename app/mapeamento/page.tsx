@@ -51,7 +51,7 @@ export default function Mapeamento() {
       .filter(m => m.church_id === activeChurch.id)
       .map(m => ({
         id: m.id, name: m.name, phone: m.phone, address: m.address,
-        state: m.state, type: (m.function === 'Visitante' || m.function === 'Visitante (Kids)' || m.function === 'Ainda não definida' ? 'visitante' : 'membro') as 'visitante' | 'membro',
+        state: m.state, type: (m.status === 'visitante' || m.status === 'em_conversao' ? 'visitante' : 'membro') as 'visitante' | 'membro',
         photoUrl: m.photoUrl, churchId: m.church_id, status: m.status,
       }));
   }, [dbMembers, activeChurch]);
