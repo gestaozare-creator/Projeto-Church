@@ -255,8 +255,9 @@ export default function FinanceiroDashboardPage() {
     } else {
       svcs = churchServices?.filter(s => s.church_id === church) || [];
     }
-    const names = new Set(svcs.map(s => s.name));
-    return Array.from(names).sort();
+    const days = new Set(svcs.map(s => s.day_of_week).filter(Boolean));
+    const DAY_ORDER = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+    return Array.from(days).sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b));
   }, [church, churchServices]);
 
   const cultosDaysMap = useMemo(() => {
@@ -314,11 +315,7 @@ export default function FinanceiroDashboardPage() {
       const times = new Set(svcs.map(s => s.time));
       return Array.from(times).sort();
     } else {
-      const dayName = cultoFilter === 'domingo' ? 'Domingo' : 
-                      cultoFilter === 'quarta' ? 'Quarta-feira' : 
-                      cultoFilter === 'sabado' ? 'Sábado' : '';
-      
-      const times = new Set(svcs.filter(s => s.day_of_week === dayName).map(s => s.time));
+      const times = new Set(svcs.filter(s => s.day_of_week === cultoFilter).map(s => s.time));
       return Array.from(times).sort();
     }
   }, [church, cultoFilter, churchServices]);
@@ -854,9 +851,7 @@ export default function FinanceiroDashboardPage() {
           )}
           <select value={cultoFilter} onChange={e => setCultoFilter(e.target.value)} className="search-input glass-input" style={{ padding: '6px 12px' }}>
             <option value="ALL">Todos os Cultos</option>
-            <option value="domingo">Domingo</option>
-            <option value="quarta">Quarta-feira</option>
-            <option value="sabado">Sábado</option>
+            {availableCultos.map((name: any) => <option key={name} value={name}>{name}</option>)}
           </select>
           <select value={horarioFilter} onChange={e => setHorarioFilter(e.target.value)} className="search-input glass-input" style={{ padding: '6px 12px' }}>
             <option value="ALL">Todos os Horários</option>
