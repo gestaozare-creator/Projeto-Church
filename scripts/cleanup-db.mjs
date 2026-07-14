@@ -27,7 +27,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function cleanup() {
   console.log("Iniciando limpeza do banco de dados (Mantendo apenas users e churches)...");
 
-  const tablesToClean = [
+const tablesToClean = [
     'transactions',
     'kids_checkin',
     'kids',
@@ -38,7 +38,8 @@ async function cleanup() {
     'events',
     'cultos',
     'rooms',
-    'patrimonio'
+    'patrimonio',
+    'members'
   ];
 
   for (const table of tablesToClean) {

@@ -237,7 +237,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
           </div>
           {currentUser.churchId && (
             <div style={{ marginTop: '2px', fontSize: '0.6rem', color: 'var(--text-secondary)' }}>
-              Igreja: {currentUser.churchId === 'igreja_sede_01' ? 'Sede' : 'Filial SP'}
+              Igreja: {currentUser.churchName || 'Desconhecida'}
             </div>
           )}
           <button onClick={signOut} className="glass-button" style={{ marginTop: 'auto', marginBottom: '20px', marginLeft: '20px', marginRight: '20px', background: 'rgba(231,76,60,0.1)', color: '#e74c3c' }}>

@@ -12,6 +12,7 @@ export interface User {
   email: string;
   role: UserRole;
   churchId: string | null;
+  churchName?: string;
 }
 
 // Chave usada no localStorage para persistir a igreja ativa ao navegar
@@ -110,13 +111,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       let resolvedChurchId = data?.church_id || null;
+      let resolvedChurchName = 'Desconhecida';
+
       if (!resolvedChurchId) {
         const { data: firstChurch } = await supabase
           .from('churches')
-          .select('id')
+          .select('id, name')
           .limit(1)
           .single();
         resolvedChurchId = firstChurch?.id || null;
+        if (firstChurch) resolvedChurchName = firstChurch.name;
+      } else {
+        const { data: userChurch } = await supabase
+          .from('churches')
+          .select('name')
+          .eq('id', resolvedChurchId)
+          .single();
+        if (userChurch) resolvedChurchName = userChurch.name;
       }
 
       setCurrentUser({
@@ -125,6 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: authUser.email || '',
         role: finalRole,
         churchId: resolvedChurchId,
+        churchName: resolvedChurchName,
       });
     } catch (err) {
       console.error(err);
