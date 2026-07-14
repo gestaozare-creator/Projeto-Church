@@ -246,16 +246,11 @@ export default function RedePage() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
                 <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                  {ministry?.name || 'Minha Rede'}
+                  {ministry?.name || 'IPCN'}
                 </h1>
-                <span style={{
-                  background: 'linear-gradient(135deg, #f39c12, #e74c3c)',
-                  color: '#fff', padding: '3px 10px', borderRadius: '12px',
-                  fontSize: '0.65rem', fontWeight: 'bold', letterSpacing: '1px'
-                }}>DIRETOR</span>
               </div>
               <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                🙏 Pastor Diretor: {ministry?.director_pastor_name || currentUser.name}
+                Igreja Pentecostal Cristo para as Nações
               </p>
             </div>
           </div>
