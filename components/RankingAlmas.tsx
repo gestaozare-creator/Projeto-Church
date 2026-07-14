@@ -101,7 +101,7 @@ export default function RankingAlmas({ editable = false }: { editable?: boolean 
       }
     });
     dbVisitors.forEach(v => {
-      if (stats[v.churchId]) { stats[v.churchId].visitantes++; stats[v.churchId].almas++; }
+      if (stats[v.churchId]) { stats[v.churchId].visitantes++; }
     });
     return Object.values(stats).sort((a, b) => b.almas - a.almas);
   }, [year, goals, dbChurches, dbMembers, dbVisitors]);
@@ -158,11 +158,6 @@ export default function RankingAlmas({ editable = false }: { editable?: boolean 
           if (matchChurch && m.integrationDate && m.integrationDate.startsWith(`${currentYear}-${mStr}`)) currCount++;
           if (matchChurch && m.integrationDate && m.integrationDate.startsWith(`${prevYear}-${mStr}`)) prevCount++;
         }
-      });
-      dbVisitors.forEach(v => {
-        const matchChurch = chartChurch === 'ALL' || v.churchId === chartChurch;
-        if (matchChurch && v.integrationDate && v.integrationDate.startsWith(`${currentYear}-${mStr}`)) currCount++;
-        if (matchChurch && v.integrationDate && v.integrationDate.startsWith(`${prevYear}-${mStr}`)) prevCount++;
       });
       
       cumCurr += currCount; 

@@ -19,8 +19,17 @@ export default function Mapeamento() {
 
   useEffect(() => {
     async function fetchData() {
-      const { data: membersData } = await supabase.from('members').select('*');
-      if (membersData) setDbMembers(membersData);
+      let allMembers: any[] = [];
+      let page = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data: pageData } = await supabase.from('members').select('*').range(page * pageSize, (page + 1) * pageSize - 1);
+        if (!pageData || pageData.length === 0) break;
+        allMembers = [...allMembers, ...pageData];
+        if (pageData.length < pageSize) break;
+        page++;
+      }
+      setDbMembers(allMembers);
       const { data: churchesData } = await supabase.from('churches').select('*');
       if (churchesData) setDbChurches(churchesData);
     }
@@ -40,7 +49,7 @@ export default function Mapeamento() {
       .filter(m => m.church_id === activeChurch.id)
       .map(m => ({
         id: m.id, name: m.name, phone: m.phone, address: m.address,
-        state: m.state, type: (m.status === 'visitante' ? 'visitante' : 'membro') as 'visitante' | 'membro',
+        state: m.state, type: (m.function === 'Visitante' || m.function === 'Visitante (Kids)' || m.function === 'Ainda não definida' ? 'visitante' : 'membro') as 'visitante' | 'membro',
         photoUrl: m.photoUrl, churchId: m.church_id, status: m.status,
       }));
   }, [dbMembers, activeChurch]);
