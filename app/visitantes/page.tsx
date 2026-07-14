@@ -145,14 +145,32 @@ export default function Visitantes() {
       }
 
       // Procuramos visitantes (membros com função de visitante ou em consolidação)
-      const { data, error } = await supabase
-        .from('members')
-        .select('*')
-        .in('function', ['Visitante (Kids)', 'Visitante', 'Ainda não definida'])
-        .limit(10000);
+      let allData: any[] = [];
+      let page = 0;
+      const pageSize = 1000;
       
-      if (data) {
-        const formatados: Visitor[] = data.map(v => ({
+      while (true) {
+        const { data, error } = await supabase
+          .from('members')
+          .select('*')
+          .in('function', ['Visitante (Kids)', 'Visitante', 'Ainda não definida'])
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+        
+        if (error || !data || data.length === 0) {
+          break;
+        }
+        
+        allData = [...allData, ...data];
+        
+        if (data.length < pageSize) {
+          break;
+        }
+        
+        page++;
+      }
+      
+      if (allData.length > 0) {
+        const formatados: Visitor[] = allData.map(v => ({
           id: v.id,
           churchId: v.church_id || '1',
           date: v.integration_date || (v.created_at ? v.created_at.split('T')[0] : '2026-05-18'),
