@@ -11,7 +11,7 @@ export function useMembers(churchId?: string) {
     async function loadMembers() {
       try {
         setLoading(true);
-        let allData = [];
+        let allData: any[] = [];
         let page = 0;
         const pageSize = 1000;
         while (true) {
