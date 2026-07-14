@@ -193,7 +193,7 @@ function DonutChart({
                       style={{
                         fontSize: "1.2rem",
                         fontWeight: 800,
-                        color: "#fff",
+                        color: "var(--text-primary)",
                         lineHeight: "1.2",
                       }}
                     >
@@ -264,7 +264,7 @@ function DonutChart({
                         style={{
                           fontSize: "0.75rem",
                           fontWeight: 600,
-                          color: "#fff",
+                          color: "var(--text-primary)",
                         }}
                       >
                         {item.value}
@@ -1358,7 +1358,7 @@ export default function DashboardSecretariaPage() {
                 <div
                   key={`grid-${i}`}
                   style={{
-                    borderBottom: "1px dashed rgba(255,255,255,0.05)",
+                    borderBottom: "1px dashed var(--border-color)",
                     width: "100%",
                     height: "0",
                   }}
@@ -1369,7 +1369,7 @@ export default function DashboardSecretariaPage() {
                   display: "flex",
                   justifyContent: "space-between",
                   paddingTop: "8px",
-                  borderTop: "1px solid rgba(255,255,255,0.1)",
+                  borderTop: "1px solid var(--border-color)",
                 }}
               >
                 {months.map((m) => (
@@ -1618,7 +1618,7 @@ export default function DashboardSecretariaPage() {
                               borderRadius: "2px",
                             }}
                           />
-                          <span style={{ color: "#fff" }}>Visitantes:</span>{" "}
+                          <span style={{ color: "var(--text-primary)" }}>Visitantes:</span>{" "}
                           <strong>{d.visitors}</strong>
                         </div>
                       )}
@@ -1639,7 +1639,7 @@ export default function DashboardSecretariaPage() {
                               borderRadius: "2px",
                             }}
                           />
-                          <span style={{ color: "#fff" }}>Em Conversão:</span>{" "}
+                          <span style={{ color: "var(--text-primary)" }}>Em Conversão:</span>{" "}
                           <strong>{d.converting}</strong>
                         </div>
                       )}
@@ -1660,7 +1660,7 @@ export default function DashboardSecretariaPage() {
                               borderRadius: "2px",
                             }}
                           />
-                          <span style={{ color: "#fff" }}>Membros:</span>{" "}
+                          <span style={{ color: "var(--text-primary)" }}>Membros:</span>{" "}
                           <strong>{d.members}</strong>
                         </div>
                       )}
@@ -1684,7 +1684,7 @@ export default function DashboardSecretariaPage() {
                               borderRadius: "2px",
                             }}
                           />
-                          <span style={{ color: "#fff" }}>Total:</span>{" "}
+                          <span style={{ color: "var(--text-primary)" }}>Total:</span>{" "}
                           <strong>{d.total}</strong>
                         </div>
                       )}

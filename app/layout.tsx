@@ -37,7 +37,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
         setTheme(savedTheme);
         document.documentElement.setAttribute('data-theme', savedTheme);
       } else {
-        document.documentElement.setAttribute('data-theme', 'light');
+        document.documentElement.setAttribute('data-theme', 'dark');
       }
     }
   }, []);
@@ -63,7 +63,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   
   useEffect(() => {
     if ((isPublicRoute || isLoginRoute) && typeof document !== 'undefined') {
-      document.documentElement.setAttribute('data-theme', 'light');
+      document.documentElement.setAttribute('data-theme', 'dark');
     }
   }, [isPublicRoute, isLoginRoute]);
 
@@ -283,11 +283,11 @@ function AppContent({ children }: { children: React.ReactNode }) {
                 borderBottom: '1px solid rgba(52,152,219,0.4)',
                 fontSize: '0.82rem'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
                   <span style={{ fontSize: '1.1rem' }}>⛪</span>
                   <span>Você está visualizando:</span>
                   <strong style={{ color: '#3498db' }}>{activeChurchName}</strong>
-                  <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem' }}>— todos os dados exibidos são desta igreja</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.72rem' }}>— todos os dados exibidos são desta igreja</span>
                 </div>
                 <button
                   onClick={() => { exitChurch(); window.location.href = '/rede'; }}
@@ -316,7 +316,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR" data-theme="light">
+    <html lang="pt-BR" data-theme="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
