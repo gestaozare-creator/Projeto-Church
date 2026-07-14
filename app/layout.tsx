@@ -253,9 +253,14 @@ function AppContent({ children }: { children: React.ReactNode }) {
             <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(true)}>☰</button>
             <h2>Visão Geral</h2>
           </div>
-          <button className="theme-toggle" onClick={toggleTheme}>
-            {theme === 'light' ? '🌙 Modo Escuro' : '☀️ Modo Claro'}
-          </button>
+          <div className="theme-switch-wrapper" onClick={toggleTheme}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+              {theme === 'light' ? 'Modo Claro' : 'Modo Escuro'}
+            </span>
+            <div className="theme-switch">
+              <div className="theme-switch-knob"></div>
+            </div>
+          </div>
         </header>
         {currentUser.role === 'kids_leader' && pathname !== '/departamentos/kids' ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: '15px', textAlign: 'center', padding: '20px' }} className="glass">
