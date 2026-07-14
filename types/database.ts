@@ -78,7 +78,7 @@ export interface Transaction {
   date: string;
   category: string;
   description?: string;
-  status?: 'pendente' | 'pago' | 'atrasado';
+  status?: 'pendente' | 'confirmado' | 'vencido';
   payment_method?: string;
   due_date?: string;
   paid_date?: string;
