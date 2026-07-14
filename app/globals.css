@@ -1,6 +1,16 @@
 @import "leaflet/dist/leaflet.css";
 @import "leaflet.markercluster/dist/MarkerCluster.css";
 @import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+
+/* Neutralize cluster colors so they don't conflict with green/yellow pins */
+.marker-cluster-small, .marker-cluster-medium, .marker-cluster-large {
+  background-color: rgba(30, 58, 138, 0.6) !important;
+}
+.marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div {
+  background-color: rgba(30, 58, 138, 0.9) !important;
+  color: white !important;
+}
+
 .custom-pin { background: transparent; border: none; }
 :root {
   --bg-base: #f0f4f8;
