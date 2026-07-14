@@ -395,10 +395,20 @@ export default function DashboardSecretariaPage() {
         );
       }
 
-      // Carregar membros do Supabase
-      const { data: membersDb } = await supabase.from("members").select("*");
+      // Carregar membros do Supabase com paginação
+      let allMembersDb: any[] = [];
+      let page = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data: pageData } = await supabase.from("members").select("*").range(page * pageSize, (page + 1) * pageSize - 1);
+        if (!pageData || pageData.length === 0) break;
+        allMembersDb = [...allMembersDb, ...pageData];
+        if (pageData.length < pageSize) break;
+        page++;
+      }
+      const membersDb = allMembersDb;
 
-      if (membersDb) {
+      if (membersDb && membersDb.length > 0) {
         // Filtramos apenas membros e lideranças (excluindo os visitantes do funil)
         const membersOnly = membersDb.filter(
           (m) =>

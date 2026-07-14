@@ -31,12 +31,24 @@ export default function RankingAlmas({ editable = false }: { editable?: boolean 
       const { data: c } = await supabase.from('churches').select('*');
       if (c) setDbChurches(c);
 
-      const { data: m } = await supabase.from('members').select('*');
-      if (m) {
-        setDbMembers(m.map(x => ({ ...x, churchId: x.church_id, integrationDate: x.integration_date || x.created_at })));
+      let allMembers: any[] = [];
+      let page = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data: pageData } = await supabase.from('members').select('*').range(page * pageSize, (page + 1) * pageSize - 1);
+        if (!pageData || pageData.length === 0) break;
+        allMembers = [...allMembers, ...pageData];
+        if (pageData.length < pageSize) break;
+        page++;
       }
-      
-      setDbVisitors([]); // Simulando que não há tabela visitors nativa por enquanto
+
+      if (allMembers.length > 0) {
+        const m = allMembers;
+        setDbMembers(m.filter(x => x.function !== 'Visitante' && x.function !== 'Visitante (Kids)' && x.function !== 'Ainda não definida').map(x => ({ ...x, churchId: x.church_id, integrationDate: x.integration_date || x.created_at })));
+        setDbVisitors(m.filter(x => x.function === 'Visitante' || x.function === 'Visitante (Kids)' || x.function === 'Ainda não definida').map(x => ({ id: x.id, churchId: x.church_id, integrationDate: x.created_at || x.integration_date, status: x.status })));
+      } else {
+        setDbVisitors([]);
+      }
       
       let loadedGoals: RankingGoal[] = [];
       if (c) {
