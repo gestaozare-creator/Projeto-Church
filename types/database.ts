@@ -42,6 +42,9 @@ export interface Member {
   cardValidity?: string;
   culto?: string;
   horario?: string;
+  maritalStatus?: string;
+  employmentStatus?: string;
+  profession?: string;
 }
 
 export interface Visitor {

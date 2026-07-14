@@ -43,7 +43,10 @@ export function useMembers(churchId?: string) {
             birthDate: m.birth_date || '',
             photoUrl: m.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}&background=random`,
             culto: m.culto || '',
-            horario: m.horario || ''
+            horario: m.horario || '',
+            maritalStatus: m.marital_status || '',
+            employmentStatus: m.employment_status || '',
+            profession: m.profession || ''
           }));
           setMembers(formatted as any);
         }
