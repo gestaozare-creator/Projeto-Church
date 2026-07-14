@@ -201,7 +201,7 @@ export default function RedePage() {
     fontWeight: 600,
     fontSize: '0.85rem',
     transition: 'all 0.2s',
-    background: activeTab === tab ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+    background: activeTab === tab ? 'var(--primary)' : 'transparent',
     color: activeTab === tab ? '#fff' : 'var(--text-secondary)',
     borderBottom: activeTab === tab ? '2px solid var(--primary)' : '2px solid transparent',
   });
@@ -245,7 +245,7 @@ export default function RedePage() {
             )}
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-                <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 800, color: '#fff' }}>
+                <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                   {ministry?.name || 'Minha Rede'}
                 </h1>
                 <span style={{
@@ -254,7 +254,7 @@ export default function RedePage() {
                   fontSize: '0.65rem', fontWeight: 'bold', letterSpacing: '1px'
                 }}>DIRETOR</span>
               </div>
-              <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
+              <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                 🙏 Pastor Diretor: {ministry?.director_pastor_name || currentUser.name}
               </p>
             </div>
@@ -288,7 +288,7 @@ export default function RedePage() {
         {/* BARRA DE TABS */}
         <div style={{
           display: 'flex', gap: '4px', padding: '12px 24px',
-          background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.06)',
+          background: 'var(--bg-glass-dim)', borderTop: '1px solid var(--border-color)',
           flexWrap: 'wrap'
         }}>
           <button style={tabStyle('overview')} onClick={() => setActiveTab('overview')}>📊 Visão Geral & Igrejas</button>
@@ -303,7 +303,7 @@ export default function RedePage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <div className="glass" style={{ borderRadius: '16px', padding: '24px', border: '1px solid rgba(255,255,255,0.07)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ margin: 0, color: '#fff', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 ⛪ Igrejas da Rede
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>— clique para entrar</span>
               </h3>
@@ -362,7 +362,7 @@ export default function RedePage() {
                       )}
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem' }}>{church.name}</span>
+                          <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{church.name}</span>
                           {church.isHeadquarters && (
                             <span style={{ background: '#3498db', color: '#fff', fontSize: '0.6rem', padding: '1px 6px', borderRadius: '4px', fontWeight: 'bold' }}>SEDE</span>
                           )}
