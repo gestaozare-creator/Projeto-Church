@@ -367,10 +367,22 @@ export default function FinanceiroDashboardPage() {
       const desc = t.description.toLowerCase();
       let matchedDia = 'Outros';
       
-      for (const culto of availableCultos) {
-        if (desc.includes(culto.toLowerCase())) {
-          matchedDia = cultosDaysMap.get(culto.toLowerCase()) || culto;
+      const DIAS_SEMANA = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+      for (const dia of DIAS_SEMANA) {
+        const normalizedDia = dia.toLowerCase().replace('-', ' ').replace('á', 'a').replace('ç', 'c');
+        const normalizedDesc = desc.replace('-', ' ').replace('á', 'a').replace('ç', 'c');
+        if (normalizedDesc.includes(normalizedDia)) {
+          matchedDia = dia;
           break;
+        }
+      }
+      
+      if (matchedDia === 'Outros') {
+        for (const culto of availableCultos) {
+          if (desc.includes(culto.toLowerCase())) {
+            matchedDia = cultosDaysMap.get(culto.toLowerCase()) || culto;
+            break;
+          }
         }
       }
       
@@ -396,10 +408,22 @@ export default function FinanceiroDashboardPage() {
     return filteredTransactions.filter(t => {
       const desc = t.description.toLowerCase();
       let matchedDia = 'Outros';
-      for (const culto of availableCultos) {
-        if (desc.includes(culto.toLowerCase())) {
-          matchedDia = cultosDaysMap.get(culto.toLowerCase()) || culto;
+      const DIAS_SEMANA = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+      for (const dia of DIAS_SEMANA) {
+        const normalizedDia = dia.toLowerCase().replace('-', ' ').replace('á', 'a').replace('ç', 'c');
+        const normalizedDesc = desc.replace('-', ' ').replace('á', 'a').replace('ç', 'c');
+        if (normalizedDesc.includes(normalizedDia)) {
+          matchedDia = dia;
           break;
+        }
+      }
+      
+      if (matchedDia === 'Outros') {
+        for (const culto of availableCultos) {
+          if (desc.includes(culto.toLowerCase())) {
+            matchedDia = cultosDaysMap.get(culto.toLowerCase()) || culto;
+            break;
+          }
         }
       }
       return matchedDia === selectedDia;
@@ -419,6 +443,22 @@ export default function FinanceiroDashboardPage() {
         if (desc.includes(culto.toLowerCase())) {
           matchedTime = cultosTimeMap.get(culto.toLowerCase()) || culto;
           break;
+        }
+      }
+      
+      if (matchedTime === 'Outros') {
+        const DIAS_SEMANA = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+        for (const dia of DIAS_SEMANA) {
+          const normalizedDia = dia.toLowerCase().replace('-', ' ').replace('á', 'a').replace('ç', 'c');
+          const normalizedDesc = desc.replace('-', ' ').replace('á', 'a').replace('ç', 'c');
+          if (normalizedDesc.includes(normalizedDia)) {
+             let svcs = church === 'ALL' ? churchServices : churchServices?.filter(s => s.church_id === church);
+             const svc = (svcs || []).find(s => (s.dayOfWeek || s.day_of_week) === dia);
+             if (svc && svc.time) {
+                matchedTime = svc.time;
+             }
+             break;
+          }
         }
       }
       
@@ -512,10 +552,22 @@ export default function FinanceiroDashboardPage() {
       const target = y === chartYear ? monthsData[m].curr : monthsData[m].prev;
       
       let matchedDia = 'Outros';
-      for (const culto of availableCultos) {
-        if (desc.includes(culto.toLowerCase())) {
-          matchedDia = cultosDaysMap.get(culto.toLowerCase()) || culto;
+      const DIAS_SEMANA = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+      for (const dia of DIAS_SEMANA) {
+        const normalizedDia = dia.toLowerCase().replace('-', ' ').replace('á', 'a').replace('ç', 'c');
+        const normalizedDesc = desc.replace('-', ' ').replace('á', 'a').replace('ç', 'c');
+        if (normalizedDesc.includes(normalizedDia)) {
+          matchedDia = dia;
           break;
+        }
+      }
+      
+      if (matchedDia === 'Outros') {
+        for (const culto of availableCultos) {
+          if (desc.includes(culto.toLowerCase())) {
+            matchedDia = cultosDaysMap.get(culto.toLowerCase()) || culto;
+            break;
+          }
         }
       }
       
@@ -535,22 +587,29 @@ export default function FinanceiroDashboardPage() {
       const currLimit = getLimit(chartYear);
       const prevLimit = getLimit(prevYear);
 
+      const allFoundDias = new Set<string>();
+      monthsData.forEach(m => {
+        Object.keys(m.curr).forEach(k => { if (k !== 'Outros') allFoundDias.add(k); });
+        Object.keys(m.prev).forEach(k => { if (k !== 'Outros') allFoundDias.add(k); });
+      });
+      const cultosList = Array.from(allFoundDias).sort();
+
       monthsData.forEach((m, idx) => {
         if (idx <= currLimit) {
-          availableDiasCulto.forEach(culto => {
+          cultosList.forEach(culto => {
             if (m.curr[culto] == null) m.curr[culto] = 0;
           });
           if (m.curr['Outros'] == null) m.curr['Outros'] = 0;
         }
         if (idx <= prevLimit) {
-          availableDiasCulto.forEach(culto => {
+          cultosList.forEach(culto => {
             if (m.prev[culto] == null) m.prev[culto] = 0;
           });
           if (m.prev['Outros'] == null) m.prev['Outros'] = 0;
         }
       });
       
-      return { data: monthsData, max: maxValue || 1, cultos: availableDiasCulto };
+      return { data: monthsData, max: maxValue || 1, cultos: cultosList };
     }, [chartTransactions, chartYear, availableCultos, cultosDaysMap, availableDiasCulto]);
 
   const CULTOS_COLORS = ['#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#1abc9c', '#e74c3c'];
