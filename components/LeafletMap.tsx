@@ -2,23 +2,34 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 
 // Create custom icons
-const createIcon = (color: string) => {
+const createPersonIcon = (color: string) => {
   return L.divIcon({
     className: 'custom-pin',
-    html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.4);"></div>`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
-    popupAnchor: [0, -10],
+    html: `<div style="background-color: ${color}; width: 10px; height: 10px; border-radius: 50%; border: 1px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.5);"></div>`,
+    iconSize: [10, 10],
+    iconAnchor: [5, 5],
+    popupAnchor: [0, -5],
+  });
+};
+
+const createChurchIcon = (color: string) => {
+  return L.divIcon({
+    className: 'custom-pin',
+    html: `<div style="background-color: ${color}; width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px;">⛪</div>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -16],
   });
 };
 
 const icons = {
-  membro: createIcon('#2ecc71'), // Green
-  visitante: createIcon('#f1c40f'), // Yellow
-  church: createIcon('#3498db'), // Blue
+  membro: createPersonIcon('#2ecc71'), // Green
+  visitante: createPersonIcon('#f1c40f'), // Yellow
+  church: createChurchIcon('#3498db'), // Blue
 };
 
 // Component to recenter map when church changes
@@ -89,14 +100,19 @@ export default function LeafletMap({
         </Popup>
       </Marker>
 
-      {markers.map((m: any) => (
-        <Marker key={m.id} position={[m.lat, m.lng]} icon={icons[m.type as 'membro'|'visitante'] || icons.membro}>
-          <Popup>
-            <strong>{m.name}</strong> ({m.type})<br/>
-            {m.address}
-          </Popup>
-        </Marker>
-      ))}
+      <MarkerClusterGroup
+        chunkedLoading
+        maxClusterRadius={50}
+      >
+        {markers.map((m: any) => (
+          <Marker key={m.id} position={[m.lat, m.lng]} icon={icons[m.type as 'membro'|'visitante'] || icons.membro}>
+            <Popup>
+              <strong>{m.name}</strong> ({m.type})<br/>
+              {m.address}
+            </Popup>
+          </Marker>
+        ))}
+      </MarkerClusterGroup>
     </MapContainer>
   );
 }
