@@ -68,10 +68,10 @@ const ChurchRow = ({ c }: { c: ChurchData }) => {
   };
 
   return (
-    <div className="glass" style={{ display: 'flex', gap: '20px', padding: '20px', borderRadius: '12px', borderLeft: c.saldoAtual >= 0 ? '4px solid #2ecc71' : '4px solid #e74c3c' }}>
+    <div className="glass church-row-card" style={{ display: 'flex', gap: '20px', padding: '20px', borderRadius: '12px', borderLeft: c.saldoAtual >= 0 ? '4px solid #2ecc71' : '4px solid #e74c3c' }}>
       
-      {/* Lado Esquerdo: Card Resumo (Tamanho Fixo) */}
-      <div style={{ width: '320px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+      {/* Lado Esquerdo: Card Resumo (Tamanho Fixo ou Responsivo) */}
+      <div className="church-row-summary" style={{ flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
           {c.logo ? (
             <img src={c.logo} alt={c.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '50%' }} />
@@ -233,7 +233,7 @@ export default function InteligenciaFinanceiraDashboard({ year, month }: Intelig
       </div>
 
       {/* ÁREA MISTA: RAIO-X DAS IGREJAS (ESQUERDA) + RANKING (DIREITA) */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginTop: '10px' }}>
+      <div className="raio-x-container" style={{ marginTop: '10px' }}>
         
         {/* LADO ESQUERDO: Lista de Igrejas com Gráficos Individuais */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -309,6 +309,31 @@ export default function InteligenciaFinanceiraDashboard({ year, month }: Intelig
         }
         .hover-highlight:hover {
           background: rgba(255,255,255,0.05) !important;
+        }
+
+        /* Responsividade para o Dashboard de Raio-X */
+        .raio-x-container {
+          display: grid;
+          grid-template-columns: 2fr 1fr;
+          gap: 20px;
+        }
+        .church-row-summary {
+          width: 320px;
+        }
+        .church-row-card {
+          flex-direction: row;
+        }
+
+        @media (max-width: 1024px) {
+          .raio-x-container {
+            grid-template-columns: 1fr;
+          }
+          .church-row-card {
+            flex-direction: column;
+          }
+          .church-row-summary {
+            width: 100%;
+          }
         }
       `}} />
     </div>
