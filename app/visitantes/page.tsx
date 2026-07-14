@@ -148,7 +148,8 @@ export default function Visitantes() {
       const { data, error } = await supabase
         .from('members')
         .select('*')
-        .in('function', ['Visitante (Kids)', 'Visitante', 'Ainda não definida']);
+        .in('function', ['Visitante (Kids)', 'Visitante', 'Ainda não definida'])
+        .limit(10000);
       
       if (data) {
         const formatados: Visitor[] = data.map(v => ({
