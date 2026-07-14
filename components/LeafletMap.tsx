@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 
 // Create custom icons
@@ -90,19 +89,14 @@ export default function LeafletMap({
         </Popup>
       </Marker>
 
-      <MarkerClusterGroup
-        chunkedLoading
-        maxClusterRadius={40}
-      >
-        {markers.map((m: any) => (
-          <Marker key={m.id} position={[m.lat, m.lng]} icon={icons[m.type as 'membro'|'visitante'] || icons.membro}>
-            <Popup>
-              <strong>{m.name}</strong> ({m.type})<br/>
-              {m.address}
-            </Popup>
-          </Marker>
-        ))}
-      </MarkerClusterGroup>
+      {markers.map((m: any) => (
+        <Marker key={m.id} position={[m.lat, m.lng]} icon={icons[m.type as 'membro'|'visitante'] || icons.membro}>
+          <Popup>
+            <strong>{m.name}</strong> ({m.type})<br/>
+            {m.address}
+          </Popup>
+        </Marker>
+      ))}
     </MapContainer>
   );
 }

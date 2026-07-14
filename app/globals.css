@@ -1,4 +1,5 @@
 @import "leaflet/dist/leaflet.css";
+.custom-pin { background: transparent; border: none; }
 :root {
   --bg-base: #f0f4f8;
   --bg-gradient-1: #dbeafe;
