@@ -86,7 +86,7 @@ export default function LeafletMap({
     : churchPos;
 
   return (
-    <MapContainer center={centerPos} zoom={13} style={{ height: '100%', width: '100%', borderRadius: '16px', zIndex: 1 }}>
+    <MapContainer center={centerPos} zoom={11} style={{ height: '100%', width: '100%', borderRadius: '16px', zIndex: 1 }}>
       <MapRecenter center={centerPos} />
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"

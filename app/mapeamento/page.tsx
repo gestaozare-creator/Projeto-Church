@@ -57,6 +57,7 @@ export default function Mapeamento() {
   }, [dbMembers, activeChurch]);
 
   const [filter, setFilter] = useState<'todos' | 'membro' | 'visitante'>('todos');
+  const [showAllBairros, setShowAllBairros] = useState(false);
 
   const filteredPeople = useMemo(() => {
     if (filter === 'todos') return allPeople;
@@ -90,7 +91,7 @@ export default function Mapeamento() {
       const bairro = parts[0] || 'Não informado';
       counts[bairro] = (counts[bairro] || 0) + 1;
     });
-    return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
   }, [filteredPeople]);
 
   return (
@@ -229,24 +230,36 @@ export default function Mapeamento() {
 
           {/* Top bairros */}
           {byBairro.length > 0 && (
-            <div className="glass" style={{ borderRadius: '14px', padding: '14px' }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.5px' }}>
-                Top Bairros
+            <div className="glass" style={{ borderRadius: '14px', padding: '14px', display: 'flex', flexDirection: 'column', maxHeight: showAllBairros ? '400px' : 'auto', transition: 'all 0.3s' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Top Bairros
+                </div>
+                {byBairro.length > 6 && (
+                  <button 
+                    onClick={() => setShowAllBairros(!showAllBairros)}
+                    style={{ background: 'transparent', border: 'none', color: '#3498db', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 'bold' }}
+                  >
+                    {showAllBairros ? 'Ver menos' : 'Ver todos'}
+                  </button>
+                )}
               </div>
-              {byBairro.slice(0, 6).map(([bairro, count]) => {
-                const max = byBairro[0][1];
-                return (
-                  <div key={bairro} style={{ marginBottom: '6px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginBottom: '2px' }}>
-                      <span style={{ color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '170px' }}>{bairro}</span>
-                      <span style={{ color: 'var(--text-secondary)', flexShrink: 0 }}>{count}</span>
+              <div style={{ overflowY: showAllBairros ? 'auto' : 'hidden', flex: 1, paddingRight: showAllBairros ? '4px' : '0' }}>
+                {byBairro.slice(0, showAllBairros ? undefined : 6).map(([bairro, count]) => {
+                  const max = byBairro[0][1];
+                  return (
+                    <div key={bairro} style={{ marginBottom: '6px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginBottom: '2px' }}>
+                        <span style={{ color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '170px' }}>{bairro}</span>
+                        <span style={{ color: 'var(--text-secondary)', flexShrink: 0 }}>{count}</span>
+                      </div>
+                      <div style={{ height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.07)' }}>
+                        <div style={{ height: '100%', borderRadius: '2px', width: `${(count / max) * 100}%`, background: 'linear-gradient(90deg, #3498db, #9b59b6)' }} />
+                      </div>
                     </div>
-                    <div style={{ height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.07)' }}>
-                      <div style={{ height: '100%', borderRadius: '2px', width: `${(count / max) * 100}%`, background: 'linear-gradient(90deg, #3498db, #9b59b6)' }} />
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
