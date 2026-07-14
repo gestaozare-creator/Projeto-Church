@@ -163,7 +163,7 @@ export default function Home() {
   const filtered = useMemo(() => members.filter(m => {
     const s = (m.name?.toLowerCase().includes(search.toLowerCase()) || false) || (m.function?.toLowerCase().includes(search.toLowerCase()) || false);
     const c = church === 'ALL' || church === 'all' || m.church_id === church;
-    const isNotVisitor = m.function !== 'Visitante (Kids)' && m.function !== 'Visitante';
+    const isMember = m.status === 'ativo' || m.status === 'inativo' || m.status === 'aguardando_aprovacao';
     
     // Filtro por Culto selecionado
     if (cultoFilter !== 'ALL' && m.culto !== cultoFilter) return false;
@@ -175,17 +175,17 @@ export default function Home() {
     if (startDate && mDate < startDate) d = false;
     if (endDate && mDate > endDate) d = false;
     
-    return s && isNotVisitor && d;
+    return s && c && isMember && d;
   }), [members, search, church, startDate, endDate, cultoFilter, horarioFilter]);
 
-  const pendentes = filtered.filter(m => m.status === 'pendente');
+  const pendentes = filtered.filter(m => m.status === 'aguardando_aprovacao');
   const ativos = filtered.filter(m => m.status === 'ativo');
   const inativos = filtered.filter(m => m.status === 'inativo');
 
-  const changeStatus = async (id: string, ns: 'ativo' | 'inativo' | 'visitante' | 'em_conversao' | 'pendente') => {
+  const changeStatus = async (id: string, ns: 'ativo' | 'inativo' | 'visitante' | 'em_conversao' | 'aguardando_aprovacao') => {
     if (ns === 'ativo') {
       const m = members.find(x => x.id === id);
-      if (m && m.status === 'pendente') {
+      if (m && m.status === 'aguardando_aprovacao') {
         setEditForm({ ...m, status: 'ativo', integrationDate: new Date().toISOString().split('T')[0] });
         setPhotoPreview(m.photoUrl || null);
         setIsApproving(true); setIsEditing(true);
@@ -433,9 +433,9 @@ export default function Home() {
               <div style={{ textAlign:'center', marginBottom:'14px', flexShrink:0 }}>
                 <img src={sel.photoUrl} alt={sel.name} className="modal-photo" style={{ width:'85px', height:'85px', border:'3px solid var(--primary-light)', display:'block', margin:'0 auto 12px' }} />
                 <h3 style={{ fontSize:'1.2rem', marginBottom:'4px' }}>{sel.name}</h3>
-                <div style={{ display:'flex', justifyContent:'center', gap:'4px', flexWrap:'wrap' }}>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
                   <span className="badge" style={{ padding:'3px 8px', fontSize:'0.6rem', margin:0 }}>{dbChurches.find((c: Church) => c.id === sel.church_id)?.name || 'Igreja'}</span>
-                  {sel.status === 'pendente' && <span className="badge" style={{ background:'#f39c12', padding:'3px 8px', fontSize:'0.6rem', margin:0, color:'#fff' }}>PENDENTE</span>}
+                  {sel.status === 'aguardando_aprovacao' && <span className="badge" style={{ background:'#f39c12', padding:'3px 8px', fontSize:'0.6rem', margin:0, color:'#fff' }}>PENDENTE</span>}
                   {sel.status === 'ativo' && (isExp(sel.integrationDate) ? <span className="badge-expired" style={{ padding:'3px 8px' }}>VENCIDA</span> : <span className="badge-valid" style={{ padding:'3px 8px' }}>ATIVA</span>)}
                   {sel.status === 'inativo' && <span className="badge" style={{ background:'#95a5a6', padding:'3px 8px', fontSize:'0.6rem', margin:0, color:'#fff' }}>INATIVO</span>}
                 </div>

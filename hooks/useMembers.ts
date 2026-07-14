@@ -11,16 +11,24 @@ export function useMembers(churchId?: string) {
     async function loadMembers() {
       try {
         setLoading(true);
-        let query = supabase.from('members').select('*');
-        if (churchId) {
-          query = query.eq('church_id', churchId);
+        let allData = [];
+        let page = 0;
+        const pageSize = 1000;
+        while (true) {
+          let query = supabase.from('members').select('*');
+          if (churchId) {
+            query = query.eq('church_id', churchId);
+          }
+          const { data, error: membersError } = await query.range(page * pageSize, (page + 1) * pageSize - 1);
+          if (membersError) throw membersError;
+          if (!data || data.length === 0) break;
+          allData = [...allData, ...data];
+          if (data.length < pageSize) break;
+          page++;
         }
-        
-        const { data, error: membersError } = await query;
-        if (membersError) throw membersError;
 
-        if (data) {
-          const formatted = data.map(m => ({
+        if (allData.length > 0) {
+          const formatted = allData.map(m => ({
             id: m.id,
             church_id: m.church_id || '',
             name: m.name,

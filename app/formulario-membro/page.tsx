@@ -128,7 +128,7 @@ export default function FormularioMembro() {
           address: form.address,
           function: 'Membro',
           ministry: '',
-          status: 'pendente',
+          status: 'aguardando_aprovacao',
           church_id: form.churchId,
           integration_date: new Date().toISOString().split('T')[0],
           photo_url: photo_url,
