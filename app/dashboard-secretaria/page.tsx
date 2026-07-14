@@ -1075,7 +1075,7 @@ export default function DashboardSecretariaPage() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gridTemplateColumns: "repeat(4, 1fr)",
           gap: "20px",
           marginBottom: "25px",
         }}
@@ -1096,34 +1096,27 @@ export default function DashboardSecretariaPage() {
           data={employmentStatusData}
           total={totalMembersCount}
         />
-
-
-              </div>
+        <DonutChart
+          title="👷 Profissões"
+          data={professionsData}
+          total={totalMembersCount}
+        />
+      </div>
 
       {/* GRÁFICO 1: EVOLUÇÃO MENSAL */}
       <div
         style={{
-          display: "flex",
+          display: "grid",
+          gridTemplateColumns: "40% 1fr",
           gap: "20px",
-          flexWrap: "nowrap",
-          overflowX: "auto",
           paddingBottom: "10px",
         }}
       >
-        {/* Profissões */}
-        <div style={{ flex: "1 0 300px", display: "flex", flexDirection: "column" }}>
-          <DonutChart
-            title="👷 Profissões"
-            data={professionsData}
-            total={totalMembersCount}
-          />
-        </div>
 
         {/* Funil de Visitantes */}
         <div
           className="glass"
           style={{
-            flex: "1 0 300px",
             padding: "20px",
             borderRadius: "14px",
             display: "flex",
@@ -1241,7 +1234,6 @@ export default function DashboardSecretariaPage() {
         <div
           className="glass"
           style={{
-            flex: "2.3 0 500px",
             padding: "20px",
             borderRadius: "14px",
             display: "flex",
@@ -1260,7 +1252,7 @@ export default function DashboardSecretariaPage() {
             }}
           >
             <div>
-              <h4 style={{ fontSize: "1rem", margin: 0, color: "#fff" }}>
+              <h4 style={{ fontSize: "1rem", margin: 0, color: "var(--text-primary)" }}>
                 👥 Evolução Mensal de Conversão Visitante e Membros
               </h4>
             </div>
