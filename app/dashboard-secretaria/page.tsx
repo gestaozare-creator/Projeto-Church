@@ -648,49 +648,35 @@ export default function DashboardSecretariaPage() {
     "Dez",
   ];
   const comparativeData = useMemo(() => {
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth();
-    // Assuming cmpYear1 is the target year they want to view.
-    const isPastYear = parseInt(cmpYear1) < currentYear;
-    const isCurrentYear = parseInt(cmpYear1) === currentYear;
-    // Se o sistema estiver atrasado (ex: 2024 local, mas o app testa 2026), vamos garantir que não retorne -1.
-    // Usamos o mês atual para o ano atual, ou 11 para passado, ou 11 para futuro simulado.
-    const maxMonthToFill = isPastYear ? 11 : (isCurrentYear ? currentMonth : currentMonth);
-
-    const data = months.map((m, index) => {
-      const shouldFill = index <= maxMonthToFill;
+    const data = months.map((m) => {
       return {
         month: m,
-        members: shouldFill ? 0 : null,
-        visitors: shouldFill ? 0 : null,
-        converting: shouldFill ? 0 : null,
-        total: shouldFill ? 0 : null,
+        members: 0,
+        visitors: 0,
+        converting: 0,
+        total: 0,
       };
     });
     
-    // Membros are members integrated this year
+    // Membros are members integrated in the filtered period
     filteredMembers.forEach((m) => {
       const d = m.integrationDate || "2026-01-01";
-      if (d.startsWith(cmpYear1)) {
-        const mIdx = parseInt(d.split("-")[1]) - 1;
-        if (data[mIdx] && mIdx <= maxMonthToFill) {
-          data[mIdx].members!++;
-        }
+      const mIdx = parseInt(d.split("-")[1]) - 1;
+      if (data[mIdx]) {
+        data[mIdx].members!++;
       }
     });
 
-    // Visitors and Conversions this year
+    // Visitors and Conversions in the filtered period
     filteredVisitors.forEach((v) => {
-      if (v.date.startsWith(cmpYear1)) {
-        const mIdx = parseInt(v.date.split("-")[1]) - 1;
-        if (data[mIdx] && mIdx <= maxMonthToFill) {
-          if (v.status === "visitante") {
-            data[mIdx].visitors!++;
-          } else if (v.status === "em_conversao") {
-            data[mIdx].converting!++;
-          } else if (v.status === "membro") {
-            data[mIdx].members!++;
-          }
+      const mIdx = parseInt(v.date.split("-")[1]) - 1;
+      if (data[mIdx]) {
+        if (v.status === "visitante") {
+          data[mIdx].visitors!++;
+        } else if (v.status === "em_conversao") {
+          data[mIdx].converting!++;
+        } else if (v.status === "membro") {
+          data[mIdx].members!++;
         }
       }
     });

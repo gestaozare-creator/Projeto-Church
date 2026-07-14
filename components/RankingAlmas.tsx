@@ -26,6 +26,20 @@ export default function RankingAlmas({ editable = false }: { editable?: boolean 
   const [editValue, setEditValue] = useState<number>(0);
   const [chartChurch, setChartChurch] = useState('ALL'); // Filtro de igreja no gráfico
 
+  const availableYears = useMemo(() => {
+    const years = new Set<string>();
+    const currentY = new Date().getFullYear().toString();
+    years.add(currentY);
+    years.add((parseInt(currentY) - 1).toString());
+    dbMembers.forEach(m => {
+      if (m.integrationDate) years.add(m.integrationDate.substring(0, 4));
+    });
+    dbVisitors.forEach(v => {
+      if (v.integrationDate) years.add(v.integrationDate.substring(0, 4));
+    });
+    return Array.from(years).sort((a, b) => parseInt(b) - parseInt(a));
+  }, [dbMembers, dbVisitors]);
+
   useEffect(() => {
     async function loadData() {
       const { data: c } = await supabase.from('churches').select('*');
@@ -45,7 +59,7 @@ export default function RankingAlmas({ editable = false }: { editable?: boolean 
       if (allMembers.length > 0) {
         const m = allMembers;
         setDbMembers(m.filter(x => x.function !== 'Visitante' && x.function !== 'Visitante (Kids)' && x.function !== 'Ainda não definida').map(x => ({ ...x, churchId: x.church_id, integrationDate: x.integration_date || x.created_at })));
-        setDbVisitors(m.filter(x => x.function === 'Visitante' || x.function === 'Visitante (Kids)' || x.function === 'Ainda não definida').map(x => ({ id: x.id, churchId: x.church_id, integrationDate: x.created_at || x.integration_date, status: x.status })));
+        setDbVisitors(m.filter(x => x.function === 'Visitante' || x.function === 'Visitante (Kids)' || x.function === 'Ainda não definida').map(x => ({ id: x.id, churchId: x.church_id, integrationDate: x.integration_date || x.created_at, status: x.status })));
       } else {
         setDbVisitors([]);
       }
@@ -243,7 +257,7 @@ export default function RankingAlmas({ editable = false }: { editable?: boolean 
         <div style={{ display:'flex', gap:'8px', alignItems:'center' }}>
           <span style={{ fontSize:'0.75rem', color:'var(--text-secondary)', fontWeight:'600' }}>Ano:</span>
           <select value={year} onChange={e => setYear(e.target.value)} className="search-input glass-input" style={{ padding:'6px 12px' }}>
-            <option value="2025">2025</option><option value="2026">2026</option>
+            {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>
       </div>
