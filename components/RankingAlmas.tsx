@@ -217,9 +217,9 @@ export default function RankingAlmas({ editable = false }: { editable?: boolean 
   };
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', height:'100%', gap:'14px', paddingBottom:'20px', background: 'radial-gradient(circle at center, #131422 0%, #0a0a14 100%)', position: 'relative' }}>
+    <div style={{ display:'flex', flexDirection:'column', height:'100%', gap:'14px', paddingBottom:'20px', position: 'relative' }}>
       {/* Background Grid Style Gamer */}
-      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '30px 30px', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(var(--border-color) 1px, transparent 1px), linear-gradient(90deg, var(--border-color) 1px, transparent 1px)', backgroundSize: '30px 30px', pointerEvents: 'none', zIndex: 0, opacity: 0.3 }} />
       <div style={{ position: 'relative', zIndex: 1, display:'flex', flexDirection:'column', height:'100%', gap:'14px' }}>
 
       {/* HEADER */}
@@ -246,7 +246,7 @@ export default function RankingAlmas({ editable = false }: { editable?: boolean 
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:'12px' }}>
             {/* Meta Global Anual */}
             <div className="glass" style={{ padding:'18px 20px', borderRadius:'14px', display:'flex', alignItems:'center', gap:'16px', border:'1px solid rgba(46,204,113,0.15)', background:'linear-gradient(135deg, rgba(46,204,113,0.05) 0%, transparent 100%)' }}>
-              <div style={{ width:'64px', height:'64px', borderRadius:'50%', background:`conic-gradient(${globalColor} ${globalProgress}%, rgba(255,255,255,0.06) 0)`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <div style={{ width:'64px', height:'64px', borderRadius:'50%', background:`conic-gradient(${globalColor} ${globalProgress}%, rgba(0,0,0,0.06) 0)`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                 <div style={{ width:'50px', height:'50px', borderRadius:'50%', background:'var(--card-bg)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                   <span style={{ fontSize:'1rem', fontWeight:'800', color:globalColor }}>{Math.round(globalProgress)}%</span>
                 </div>
