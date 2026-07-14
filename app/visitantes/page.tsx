@@ -350,7 +350,7 @@ export default function Visitantes() {
   const activeChurchName = (cid: string) => dbChurches.find(c => c.id === cid)?.name || 'Igreja Local';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '12px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 50px)', maxHeight: '100%', gap: '12px' }}>
       {/* STICKY HEADER SECTION */}
       <div style={{ position: 'sticky', top: '-1px', zIndex: 50, paddingTop: '1px', paddingBottom: '12px', display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--bg-base)' }}>
       {/* HEADER + STATS */}
