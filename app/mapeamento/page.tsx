@@ -2,8 +2,10 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { BRAZIL_STATES } from '@/lib/brazil-map-data';
 import { useAuth } from '@/context/AuthContext';
+import dynamic from 'next/dynamic';
+
+const LeafletMap = dynamic(() => import('@/components/LeafletMap'), { ssr: false });
 
 type Person = {
   id: string; name: string; phone?: string; address?: string;
@@ -66,13 +68,15 @@ export default function Mapeamento() {
     ? `${activeChurch?.neighborhood || ''}, ${activeChurch?.city || ''}, ${activeChurch?.state || ''}, Brasil`.replace(/^,\s*/, '')
     : 'São Paulo, SP, Brasil';
 
-  const mapQuery = selectedPerson?.address
-    ? selectedPerson.address
-    : churchAddress;
-
-  const mapUrl = selectedPerson?.address
-    ? `https://maps.google.com/maps?saddr=${encodeURIComponent(churchAddress)}&daddr=${encodeURIComponent(selectedPerson.address)}&t=&z=13&ie=UTF8&output=embed`
-    : `https://maps.google.com/maps?q=${encodeURIComponent(churchAddress)}&t=&z=14&ie=UTF8&iwloc=B&output=embed`;
+  const geocache = useMemo(() => {
+    if (!activeChurch) return {};
+    try {
+      const config = typeof activeChurch.config === 'string' ? JSON.parse(activeChurch.config) : (activeChurch.config || {});
+      return config.geocache || {};
+    } catch(e) {
+      return {};
+    }
+  }, [activeChurch]);
 
   const totalMembros = allPeople.filter(p => p.type === 'membro').length;
   const totalVisitantes = allPeople.filter(p => p.type === 'visitante').length;
@@ -144,12 +148,11 @@ export default function Mapeamento() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '16px', flex: 1, minHeight: 0 }}>
         {/* MAPA GOOGLE */}
         <div className="glass" style={{ borderRadius: '16px', overflow: 'hidden', position: 'relative', minHeight: '400px' }}>
-          <iframe
-            src={mapUrl}
-            width="100%" height="100%"
-            style={{ border: 0, display: 'block', minHeight: '400px' }}
-            allowFullScreen loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
+          <LeafletMap 
+            people={filteredPeople} 
+            church={{ name: activeChurch?.name, address: churchAddress }} 
+            selectedPerson={selectedPerson} 
+            geocache={geocache} 
           />
           {selectedPerson && (
             <div style={{
