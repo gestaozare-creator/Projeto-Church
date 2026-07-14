@@ -453,7 +453,7 @@ export default function FinanceiroDashboardPage() {
           const normalizedDesc = desc.replace('-', ' ').replace('á', 'a').replace('ç', 'c');
           if (normalizedDesc.includes(normalizedDia)) {
              let svcs = church === 'ALL' ? churchServices : churchServices?.filter(s => s.church_id === church);
-             const svc = (svcs || []).find(s => (s.dayOfWeek || s.day_of_week) === dia);
+             const svc = (svcs || []).find(s => ((s as any).dayOfWeek || s.day_of_week) === dia);
              if (svc && svc.time) {
                 matchedTime = svc.time;
              }
