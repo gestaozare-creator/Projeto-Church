@@ -325,7 +325,18 @@ export default function Visitantes() {
 
       if (startDate && v.date < startDate) return false;
       if (endDate && v.date > endDate) return false;
-      if (search && !v.name.toLowerCase().includes(search.toLowerCase()) && !v.region.toLowerCase().includes(search.toLowerCase())) return false;
+      
+      if (search) {
+        const q = search.toLowerCase();
+        const matchesName = v.name.toLowerCase().includes(q);
+        const matchesRegion = (v.region || '').toLowerCase().includes(q);
+        
+        const cleanPhone = (v.phone || '').replace(/\D/g, '');
+        const cleanSearch = search.replace(/\D/g, '');
+        const matchesPhone = cleanSearch.length > 0 ? cleanPhone.includes(cleanSearch) : (v.phone || '').toLowerCase().includes(q);
+
+        if (!matchesName && !matchesRegion && !matchesPhone) return false;
+      }
       return true;
     });
   }, [visitors, startDate, endDate, cultoFilter, horarioFilter, search, churchF]);
