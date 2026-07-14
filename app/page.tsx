@@ -214,10 +214,10 @@ export default function Home() {
   const openEdit = (m: Member) => { 
     setEditForm({
       ...m,
-      birthDate: (m as any).birth_date || '',
-      maritalStatus: (m as any).marital_status || '',
-      employmentStatus: (m as any).employment_status || '',
-      profession: (m as any).profession || ''
+      birthDate: m.birthDate || '',
+      maritalStatus: m.maritalStatus || '',
+      employmentStatus: m.employmentStatus || '',
+      profession: m.profession || ''
     }); 
     setPhotoPreview(m.photoUrl||null); setIsCreating(false); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomProfession(false); setCustomChurch(false); setIsEditing(true); 
   };
