@@ -232,7 +232,8 @@ body::before {
   padding: 25px 30px;
   flex: 1;
   width: calc(100% - 260px);
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -248,7 +249,17 @@ body::before {
 .main-content > *:last-child {
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 5px;
+}
+
+.main-content > *:last-child::-webkit-scrollbar {
+  width: 6px;
+}
+.main-content > *:last-child::-webkit-scrollbar-thumb {
+  background: var(--sidebar-border);
+  border-radius: 10px;
 }
 
 .header {
