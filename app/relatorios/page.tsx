@@ -493,7 +493,7 @@ export default function RelatoriosPage() {
                                 <td className="text-nowrap">{formatDate(t.date)}</td>
                                 <td>
                                   <div style={{ fontWeight: 'bold' }}>{t.category || 'Entrada'}</div>
-                                  <div style={{ fontSize: '0.75rem', color: '#666' }}>{extractDayTimeFromTransaction(t)}</div>
+                                  <div style={{ fontSize: '0.65rem', color: '#666' }}>{extractDayTimeFromTransaction(t)}</div>
                                 </td>
                                 <td>{t.payment_method || '-'}</td>
                                 <td style={{ textAlign: 'right' }} className="text-green text-nowrap">{formatCurrency(t.amount)}</td>
@@ -529,7 +529,7 @@ export default function RelatoriosPage() {
                                 <td className="text-nowrap">{formatDate(t.date)}</td>
                                 <td>
                                   <div style={{ fontWeight: 'bold' }}>{t.category || 'Despesa'}</div>
-                                  <div style={{ fontSize: '0.75rem', color: '#666' }}>{t.description}</div>
+                                  <div style={{ fontSize: '0.65rem', color: '#666' }}>{t.description}</div>
                                 </td>
                                 <td style={{ textAlign: 'right' }} className="text-red text-nowrap">{formatCurrency(t.amount)}</td>
                               </tr>
