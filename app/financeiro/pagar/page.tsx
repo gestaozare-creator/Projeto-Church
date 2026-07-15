@@ -38,11 +38,14 @@ export default function ContasPagar() {
   }, [activeChurchId, canSeeAllChurches]);
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
-    return new Date(d.getFullYear(), 0, 1).toISOString().split('T')[0];
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    return `${d.getFullYear()}-${mm}-01`;
   });
   const [endDate, setEndDate] = useState(() => {
     const d = new Date();
-    return new Date(d.getFullYear(), 11, 31).toISOString().split('T')[0];
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    return `${d.getFullYear()}-${mm}-${String(lastDay).padStart(2, '0')}`;
   });
   const [cultoFilter, setCultoFilter] = useState('ALL');
   const [horarioFilter, setHorarioFilter] = useState('ALL');
