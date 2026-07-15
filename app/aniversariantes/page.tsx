@@ -15,7 +15,7 @@ export default function AniversariantesPage() {
   const [whatsappMessage, setWhatsappMessage] = useState('');
   const [whatsappPhone, setWhatsappPhone] = useState('');
 
-  const openWhatsApp = (name: string, phone: string) => {
+  const openWhatsApp = (name: string, phone: string, churchName: string) => {
     if (!phone) {
       alert('Este membro não possui telefone cadastrado no sistema.');
       return;
@@ -27,7 +27,7 @@ export default function AniversariantesPage() {
     else if (hour >= 18) greeting = 'Boa noite';
     
     const firstName = name.split(' ')[0];
-    const msg = `${greeting}, ${firstName}! 🎉🎂\n\nEm nome de toda a nossa igreja, queremos te desejar um feliz aniversário! Que Deus continue abençoando sua vida, te dando muita saúde, paz e alegria. Amamos a sua vida! 🙌`;
+    const msg = `${greeting}, ${firstName}! 🎉🎂\n\nEm nome de toda a nossa igreja IPCN ${churchName}, queremos te desejar um feliz aniversário! Que Deus continue abençoando sua vida, te dando muita saúde, paz e alegria. Amamos a sua vida! 🙌`;
 
     setWhatsappMessage(msg);
     setWhatsappPhone(phone.replace(/\D/g, ''));
@@ -203,7 +203,7 @@ export default function AniversariantesPage() {
                     )}
                   </div>
                   <button 
-                    onClick={e => { e.stopPropagation(); openWhatsApp(m.name, m.phone || ''); }} 
+                    onClick={e => { e.stopPropagation(); openWhatsApp(m.name, m.phone || '', getChurchName(m.church_id)); }} 
                     style={{ width:'28px', height:'28px', borderRadius:'50%', border:'1.5px solid #25d366', background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all 0.2s', marginLeft: 'auto' }}
                     onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.background = '#25d366'; (e.currentTarget.querySelector('svg') as SVGElement).style.fill = '#fff'; }}
                     onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'transparent'; (e.currentTarget.querySelector('svg') as SVGElement).style.fill = '#25d366'; }}
@@ -283,7 +283,7 @@ export default function AniversariantesPage() {
                       )}
                     </div>
                     <button 
-                      onClick={e => { e.stopPropagation(); openWhatsApp(m.name, m.phone || ''); }} 
+                      onClick={e => { e.stopPropagation(); openWhatsApp(m.name, m.phone || '', getChurchName(m.church_id)); }} 
                       style={{ width:'26px', height:'26px', borderRadius:'50%', border:'1.5px solid #25d366', background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all 0.2s', marginLeft: 'auto' }}
                       onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.background = '#25d366'; (e.currentTarget.querySelector('svg') as SVGElement).style.fill = '#fff'; }}
                       onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'transparent'; (e.currentTarget.querySelector('svg') as SVGElement).style.fill = '#25d366'; }}
