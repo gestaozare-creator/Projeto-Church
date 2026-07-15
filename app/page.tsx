@@ -222,7 +222,11 @@ export default function Home() {
     setPhotoPreview(m.photoUrl||null); setIsCreating(false); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomProfession(false); setCustomChurch(false); setIsEditing(true); 
   };
   const openCreate = () => { 
-    setEditForm({ id:'', name:'', function:'Membro', ministry:'Louvor', phone:'', email:'', address:'', integrationDate: new Date().toISOString().split('T')[0], cardValidity: '', churchId: (church && church !== 'ALL') ? church : (currentUser?.churchId || dbChurches[0]?.id || ''), photoUrl:'', status:'ativo', birthDate:'', maritalStatus:'', employmentStatus:'', profession:'' }); 
+    const today = new Date();
+    const defaultIntegration = today.toISOString().split('T')[0];
+    const defaultValidity = `${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear() + 1}`;
+    
+    setEditForm({ id:'', name:'', function:'Membro', ministry:'Louvor', phone:'', email:'', address:'', integrationDate: defaultIntegration, cardValidity: defaultValidity, churchId: (church && church !== 'ALL') ? church : (currentUser?.churchId || dbChurches[0]?.id || ''), photoUrl:'', status:'ativo', birthDate:'', maritalStatus:'', employmentStatus:'', profession:'' }); 
     setPhotoPreview(null); setIsCreating(true); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomProfession(false); setCustomChurch(false); setIsEditing(true); 
   };
 
@@ -322,7 +326,19 @@ export default function Home() {
     setIsEditing(false); setIsCreating(false); setIsApproving(false);
   };
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement>) => setEditForm((p:any) => ({...p, [e.target.name]: e.target.value}));
+  const onChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setEditForm((p:any) => {
+      const next = {...p, [name]: value};
+      if (name === 'integrationDate' && value) {
+        const [yyyy, mm] = value.split('-');
+        if (yyyy && mm) {
+          next.cardValidity = `${mm}/${parseInt(yyyy) + 1}`;
+        }
+      }
+      return next;
+    });
+  };
 
   const handlePrint = () => {
     if (!cardRef.current) return;
