@@ -246,8 +246,8 @@ export default function Visitantes() {
 
   const handleNewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newForm.name || !newForm.phone || !newForm.region || !newForm.source) {
-      alert('Por favor, preencha todos os campos obrigatórios (Nome, Telefone, Bairro e Como Conheceu).');
+    if (!newForm.name || !newForm.phone || !newForm.source) {
+      alert('Por favor, preencha todos os campos obrigatórios (Nome, Telefone e Como Conheceu).');
       return;
     }
 
@@ -258,19 +258,21 @@ export default function Visitantes() {
       return;
     }
 
-    const newId = 'v_' + Date.now().toString();
+    const targetId = newForm.id || 'v_' + Date.now().toString();
+    const isEditing = !!newForm.id;
+    
     const { data: newMemberDb, error } = await supabase
       .from('members')
-      .insert({
-        id: newId,
+      .upsert({
+        id: targetId,
         name: newForm.name,
         phone: newForm.phone,
         email: newForm.email || '',
-        state: newForm.region,
+        state: newForm.region || '',
         ministry: newForm.source === 'Outro' ? newForm.customSourceText || 'Outro' : newForm.source,
         address: newForm.address || '',
         function: 'Visitante',
-        status: 'pendente',
+        status: newForm.status || 'pendente',
         church_id: activeChurch,
         culto: newForm.culto || '',
         horario: newForm.horario || '',
@@ -291,7 +293,7 @@ export default function Visitantes() {
       name: newForm.name,
       phone: newForm.phone,
       email: newForm.email || '',
-      region: newForm.region,
+      region: newForm.region || '',
       source: newForm.source === 'Outro' ? newForm.customSourceText || 'Outro' : newForm.source,
       wantsVisit: !!newForm.wantsVisit,
       status: 'visitante',
@@ -301,9 +303,13 @@ export default function Visitantes() {
       horario: newForm.horario || ''
     };
     
-    setVisitors(p => [newVisitor, ...p]);
+    if (isEditing) {
+      setVisitors(p => p.map(v => v.id === newVisitor.id ? newVisitor : v));
+    } else {
+      setVisitors(p => [newVisitor, ...p]);
+    }
     setShowNewModal(false);
-    setNewForm({ name: '', phone: '', email: '', region: '', source: 'Amigos / Parentes', wantsVisit: false, address: '', notes: '', date: new Date().toISOString().split('T')[0], culto: '', horario: '', churchId: '' });
+    setNewForm({ name: '', phone: '', email: '', region: '', source: 'Amigos / Parentes', customSourceText: '', wantsVisit: false, address: '', notes: '', date: new Date().toISOString().split('T')[0], culto: '', horario: '', churchId: '' });
   };
 
   const fmtDate = (d: string) => new Date(d + 'T12:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
@@ -313,6 +319,13 @@ export default function Visitantes() {
     const m = map[s];
     return <span style={{ fontSize: '0.6rem', padding: '2px 6px', borderRadius: '6px', background: m.bg, color: m.color, fontWeight: '700', border: `1px solid ${m.border}` }}>{m.label}</span>;
   };
+
+  const availableSources = useMemo(() => {
+    const defaultSources = ['Amigos / Parentes', 'Redes Sociais', 'Passou em frente', 'Convite especial'];
+    const existing = visitors.map(v => v.source).filter(s => s && s !== 'Outro' && s.trim().length > 0);
+    const all = new Set([...defaultSources, ...existing]);
+    return Array.from(all).sort();
+  }, [visitors]);
 
   // Estatísticas baseadas nos filtros globais, incluindo Culto e Horário
   const baseForStats = useMemo(() => {
@@ -547,10 +560,37 @@ export default function Visitantes() {
             <button onClick={() => setSel(null)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div>
-                {statusBadge(sel.status)}
-                <h3 style={{ fontSize: '1.25rem', margin: '6px 0 2px 0' }}>{sel.name}</h3>
-                <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>⛪ {activeChurchName(sel.churchId)}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  {statusBadge(sel.status)}
+                  <h3 style={{ fontSize: '1.25rem', margin: '6px 0 2px 0' }}>{sel.name}</h3>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>⛪ {activeChurchName(sel.churchId)}</span>
+                </div>
+                <button 
+                  onClick={() => {
+                    setNewForm({
+                      id: sel.id,
+                      name: sel.name,
+                      phone: sel.phone,
+                      email: sel.email,
+                      region: sel.region,
+                      source: availableSources.includes(sel.source) ? sel.source : 'Outro',
+                      customSourceText: availableSources.includes(sel.source) ? '' : sel.source,
+                      wantsVisit: sel.wantsVisit,
+                      address: sel.address,
+                      date: sel.date,
+                      culto: sel.culto,
+                      horario: sel.horario,
+                      churchId: sel.churchId,
+                      status: sel.status
+                    });
+                    setSel(null);
+                    setShowNewModal(true);
+                  }}
+                  style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  ✏️ Editar
+                </button>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
@@ -679,7 +719,9 @@ export default function Visitantes() {
       {showNewModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <form onSubmit={handleNewSubmit} className="glass" style={{ padding: '24px', borderRadius: '16px', width: '100%', maxWidth: '440px', margin: '15px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h3 style={{ marginTop: 0, fontSize: '1.2rem', borderBottom: '1px solid var(--card-border)', paddingBottom: '10px', marginBottom: '4px' }}>➕ Adicionar Visitante</h3>
+            <h3 style={{ marginTop: 0, fontSize: '1.2rem', borderBottom: '1px solid var(--card-border)', paddingBottom: '10px', marginBottom: '4px' }}>
+              {newForm.id ? '✏️ Editar Visitante' : '➕ Adicionar Visitante'}
+            </h3>
             
             {/* Seletor de Igreja para Superadmin sob filtro global */}
             {canSeeAllChurches && (churchF === 'all' || churchF === 'ALL') ? (
@@ -723,16 +765,13 @@ export default function Visitantes() {
 
             <div style={{ display: 'flex', gap: '10px' }}>
               <div style={{ flex: 1 }}>
-                <label className="input-label">Bairro / Região *</label>
-                <input type="text" value={newForm.region || ''} onChange={e => setNewForm(p => ({ ...p, region: e.target.value }))} required className="search-input glass-input" style={{ width: '100%', padding: '8px' }} />
+                <label className="input-label">Bairro / Região</label>
+                <input type="text" value={newForm.region || ''} onChange={e => setNewForm(p => ({ ...p, region: e.target.value }))} className="search-input glass-input" style={{ width: '100%', padding: '8px' }} />
               </div>
               <div style={{ flex: 1 }}>
                 <label className="input-label">Como Conheceu?</label>
                 <select value={newForm.source || ''} onChange={e => setNewForm(p => ({ ...p, source: e.target.value }))} className="search-input glass-input" style={{ width: '100%', padding: '8px' }}>
-                  <option value="Amigos / Parentes">Amigos / Parentes</option>
-                  <option value="Redes Sociais">Redes Sociais</option>
-                  <option value="Passou em frente">Passou em frente</option>
-                  <option value="Convite especial">Convite especial</option>
+                  {availableSources.map(s => <option key={s} value={s}>{s}</option>)}
                   <option value="Outro">Outro (Especificar...)</option>
                 </select>
                 {newForm.source === 'Outro' && (
@@ -812,7 +851,9 @@ export default function Visitantes() {
 
             <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
               <button type="button" onClick={() => setShowNewModal(false)} style={{ flex: 1, padding: '10px', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>Cancelar</button>
-              <button type="submit" style={{ flex: 1.5, padding: '10px', border: 'none', background: '#2ecc71', color: '#fff', fontWeight: 'bold', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>Salvar Visitante</button>
+              <button type="submit" style={{ flex: 1.5, padding: '10px', border: 'none', background: '#2ecc71', color: '#fff', fontWeight: 'bold', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>
+                {newForm.id ? 'Salvar Alterações' : 'Salvar Visitante'}
+              </button>
             </div>
           </form>
         </div>
