@@ -21,7 +21,7 @@ export default function IgrejasPage() {
   const [initialData, setInitialData] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   
-  const [liveCounts, setLiveCounts] = useState<Record<string, { members: number; transactions: number }>>({});
+  const [liveCounts, setLiveCounts] = useState<Record<string, { members: number; transactions: number; users: number }>>({});
   const [loadingLive, setLoadingLive] = useState(true);
 
   useEffect(() => {
@@ -82,32 +82,20 @@ export default function IgrejasPage() {
   useEffect(() => {
     async function loadLiveStats() {
       try {
-        const { data: membersDb } = await supabase.from('members').select('id, church_id');
-        const { data: transDb } = await supabase.from('transactions').select('id, church_id');
-
-        const counts: Record<string, { members: number; transactions: number }> = {};
+        const counts: Record<string, { members: number; transactions: number; users: number }> = {};
         
-        // Inicializar com zeros
-        churches.forEach(c => {
-          counts[c.id] = { members: 0, transactions: 0 };
-        });
-
-        // Contar membros reais do Supabase
-        if (membersDb) {
-          membersDb.forEach(m => {
-            const cId = m.church_id || '1';
-            if (!counts[cId]) counts[cId] = { members: 0, transactions: 0 };
-            counts[cId].members += 1;
-          });
-        }
-
-        // Contar transações reais do Supabase
-        if (transDb) {
-          transDb.forEach(t => {
-            const cId = t.church_id || '1';
-            if (!counts[cId]) counts[cId] = { members: 0, transactions: 0 };
-            counts[cId].transactions += 1;
-          });
+        for (const c of churches) {
+          const [{ count: mCount }, { count: tCount }, { count: uCount }] = await Promise.all([
+            supabase.from('members').select('*', { count: 'exact', head: true }).eq('church_id', c.id),
+            supabase.from('transactions').select('*', { count: 'exact', head: true }).eq('church_id', c.id),
+            supabase.from('user_roles').select('*', { count: 'exact', head: true }).eq('church_id', c.id)
+          ]);
+          
+          counts[c.id] = { 
+            members: mCount || 0, 
+            transactions: tCount || 0,
+            users: uCount || 0
+          };
         }
 
         setLiveCounts(counts);
@@ -241,13 +229,11 @@ export default function IgrejasPage() {
 
   // Estimativa de banco de dados por igreja baseada nos dados REAIS do Supabase
   const getDatabaseUsage = (churchId: string) => {
-    const live = liveCounts[churchId] || { members: 0, transactions: 0 };
+    const live = liveCounts[churchId] || { members: 0, transactions: 0, users: 0 };
     const memberCount = live.members;
     const transCount = live.transactions;
+    const activeUsersCount = live.users;
     const fileCount = memberCount + (memberCount > 0 ? 10 : 0); // Ex: fotos de membros + fotos de capa
-    
-    // Contagem de administradores/usuários configurados no sistema para esta igreja específica
-    const activeUsersCount = 1;
 
     const dbSizeKB = (memberCount * 5) + (transCount * 2); // 5KB por membro, 2KB por transação
     const storageSizeKB = fileCount * 150; // 150KB por arquivo de imagem
