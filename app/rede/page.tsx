@@ -116,8 +116,31 @@ export default function RedePage() {
       const { data: ministries } = await supabase.from('ministries').select('*');
       const { data: churchesDb } = await supabase.from('churches').select('*');
       const { data: servicesDb } = await supabase.from('church_services').select('*');
-      const { data: membersDb } = await supabase.from('members').select('id, status, church_id');
-      const { data: visitantesDb } = await supabase.from('visitors').select('id, church_id, status');
+      let allMembersDb: any[] = [];
+      let pageM = 0;
+      while (true) {
+        const { data } = await supabase.from('members').select('id, status, church_id').range(pageM * 1000, (pageM + 1) * 1000 - 1);
+        if (data && data.length > 0) {
+          allMembersDb = allMembersDb.concat(data);
+          if (data.length < 1000) break;
+          pageM++;
+        } else {
+          break;
+        }
+      }
+
+      let allVisitorsDb: any[] = [];
+      let pageV = 0;
+      while (true) {
+        const { data } = await supabase.from('visitors').select('id, church_id, status').range(pageV * 1000, (pageV + 1) * 1000 - 1);
+        if (data && data.length > 0) {
+          allVisitorsDb = allVisitorsDb.concat(data);
+          if (data.length < 1000) break;
+          pageV++;
+        } else {
+          break;
+        }
+      }
 
       if (ministries && ministries.length > 0) {
         setMinistry(ministries[0]);
@@ -153,8 +176,8 @@ export default function RedePage() {
         // Stats por igreja
         const stats: Record<string, MemberStats> = {};
         for (const church of formatted) {
-          const mem = (membersDb || []).filter((m: any) => m.church_id === church.id);
-          const vis = (visitantesDb || []).filter((v: any) => v.church_id === church.id);
+          const mem = allMembersDb.filter((m: any) => m.church_id === church.id);
+          const vis = allVisitorsDb.filter((v: any) => v.church_id === church.id);
           stats[church.id] = {
             total: mem.length,
             ativos: mem.filter((m: any) => m.status === 'ativo').length,
@@ -163,10 +186,9 @@ export default function RedePage() {
         }
         setMemberStats(stats);
 
-        const allMem = membersDb || [];
-        setTotalMembros(allMem.length);
-        setTotalAtivos(allMem.filter((m: any) => m.status === 'ativo').length);
-        setTotalVisitantes((visitantesDb || []).length);
+        setTotalMembros(allMembersDb.length);
+        setTotalAtivos(allMembersDb.filter((m: any) => m.status === 'ativo').length);
+        setTotalVisitantes(allVisitorsDb.length);
       }
     } finally {
       setPageLoading(false);
