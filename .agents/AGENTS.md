@@ -39,3 +39,9 @@
 
 ### 9. Sincronia de Campos (Formulários Públicos vs Modais Internos)
 * **Regra**: Todo e qualquer novo campo de cadastro adicionado aos modais internos da Secretaria (ex: `app/dashboard-secretaria/page.tsx` ou `app/visitantes/page.tsx`) DEVE OBRIGATORIAMENTE ser refletido e atualizado também nos formulários públicos de auto-cadastro (`app/formulario/page.tsx` para visitantes e `app/formulario-membro/page.tsx` para membros). O inverso também é válido. O objetivo é manter os canais de entrada de dados totalmente sincronizados arquiteturalmente.
+
+### 10. Filtros Dinâmicos Baseados em Dados Reais (Culto/Horário)
+* **Regra**: Qualquer componente de filtro no sistema (Financeiro, Secretaria, Visitantes, etc) que permita filtrar por "Culto" ou "Horário" DEVE obrigatoriamente carregar as opções e filtrar os registros com base nos NOMES EXATOS cadastrados no banco de dados para a Igreja (`dbChurches[x].services[y].name` e `time`). NUNCA utilize valores hardcoded (como "Domingo", "Segunda-feira") como strings de busca na base de dados, a menos que o campo no banco armazene estritamente o dia da semana.
+
+### 11. Processo de Transição de Status (Visitante -> Conversão)
+* **Regra**: Ao transicionar um membro de fase (ex: `Visitante` para `Em Conversão`), o sistema deve obrigatoriamente realizar um `UPDATE` no banco de dados alterando TANTO o `status` (ex: `em_conversao`) QUANTO campos atrelados ao funil (como `function: 'Ainda não definida'`). Isso garante que em atualizações ou imports futuros de planilhas antigas os dados não entrem em conflito gerando o "desaparecimento" visual de pessoas das colunas do Kanban. A busca (SELECT) das colunas também deve cruzar as informações dessas duas chaves para não perder dados.

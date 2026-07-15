@@ -18,7 +18,7 @@ export default function LoginPage() {
     setLoading(true);
     setErrorMsg('');
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -27,7 +27,22 @@ export default function LoginPage() {
       setErrorMsg(error.message);
       setLoading(false);
     } else {
-      router.push('/dashboard-secretaria');
+      let redirectTo = '/dashboard-secretaria';
+      
+      if (data.user) {
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+          
+        const role = roleData?.role;
+        if (role === 'pastor_diretor' || role === 'superadmin' || data.user.email === 'gestaozare@gmail.com') {
+          redirectTo = '/rede';
+        }
+      }
+      
+      router.push(redirectTo);
     }
   };
 
