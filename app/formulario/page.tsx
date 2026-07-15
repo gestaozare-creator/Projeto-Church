@@ -22,6 +22,7 @@ export default function FormularioVisitante() {
   });
 
   const [isLocked, setIsLocked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Carrega as igrejas e os cultos do banco de dados
   useEffect(() => {
@@ -108,7 +109,22 @@ export default function FormularioVisitante() {
   const saveVisitorToDb = async (finalForm: typeof form) => {
     if (!finalForm.churchId) {
       alert('Nenhuma igreja selecionada ou disponível.');
-      return;
+      return false;
+    }
+
+    const cleanPhone = finalForm.phone ? finalForm.phone.replace(/\D/g, '') : '';
+    
+    if (cleanPhone) {
+      const { data: existing } = await supabase
+        .from('members')
+        .select('id')
+        .eq('phone', cleanPhone)
+        .limit(1);
+        
+      if (existing && existing.length > 0) {
+        alert('Este número de WhatsApp já está cadastrado no sistema.');
+        return false;
+      }
     }
 
     const { error } = await supabase
@@ -116,7 +132,7 @@ export default function FormularioVisitante() {
       .insert({
         id: 'm_' + Date.now().toString(),
         name: finalForm.name,
-        phone: finalForm.phone,
+        phone: cleanPhone,
         state: finalForm.region,
         ministry: finalForm.howKnew,
         function: 'Visitante',
@@ -130,7 +146,10 @@ export default function FormularioVisitante() {
 
     if (error) {
       alert('Erro ao enviar dados para o servidor: ' + error.message);
+      return false;
     }
+    
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -139,14 +158,25 @@ export default function FormularioVisitante() {
       setStep('visit');
       return;
     }
-    saveVisitorToDb(form); // Dispara inserção em segundo plano (background)
-    setStep('success'); // Muda a tela instantaneamente
+    
+    setIsSubmitting(true);
+    const success = await saveVisitorToDb(form);
+    setIsSubmitting(false);
+    
+    if (success) {
+      setStep('success');
+    }
   };
 
   const handleVisitSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    saveVisitorToDb(form); // Dispara inserção em segundo plano (background)
-    setStep('success'); // Muda a tela instantaneamente
+    setIsSubmitting(true);
+    const success = await saveVisitorToDb(form);
+    setIsSubmitting(false);
+    
+    if (success) {
+      setStep('success');
+    }
   };
 
   if (step === 'success') {
@@ -292,8 +322,8 @@ export default function FormularioVisitante() {
               </div>
             </div>
 
-            <button type="submit" style={{ width: '100%', padding: '14px', borderRadius: '10px', border: 'none', background: '#3b82f6', color: '#fff', fontSize: '1.05rem', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 12px rgba(59,130,246,0.3)', marginTop: '10px' }}>
-              Enviar Ficha
+            <button type="submit" style={{ width: '100%', padding: '15px', background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '1.1rem', fontWeight: 'bold', cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1, transition: 'all 0.3s ease', boxShadow: '0 4px 15px rgba(59, 130, 246, 0.4)' }} disabled={isSubmitting}>
+              {isSubmitting ? 'Enviando...' : 'Enviar Ficha'}
             </button>
           </form>
         ) : (

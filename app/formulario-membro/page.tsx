@@ -91,6 +91,22 @@ export default function FormularioMembro() {
     
     setIsSubmitting(true);
 
+    const cleanPhone = form.phone ? form.phone.replace(/\D/g, '') : '';
+      
+    if (cleanPhone) {
+      const { data: existing } = await supabase
+        .from('members')
+        .select('id')
+        .eq('phone', cleanPhone)
+        .limit(1);
+        
+      if (existing && existing.length > 0) {
+        alert('Este número de WhatsApp já está cadastrado no sistema.');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     let photo_url = null;
 
     try {
@@ -119,7 +135,7 @@ export default function FormularioMembro() {
         .insert({
           id: 'm_' + Date.now().toString(),
           name: form.name,
-          phone: form.phone,
+          phone: cleanPhone,
           email: form.email || null,
           address: form.address,
           function: 'Membro',

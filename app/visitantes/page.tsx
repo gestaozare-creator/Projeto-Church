@@ -219,12 +219,14 @@ export default function Visitantes() {
     e.preventDefault();
     if (!sel) return;
 
+    const cleanPhone = convertForm.phone ? convertForm.phone.replace(/\D/g, '') : '';
+
     const { error } = await supabase
       .from('members')
       .update({
         status: 'ativo',
         name: convertForm.name,
-        phone: convertForm.phone,
+        phone: cleanPhone,
         address: convertForm.address,
         church_id: convertForm.churchId,
         function: convertForm.function || 'Membro',
@@ -258,15 +260,30 @@ export default function Visitantes() {
       return;
     }
 
-    const targetId = newForm.id || 'v_' + Date.now().toString();
+    const cleanPhone = newForm.phone ? newForm.phone.replace(/\D/g, '') : '';
     const isEditing = !!newForm.id;
+    
+    if (!isEditing && cleanPhone) {
+      const { data: existing } = await supabase
+        .from('members')
+        .select('id')
+        .eq('phone', cleanPhone)
+        .limit(1);
+        
+      if (existing && existing.length > 0) {
+        alert('Este número de WhatsApp já está cadastrado no sistema.');
+        return;
+      }
+    }
+
+    const targetId = newForm.id || 'v_' + Date.now().toString();
     
     const { data: newMemberDb, error } = await supabase
       .from('members')
       .upsert({
         id: targetId,
         name: newForm.name,
-        phone: newForm.phone,
+        phone: cleanPhone,
         email: newForm.email || '',
         state: newForm.region || '',
         ministry: newForm.source === 'Outro' ? newForm.customSourceText || 'Outro' : newForm.source,
@@ -291,7 +308,7 @@ export default function Visitantes() {
       churchId: newMemberDb.church_id || '1',
       date: newMemberDb.integration_date || (newForm.date || new Date().toISOString().split('T')[0]),
       name: newForm.name,
-      phone: newForm.phone,
+      phone: cleanPhone,
       email: newForm.email || '',
       region: newForm.region || '',
       source: newForm.source === 'Outro' ? newForm.customSourceText || 'Outro' : newForm.source,

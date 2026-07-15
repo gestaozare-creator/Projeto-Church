@@ -235,11 +235,26 @@ export default function Home() {
     e.preventDefault();
     const finalPhoto = editForm.photoUrl || `https://i.pravatar.cc/150?u=${editForm.name.replace(/\s/g,'')}`;
     
+    const cleanPhone = editForm.phone ? editForm.phone.replace(/\D/g, '') : '';
+
+    if (isCreating && cleanPhone) {
+      const { data: existing } = await supabase
+        .from('members')
+        .select('id')
+        .eq('phone', cleanPhone)
+        .limit(1);
+        
+      if (existing && existing.length > 0) {
+        alert('Este número de WhatsApp já está cadastrado no sistema.');
+        return;
+      }
+    }
+
     const dbPayload = {
       name: editForm.name,
       function: editForm.function,
       ministry: editForm.ministry,
-      phone: editForm.phone,
+      phone: cleanPhone,
       email: editForm.email,
       address: editForm.address,
       status: editForm.status,
