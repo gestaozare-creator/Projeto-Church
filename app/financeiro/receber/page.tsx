@@ -696,7 +696,7 @@ export default function ContasReceber() {
                   ) : (
                     <select name="memberId" value={selectedMember} onChange={e => setSelectedMember(e.target.value)} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
                       <option value="">Anônimo</option>
-                      {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                      {[...members].sort((a,b) => a.name.localeCompare(b.name)).map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                     </select>
                   )}
                 </div>
