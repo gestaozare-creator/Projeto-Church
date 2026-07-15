@@ -129,19 +129,6 @@ export default function RedePage() {
         }
       }
 
-      let allVisitorsDb: any[] = [];
-      let pageV = 0;
-      while (true) {
-        const { data } = await supabase.from('visitors').select('id, church_id, status').range(pageV * 1000, (pageV + 1) * 1000 - 1);
-        if (data && data.length > 0) {
-          allVisitorsDb = allVisitorsDb.concat(data);
-          if (data.length < 1000) break;
-          pageV++;
-        } else {
-          break;
-        }
-      }
-
       if (ministries && ministries.length > 0) {
         setMinistry(ministries[0]);
       }
@@ -176,19 +163,24 @@ export default function RedePage() {
         // Stats por igreja
         const stats: Record<string, MemberStats> = {};
         for (const church of formatted) {
-          const mem = allMembersDb.filter((m: any) => m.church_id === church.id);
-          const vis = allVisitorsDb.filter((v: any) => v.church_id === church.id);
+          const allPeople = allMembersDb.filter((m: any) => m.church_id === church.id);
+          const visitors = allPeople.filter((m: any) => m.status === 'pendente' || m.status === 'em_conversao' || m.status === 'visitante');
+          const members = allPeople.filter((m: any) => m.status !== 'pendente' && m.status !== 'em_conversao' && m.status !== 'visitante');
+
           stats[church.id] = {
-            total: mem.length,
-            ativos: mem.filter((m: any) => m.status === 'ativo').length,
-            visitantes: vis.length
+            total: members.length,
+            ativos: members.filter((m: any) => m.status === 'ativo').length,
+            visitantes: visitors.length
           };
         }
         setMemberStats(stats);
 
-        setTotalMembros(allMembersDb.length);
-        setTotalAtivos(allMembersDb.filter((m: any) => m.status === 'ativo').length);
-        setTotalVisitantes(allVisitorsDb.length);
+        const globalVisitors = allMembersDb.filter((m: any) => m.status === 'pendente' || m.status === 'em_conversao' || m.status === 'visitante');
+        const globalMembers = allMembersDb.filter((m: any) => m.status !== 'pendente' && m.status !== 'em_conversao' && m.status !== 'visitante');
+
+        setTotalMembros(globalMembers.length);
+        setTotalAtivos(globalMembers.filter((m: any) => m.status === 'ativo').length);
+        setTotalVisitantes(globalVisitors.length);
       }
     } finally {
       setPageLoading(false);
