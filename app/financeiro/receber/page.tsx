@@ -3,6 +3,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { useGlobalData } from '@/hooks/useGlobalData';
+import { useMembers } from '@/hooks/useMembers';
 
 // Tipo local (view model camelCase)
 interface FinancialTransaction {
@@ -25,9 +26,11 @@ type Transaction = FinancialTransaction;
 
 export default function ContasReceber() {
   const { currentUser, canSeeAllChurches, activeChurchId } = useAuth();
-  const { churches, churchServices, members } = useGlobalData();
+  const { churches, churchServices } = useGlobalData();
   
   const [church, setChurch] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches ? 'ALL' : currentUser?.churchId || ''));
+  
+  const { members } = useMembers(church === 'ALL' ? undefined : church);
 
   useEffect(() => {
     if (activeChurchId) {
