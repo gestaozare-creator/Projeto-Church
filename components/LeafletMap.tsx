@@ -58,8 +58,24 @@ export default function LeafletMap({
     setMounted(true);
   }, []);
 
-  const churchPos: [number, number] = geocache[church?.address || ''] ? [geocache[church.address]!.lat, geocache[church.address]!.lng] : [-25.4284, -49.2733]; // Default to Curitiba
+  const hasChurchGeo = Boolean(church?.address && geocache[church.address]);
+  const churchCoords: [number, number] | null = hasChurchGeo 
+    ? [geocache[church.address]!.lat, geocache[church.address]!.lng] 
+    : null;
 
+  let centerPos: [number, number] = [-25.4284, -49.2733]; // Default to Curitiba se tudo falhar
+
+  if (selectedPerson && selectedPerson.address && geocache[selectedPerson.address.trim()]) {
+    centerPos = [geocache[selectedPerson.address.trim()]!.lat, geocache[selectedPerson.address.trim()]!.lng];
+  } else if (churchCoords) {
+    centerPos = churchCoords;
+  } else {
+    // Tenta achar a primeira pessoa com localização válida para focar o mapa lá
+    const firstValid = people.find(p => p.address && geocache[p.address.trim()]);
+    if (firstValid) {
+      centerPos = [geocache[firstValid.address.trim()]!.lat, geocache[firstValid.address.trim()]!.lng];
+    }
+  }
   const markers = useMemo(() => {
     return people.map(p => {
       const addr = p.address ? p.address.trim() : '';
@@ -81,10 +97,6 @@ export default function LeafletMap({
 
   if (!mounted) return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Carregando mapa interativo...</div>;
 
-  const centerPos = selectedPerson && selectedPerson.address && geocache[selectedPerson.address.trim()] 
-    ? [geocache[selectedPerson.address.trim()]!.lat, geocache[selectedPerson.address.trim()]!.lng] as [number, number]
-    : churchPos;
-
   return (
     <MapContainer center={centerPos} zoom={11} style={{ height: '100%', width: '100%', borderRadius: '16px', zIndex: 1 }}>
       <MapRecenter center={centerPos} />
@@ -93,12 +105,14 @@ export default function LeafletMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
       />
       
-      <Marker position={churchPos} icon={icons.church}>
-        <Popup>
-          <strong>{church?.name || 'Igreja'}</strong><br/>
-          {church?.address}
-        </Popup>
-      </Marker>
+      {churchCoords && (
+        <Marker position={churchCoords} icon={icons.church}>
+          <Popup>
+            <strong>{church?.name || 'Igreja'}</strong><br/>
+            {church?.address}
+          </Popup>
+        </Marker>
+      )}
 
       <MarkerClusterGroup
         chunkedLoading
