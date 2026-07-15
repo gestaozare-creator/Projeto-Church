@@ -30,22 +30,16 @@ export default function FormularioMembro() {
   // Carrega as igrejas reais do banco de dados em tempo real
   useEffect(() => {
     async function loadChurches() {
-      const { data, error } = await supabase
-        .from('churches')
-        .select(`
-          id, 
-          name, 
-          logo_url,
-          cover_photo_url,
-          config,
-          ministries (
-            name,
-            logo_url
-          )
-        `);
+      const { data: churchesData, error } = await supabase.from('churches').select('*');
+      const { data: ministriesData } = await supabase.from('ministries').select('*');
       
-      if (!error && data) {
-        setChurches(data);
+      if (!error && churchesData) {
+        const mappedChurches = churchesData.map(c => ({
+          ...c,
+          ministries: ministriesData?.find(m => m.id === c.ministry_id) || null
+        }));
+        
+        setChurches(mappedChurches);
         
         // Verifica se há o parâmetro ?church=ID na URL
         const params = new URLSearchParams(window.location.search);
@@ -202,7 +196,7 @@ export default function FormularioMembro() {
             <img src={activeLogo} alt="Logo da Igreja" style={{ maxWidth: '100%', maxHeight: '140px', objectFit: 'contain', marginBottom: '15px' }} />
           )}
           <h2 style={{ fontSize: '1.3rem', color: '#1e293b', marginBottom: '4px' }}>Cadastro de Membro - {activeMinistryName || 'Geral'}</h2>
-          <p style={{ color: '#475569', fontSize: '0.85rem', marginBottom: '6px' }}>Igreja Local: <strong>{activeChurch?.name}</strong></p>
+          <p style={{ color: '#475569', fontSize: '0.85rem', marginBottom: '6px' }}>Igreja - <strong>{activeChurch?.name}</strong></p>
           <p style={{ color: '#94a3b8', fontSize: '0.82rem' }}>Preencha seus dados para se cadastrar na igreja</p>
         </div>
 

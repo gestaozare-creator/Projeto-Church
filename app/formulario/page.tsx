@@ -26,18 +26,17 @@ export default function FormularioVisitante() {
   // Carrega as igrejas e os cultos do banco de dados
   useEffect(() => {
     async function loadData() {
-      const { data: churchesDb } = await supabase.from('churches').select(`
-        id, 
-        name, 
-        logo_url,
-        cover_photo_url,
-        config,
-        ministries (
-          name,
-          logo_url
-        )
-      `);
+      const { data: churchesData } = await supabase.from('churches').select('*');
+      const { data: ministriesData } = await supabase.from('ministries').select('*');
       const { data: servicesDb } = await supabase.from('church_services').select('*');
+      
+      let churchesDb = null;
+      if (churchesData) {
+        churchesDb = churchesData.map(c => ({
+          ...c,
+          ministries: ministriesData?.find(m => m.id === c.ministry_id) || null
+        }));
+      }
       
       if (churchesDb) {
         setChurches(churchesDb);
@@ -189,7 +188,7 @@ export default function FormularioVisitante() {
             <img src={activeLogo} alt="Logo da Igreja" style={{ maxWidth: '100%', maxHeight: '140px', objectFit: 'contain', marginBottom: '15px' }} />
           )}
           <h1 style={{ fontSize: '1.4rem', color: '#0f172a', marginBottom: '5px' }}>Ficha de Visitante - {activeMinistryName || 'Geral'}</h1>
-          <p style={{ color: '#475569', fontSize: '0.9rem', marginBottom: '5px' }}>Igreja Local: <strong>{activeChurch?.name}</strong></p>
+          <p style={{ color: '#475569', fontSize: '0.9rem', marginBottom: '5px' }}>Igreja - <strong>{activeChurch?.name}</strong></p>
           <div style={{ width: '50px', height: '3px', background: '#3b82f6', margin: '10px auto 15px', borderRadius: '2px' }}></div>
         </div>
 
