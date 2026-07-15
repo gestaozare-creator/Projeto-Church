@@ -36,6 +36,8 @@ export default function FormularioMembro() {
           id, 
           name, 
           logo_url,
+          cover_photo_url,
+          config,
           ministries (
             name,
             logo_url
@@ -176,7 +178,7 @@ export default function FormularioMembro() {
   }
 
   const activeChurch = churches.find(c => c.id === form.churchId);
-  const activeLogo = activeChurch?.logo_url || activeChurch?.ministries?.logo_url;
+  const activeLogo = activeChurch?.cover_photo_url || activeChurch?.logo_url || activeChurch?.ministries?.logo_url;
   const activeMinistryName = activeChurch?.ministries?.name;
   
   let themeColor = '#1e3a5f';
@@ -197,12 +199,10 @@ export default function FormularioMembro() {
 
         <div style={{ textAlign: 'center', marginBottom: '25px' }}>
           {activeLogo && (
-            <img src={activeLogo} alt="Logo da Igreja" style={{ maxWidth: '140px', maxHeight: '140px', objectFit: 'contain', marginBottom: '15px' }} />
+            <img src={activeLogo} alt="Logo da Igreja" style={{ maxWidth: '100%', maxHeight: '140px', objectFit: 'contain', marginBottom: '15px' }} />
           )}
-          {activeMinistryName && (
-            <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#3b82f6', letterSpacing: '0.5px', marginBottom: '4px', textTransform: 'uppercase' }}>{activeMinistryName}</div>
-          )}
-          <h2 style={{ fontSize: '1.3rem', color: '#1e293b', marginBottom: '6px' }}>Cadastro de Membro</h2>
+          <h2 style={{ fontSize: '1.3rem', color: '#1e293b', marginBottom: '4px' }}>Cadastro de Membro - {activeMinistryName || 'Geral'}</h2>
+          <p style={{ color: '#475569', fontSize: '0.85rem', marginBottom: '6px' }}>Igreja Local: <strong>{activeChurch?.name}</strong></p>
           <p style={{ color: '#94a3b8', fontSize: '0.82rem' }}>Preencha seus dados para se cadastrar na igreja</p>
         </div>
 

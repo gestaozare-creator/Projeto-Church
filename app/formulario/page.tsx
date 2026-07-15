@@ -30,6 +30,8 @@ export default function FormularioVisitante() {
         id, 
         name, 
         logo_url,
+        cover_photo_url,
+        config,
         ministries (
           name,
           logo_url
@@ -164,7 +166,7 @@ export default function FormularioVisitante() {
   }
 
   const activeChurch = churches.find(c => c.id === form.churchId);
-  const activeLogo = activeChurch?.logo_url || activeChurch?.ministries?.logo_url;
+  const activeLogo = activeChurch?.cover_photo_url || activeChurch?.logo_url || activeChurch?.ministries?.logo_url;
   const activeMinistryName = activeChurch?.ministries?.name;
   
   let themeColor = '#1e293b';
@@ -184,13 +186,11 @@ export default function FormularioVisitante() {
       <div style={{ background: 'rgba(255,255,255,0.95)', borderRadius: '20px', padding: '40px', maxWidth: '420px', width: '100%', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }}>
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
           {activeLogo && (
-            <img src={activeLogo} alt="Logo da Igreja" style={{ maxWidth: '140px', maxHeight: '140px', objectFit: 'contain', marginBottom: '15px' }} />
+            <img src={activeLogo} alt="Logo da Igreja" style={{ maxWidth: '100%', maxHeight: '140px', objectFit: 'contain', marginBottom: '15px' }} />
           )}
-          {activeMinistryName && (
-            <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#3b82f6', letterSpacing: '0.5px', marginBottom: '4px', textTransform: 'uppercase' }}>{activeMinistryName}</div>
-          )}
-          <h1 style={{ fontSize: '1.5rem', color: '#0f172a', marginBottom: '5px' }}>Ficha de Visitante</h1>
-          <div style={{ width: '50px', height: '3px', background: '#3b82f6', margin: '15px auto 0', borderRadius: '2px' }}></div>
+          <h1 style={{ fontSize: '1.4rem', color: '#0f172a', marginBottom: '5px' }}>Ficha de Visitante - {activeMinistryName || 'Geral'}</h1>
+          <p style={{ color: '#475569', fontSize: '0.9rem', marginBottom: '5px' }}>Igreja Local: <strong>{activeChurch?.name}</strong></p>
+          <div style={{ width: '50px', height: '3px', background: '#3b82f6', margin: '10px auto 15px', borderRadius: '2px' }}></div>
         </div>
 
         {loading ? (
