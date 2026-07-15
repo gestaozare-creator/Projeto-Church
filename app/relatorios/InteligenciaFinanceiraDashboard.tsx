@@ -55,8 +55,7 @@ const ChurchRow = ({ c }: { c: ChurchData }) => {
   const [linesVisibility, setLinesVisibility] = useState({
     receitas: true,
     despesas: true,
-    saldo: true,
-    ticketMedio: true
+    saldo: true
   });
 
   const handleLegendClick = (e: any) => {
@@ -124,7 +123,6 @@ const ChurchRow = ({ c }: { c: ChurchData }) => {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
             <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{fontSize: 10}} />
             <YAxis yAxisId="left" tickFormatter={(v) => `R$${(v/1000).toFixed(0)}k`} stroke="var(--text-secondary)" tick={{fontSize: 10}} />
-            <YAxis yAxisId="right" orientation="right" hide={true} />
             
             <Tooltip 
               cursor={{fill: 'rgba(255,255,255,0.05)'}} 
@@ -136,8 +134,7 @@ const ChurchRow = ({ c }: { c: ChurchData }) => {
                 if (item.dataKey === 'receitas') return 1;
                 if (item.dataKey === 'despesas') return 2;
                 if (item.dataKey === 'saldo') return 3;
-                if (item.dataKey === 'ticketMedio') return 4;
-                return 5;
+                return 4;
               }}
             />
             <Legend 
@@ -148,7 +145,6 @@ const ChurchRow = ({ c }: { c: ChurchData }) => {
             <Line yAxisId="left" type="monotone" dataKey="receitas" name="Entradas" hide={!linesVisibility.receitas} stroke="#2ecc71" strokeWidth={3} dot={{ r: 3 }} connectNulls={false} />
             <Line yAxisId="left" type="monotone" dataKey="despesas" name="Saídas" hide={!linesVisibility.despesas} stroke="#e74c3c" strokeWidth={3} dot={{ r: 3 }} connectNulls={false} />
             <Line yAxisId="left" type="monotone" dataKey="saldo" name="Saldo" hide={!linesVisibility.saldo} stroke="#3498db" strokeWidth={3} dot={{ r: 3 }} connectNulls={false} />
-            <Line yAxisId="right" type="monotone" dataKey="ticketMedio" name="Ticket Médio" hide={!linesVisibility.ticketMedio} stroke="#f1c40f" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3 }} connectNulls={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
