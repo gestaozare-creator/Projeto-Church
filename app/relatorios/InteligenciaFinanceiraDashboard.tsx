@@ -55,8 +55,8 @@ const ChurchRow = ({ c }: { c: ChurchData }) => {
   const [linesVisibility, setLinesVisibility] = useState({
     receitas: true,
     despesas: true,
-    saldo: false,
-    ticketMedio: false
+    saldo: true,
+    ticketMedio: true
   });
 
   const handleLegendClick = (e: any) => {
