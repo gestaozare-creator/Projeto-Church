@@ -57,9 +57,8 @@ export default function ContasReceber() {
     } else {
       svcs = churchServices?.filter(s => s.church_id === church) || [];
     }
-    const days = new Set(svcs.map(s => s.day_of_week).filter(Boolean));
-    const DAY_ORDER = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-    return Array.from(days).sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b));
+    const names = new Set(svcs.map(s => s.name).filter(Boolean));
+    return Array.from(names).sort();
   }, [church, churchServices]);
 
   const availableHorarios = useMemo(() => {
@@ -73,7 +72,7 @@ export default function ContasReceber() {
       const times = new Set(svcs.map(s => s.time));
       return Array.from(times).sort();
     } else {
-      const times = new Set(svcs.filter(s => s.day_of_week === cultoFilter).map(s => s.time));
+      const times = new Set(svcs.filter(s => s.name === cultoFilter).map(s => s.time));
       return Array.from(times).sort();
     }
   }, [church, cultoFilter, churchServices]);
