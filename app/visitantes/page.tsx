@@ -35,8 +35,8 @@ export default function Visitantes() {
   const [convertForm, setConvertForm] = useState<any>({ name: '', phone: '', address: '', churchId: '', function: 'Membro', department: 'Geral', integrationDate: new Date().toISOString().split('T')[0], cardValidity: '' });
 
   const [showNewModal, setShowNewModal] = useState(false);
-  const [newForm, setNewForm] = useState<Partial<Visitor & { churchId?: string }>>({
-    name: '', phone: '', email: '', region: '', source: 'Amigos / Parentes', wantsVisit: false, address: '', notes: '', date: new Date().toISOString().split('T')[0], culto: '', horario: '', churchId: ''
+  const [newForm, setNewForm] = useState<Partial<Visitor & { churchId?: string, customSourceText?: string }>>({
+    name: '', phone: '', email: '', region: '', source: 'Amigos / Parentes', customSourceText: '', wantsVisit: false, address: '', notes: '', date: new Date().toISOString().split('T')[0], culto: '', horario: '', churchId: ''
   });
 
   // WhatsApp Modal
@@ -267,7 +267,7 @@ export default function Visitantes() {
         phone: newForm.phone,
         email: newForm.email || '',
         state: newForm.region,
-        ministry: newForm.source,
+        ministry: newForm.source === 'Outro' ? newForm.customSourceText || 'Outro' : newForm.source,
         address: newForm.address || '',
         function: 'Visitante',
         status: 'pendente',
@@ -292,7 +292,7 @@ export default function Visitantes() {
       phone: newForm.phone,
       email: newForm.email || '',
       region: newForm.region,
-      source: newForm.source,
+      source: newForm.source === 'Outro' ? newForm.customSourceText || 'Outro' : newForm.source,
       wantsVisit: !!newForm.wantsVisit,
       status: 'visitante',
       address: newForm.address || '',
@@ -733,8 +733,11 @@ export default function Visitantes() {
                   <option value="Redes Sociais">Redes Sociais</option>
                   <option value="Passou em frente">Passou em frente</option>
                   <option value="Convite especial">Convite especial</option>
-                  <option value="Outro">Outro</option>
+                  <option value="Outro">Outro (Especificar...)</option>
                 </select>
+                {newForm.source === 'Outro' && (
+                  <input type="text" placeholder="Especifique..." value={newForm.customSourceText || ''} onChange={e => setNewForm(p => ({ ...p, customSourceText: e.target.value }))} className="search-input glass-input" style={{ width: '100%', padding: '8px', marginTop: '6px' }} />
+                )}
               </div>
             </div>
 
