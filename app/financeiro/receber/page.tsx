@@ -207,9 +207,9 @@ export default function ContasReceber() {
         }
       }
       
-      let finalMemberId = formData.get('memberId') as string || undefined;
+      let finalMemberId: string | null = (formData.get('memberId') as string) || null;
       if (selectedMember === 'NOVO') {
-        finalMemberId = undefined; 
+        finalMemberId = null; 
       }
 
       const amount = parseFloat(formData.get('amount') as string) || 0;
@@ -257,7 +257,7 @@ export default function ContasReceber() {
         const { data: updTxDb, error } = await supabase
           .from('transactions')
           .update({
-            member_id: finalMemberId && finalMemberId.startsWith('m_') ? null : finalMemberId,
+            member_id: finalMemberId,
             category: finalCategory as string,
             amount: amount,
             description: fullDescription,
@@ -299,7 +299,7 @@ export default function ContasReceber() {
           .from('transactions')
           .insert({
             church_id: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
-            member_id: finalMemberId && finalMemberId.startsWith('m_') ? null : finalMemberId,
+            member_id: finalMemberId,
             type: 'receita',
             category: finalCategory as string,
             amount: amount,

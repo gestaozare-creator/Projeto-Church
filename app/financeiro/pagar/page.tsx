@@ -160,7 +160,7 @@ export default function ContasPagar() {
       const formData = new FormData(e.currentTarget);
       const finalCategory = selectedCategory === 'NOVA' ? formData.get('customCategory') : selectedCategory;
       
-      let finalSupplierId = formData.get('supplierId') as string || undefined;
+      let finalSupplierId: string | null = (formData.get('supplierId') as string) || null;
       if (selectedSupplier === 'NOVO') {
         const customSupplierName = formData.get('customSupplier') as string;
         if (customSupplierName) {
