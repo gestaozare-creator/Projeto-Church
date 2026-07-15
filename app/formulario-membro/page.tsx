@@ -46,15 +46,15 @@ export default function FormularioMembro() {
         const churchParam = params.get('church');
         
         if (churchParam) {
-          const exists = data.find(c => c.id === churchParam);
+          const exists = mappedChurches.find(c => c.id === churchParam);
           if (exists) {
             setForm(prev => ({ ...prev, churchId: churchParam }));
             setIsLocked(true);
-          } else if (data.length > 0) {
-            setForm(prev => ({ ...prev, churchId: data[0].id }));
+          } else if (mappedChurches.length > 0) {
+            setForm(prev => ({ ...prev, churchId: mappedChurches[0].id }));
           }
-        } else if (data.length > 0) {
-          setForm(prev => ({ ...prev, churchId: data[0].id }));
+        } else if (mappedChurches.length > 0) {
+          setForm(prev => ({ ...prev, churchId: mappedChurches[0].id }));
         }
       }
       setLoadingChurches(false);
