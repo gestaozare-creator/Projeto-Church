@@ -76,6 +76,9 @@ Protocolo V.L.A.E.G.
 ## 🚫 Regra de Ouro (Erros de Compilação / Vercel)
 Se a Vercel travar no build e mostrar uma versão antiga do site, o problema **NÃO** é cache de banco de dados nem falha do Supabase. O problema é que modificações recentes introduziram **erros de tipagem do TypeScript** (ex: `Implicit Any`, `Cannot find name`). O agente DEVE rodar `npx tsc --noEmit` localmente para garantir que não haja erros de tipo ANTES de empurrar grandes refatorações para o repositório principal. Mocks NUNCA devem ser reintegrados sem tipagem.
 
+## 🚫 Regra de Ouro (Edições no Supabase via SDK)
+Ao utilizar o SDK do Supabase para atualizar (`.update()`) ou inserir (`.insert()`) registros, se você enviar um valor como `undefined` (ex: `member_id: undefined`), a SDK irá **IGNORAR** esse campo. A coluna no banco não será afetada (permanecerá com o valor antigo). Para **APAGAR** (limpar/resetar) uma informação, você deve obrigatoriamente enviar o valor `null` (ex: `member_id: null`). Sempre valide chaves estrangeiras com conversões explícitas: `const val = formData.get('x') || null;`. Nunca confie no `|| undefined` para dados opcionais.
+
 ## 💾 Persistência de Dados (Regras Específicas)
 - **Tabela `suppliers` (Fornecedores):** Não possui geração automática de UUID. Todo novo insert DEVE conter um `id` gerado manualmente (ex: `crypto.randomUUID()`), caso contrário o Supabase retornará erro silencioso e o fornecedor será perdido.
 - **Tabela `churches` (Configurações / Categorias):** Categorias de receitas e despesas são armazenadas como arrays JSON na coluna `config` (ex: `config.receitas`). Ao adicionar uma "Nova Categoria" no front-end, o agente DEVE sempre realizar um `.update()` na tabela `churches` para injetar essa nova string no array, caso contrário a categoria não sobreviverá ao refresh (F5) da página.
