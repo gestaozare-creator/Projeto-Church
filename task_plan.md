@@ -97,3 +97,9 @@ Protocolo V.L.A.E.G.
 - [x] Deploy na Nuvem (Vercel) finalizado com sucesso.
 - [x] Transição de MVP visual (Mocks) para Sistema de Produção Real (Supabase).
 - [ ] Automações e Gatilhos de Banco de Dados.
+
+### Fase 6: Refinamento e UX (Pendências 2026-07-15) [ ]
+- [ ] **Secretaria (Membros):** Ordenar alfabeticamente a lista de membros no dropdown de inserção (Receitas, etc) para facilitar a busca.
+- [ ] **Secretaria (Visitantes):** Dividir a tela "Primeiro Contato": lado esquerdo para "Visitantes", lado direito para "Em conversão".
+- [ ] **Secretaria (Visitantes - Lead):** Agrupar o histórico/leads por ano, mês, dia e horário de culto (dropdowns aninhados) no perfil do visitante.
+- [ ] **Dashboard Master:** Sincronizar dados do painel SAS Master (projeção e imagem de recursos) com a base real do Supabase (atualmente dessincronizados).

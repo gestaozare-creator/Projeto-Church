@@ -44,3 +44,11 @@ Protocolo V.L.A.E.G.
 - [x] Limpeza e padronização UX nos botões das escalas, substituindo modais confusos por dois botões inteligentes: Salvar Escala e Compartilhar, que já preparam o envio dinâmico via WhatsApp.
 - [x] Resolução de barreira de Autenticação (AuthContext.tsx e layout.tsx) onde rotas públicas estavam sendo indevidamente redirecionadas para o Login.
 - [x] Compatibilidade Mobile Extrema: Conversão do calendário (CSS Grid) para Flexbox (display: flex; flex-wrap: wrap) com porcentagens matemáticas, erradicando quebras visuais verticais que ocorriam em navegadores de iPhone/Safari antigos.
+
+### 2026-07-15
+
+- [x] **Financeiro (CRUD e Persistência):** Implementação da edição e exclusão de transações (Receitas e Despesas) refletindo em tempo real no Supabase.
+- [x] **Financeiro (Categorias e Fornecedores):** Correção crítica na gravação de "Nova Categoria" (agora persistindo corretamente no array `config.receitas` / `config.despesas` da tabela `churches`) e "Novo Fornecedor" (geração obrigatória de `crypto.randomUUID()` na tabela `suppliers` contornando a falta de auto-increment).
+- [x] **Financeiro (Anexos):** Restauração do campo de envio de comprovantes (upload de arquivos) no modal de Nova Despesa que havia sumido após atualizações anteriores.
+- [x] **Dashboard de Inteligência Financeira:** Desativação do cache do Next.js (`force-dynamic`) para garantir exibição imediata de alterações feitas na tela financeira. Otimização visual com a remoção da linha "Ticket Médio" do gráfico e exibição padrão de Entradas, Saídas e Saldo.
+- [x] **Secretaria (Membros):** Validade da carteirinha pré-preenchida automaticamente para 1 ano à frente da data de integração, mantendo edição livre para o usuário.
