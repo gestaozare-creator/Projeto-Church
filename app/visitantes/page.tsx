@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { Church } from '@/types/database';
@@ -80,6 +80,9 @@ export default function Visitantes() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({});
+
+  const toggleNode = (id: string) => setExpandedNodes(p => ({ ...p, [id]: !p[id] }));
 
   // Calcula horários dinâmicos da igreja selecionada
   const availableHorarios = useMemo(() => {
@@ -391,24 +394,44 @@ export default function Visitantes() {
 
   const activeChurchName = (cid: string) => dbChurches.find(c => c.id === cid)?.name || 'Igreja Local';
 
-  const groupedList = useMemo(() => {
-    const groups: Record<string, Visitor[]> = {};
-    filtered.forEach(v => {
+  const buildTree = useCallback((vList: Visitor[]) => {
+    const tree: any = {};
+    vList.forEach(v => {
+      const dateVal = v.date || '2000-01-01';
+      const year = dateVal.split('-')[0];
+      const monthStr = new Date(dateVal + 'T12:00').toLocaleDateString('pt-BR', { month: 'long' });
+      const month = monthStr.charAt(0).toUpperCase() + monthStr.slice(1);
+      const day = dateVal.split('-')[2];
       const culto = v.culto || 'Geral';
       const horario = v.horario || 'Sem horário';
-      const key = `${v.date}##${culto}##${horario}`;
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(v);
+      const dayKey = `${day} - ${culto} (${horario})`;
+      
+      if (!tree[year]) tree[year] = {};
+      if (!tree[year][month]) tree[year][month] = {};
+      if (!tree[year][month][dayKey]) tree[year][month][dayKey] = { visitors: [], fullDate: dateVal };
+      
+      tree[year][month][dayKey].visitors.push(v);
     });
-    return Object.keys(groups).sort((a, b) => b.localeCompare(a)).map(key => {
-      const [fullDate, culto, horario] = key.split('##');
-      const year = fullDate.split('-')[0];
-      const monthStr = new Date(fullDate + 'T12:00').toLocaleDateString('pt-BR', { month: 'long' });
-      const month = monthStr.charAt(0).toUpperCase() + monthStr.slice(1);
-      const day = fullDate.split('-')[2];
-      return { key, year, month, day, culto, horario, fullDate, visitors: groups[key] };
-    });
-  }, [filtered]);
+    
+    return Object.keys(tree).sort((a,b) => b.localeCompare(a)).map(year => ({
+      year,
+      months: Object.keys(tree[year]).sort((a,b) => {
+         const getFirstDate = (m: string) => tree[year][m][Object.keys(tree[year][m])[0]].fullDate;
+         return getFirstDate(b).localeCompare(getFirstDate(a));
+      }).map(month => ({
+        month,
+        days: Object.keys(tree[year][month]).sort((a,b) => {
+           return tree[year][month][b].fullDate.localeCompare(tree[year][month][a].fullDate);
+        }).map(dayKey => ({
+          dayKey,
+          visitors: tree[year][month][dayKey].visitors
+        }))
+      }))
+    }));
+  }, []);
+
+  const treeVisitantes = useMemo(() => buildTree(filtered.filter(v => v.status === 'visitante')), [filtered, buildTree]);
+  const treeConversao = useMemo(() => buildTree(filtered.filter(v => v.status === 'em_conversao')), [filtered, buildTree]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', gap: '12px' }}>
@@ -597,58 +620,111 @@ export default function Visitantes() {
 
       </div>
     ) : (
-      <div className="glass" style={{ flex: 1, overflowY: 'auto', padding: '20px', borderRadius: '12px' }}>
-        {/* MODO LISTA AGRUPADA */}
-        {groupedList.length > 0 ? groupedList.map(group => (
-          <div key={group.key} style={{ marginBottom: '24px' }}>
-            <div style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', borderLeft: '3px solid var(--primary-color)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '1.2rem' }}>📅</span>
-              <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {group.day} de {group.month} de {group.year}
-                <span style={{ color: 'var(--text-secondary)', fontWeight: '400', fontSize: '0.85rem' }}>• {group.culto} ({group.horario})</span>
+      <div className="responsive-grid" style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
+        {/* MODO LISTA ARVORE EM 2 COLUNAS */}
+        
+        {/* Helper function to render a tree */}
+        {[
+          { title: 'Visitante (1º Contato)', color: '#3b82f6', tree: treeVisitantes, type: 'visitante' },
+          { title: 'Em Conversão', color: '#f39c12', tree: treeConversao, type: 'em_conversao' }
+        ].map((col, cIdx) => (
+          <div key={cIdx} className="glass" style={{ display: 'flex', flexDirection: 'column', padding: '14px', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h4 style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: col.color, display: 'inline-block' }} />{col.title}
               </h4>
-              <span className="badge" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', marginLeft: 'auto' }}>{group.visitors.length}</span>
+              <span className="badge" style={{ background: col.color, padding: '2px 7px', fontSize: '0.65rem', margin: 0, color: '#fff' }}>
+                {filtered.filter(v => v.status === col.type).length}
+              </span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {group.visitors.map(v => {
-                const isSel = sel?.id === v.id;
+            
+            <div className="scroll-container" style={{ flex: 1, paddingRight: '4px' }}>
+              {col.tree.length > 0 ? col.tree.map((yNode: any) => {
+                const yKey = `${col.type}-y-${yNode.year}`;
+                const isYExp = expandedNodes[yKey];
                 return (
-                  <div key={v.id} className={`glass ${isSel ? 'card-selected' : ''}`} style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)', transition: 'all 0.2s' }} onClick={() => setSel(v)} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '700', fontSize: '0.8rem', flexShrink: 0, border: '1px solid rgba(255,255,255,0.1)' }}>
-                      {v.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                  <div key={yNode.year} style={{ marginBottom: '8px' }}>
+                    {/* Header ANO */}
+                    <div onClick={() => toggleNode(yKey)} style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', borderLeft: `3px solid ${col.color}` }}>
+                      <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>{isYExp ? '▼' : '▶'}</span>
+                      <strong style={{ fontSize: '1rem' }}>{yNode.year}</strong>
                     </div>
                     
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                      <span style={{ fontWeight: '600', fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '250px' }}>{v.name}</span>
-                      {statusBadge(v.status)}
-                      {v.wantsVisit && v.status !== 'membro' && <span style={{ fontSize: '0.6rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(231,76,60,0.15)', color: '#e74c3c', fontWeight: '700', border: '1px solid rgba(231,76,60,0.3)' }}>VISITA</span>}
-                    </div>
-
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', gap: '20px', alignItems: 'center' }}>
-                      <span style={{ width: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>📍 {v.region}</span>
-                      <span style={{ width: '120px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>📞 {v.phone || 'S/N'}</span>
-                    </div>
-
-                    <button 
-                      onClick={e => { e.stopPropagation(); openWhatsApp(v.name, v.phone); }} 
-                      style={{ width:'28px', height:'28px', borderRadius:'50%', border:'1px solid #25d366', background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all 0.2s', marginLeft: 'auto' }}
-                      onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.background = '#25d366'; (e.currentTarget.querySelector('svg') as SVGElement).style.fill = '#fff'; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'transparent'; (e.currentTarget.querySelector('svg') as SVGElement).style.fill = '#25d366'; }}
-                      title="Abrir WhatsApp"
-                    >
-                      <svg viewBox="0 0 24 24" width="13" height="13" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                    </button>
+                    {isYExp && (
+                      <div style={{ paddingLeft: '16px', marginTop: '8px' }}>
+                        {yNode.months.map((mNode: any) => {
+                          const mKey = `${col.type}-m-${yNode.year}-${mNode.month}`;
+                          const isMExp = expandedNodes[mKey];
+                          return (
+                            <div key={mNode.month} style={{ marginBottom: '6px' }}>
+                              {/* Header MÊS */}
+                              <div onClick={() => toggleNode(mKey)} style={{ padding: '6px 10px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                <span style={{ fontSize: '0.7rem', opacity: 0.6 }}>{isMExp ? '▼' : '▶'}</span>
+                                <strong style={{ fontSize: '0.9rem' }}>{mNode.month}</strong>
+                              </div>
+                              
+                              {isMExp && (
+                                <div style={{ paddingLeft: '16px', marginTop: '6px' }}>
+                                  {mNode.days.map((dNode: any) => {
+                                    const dKey = `${col.type}-d-${yNode.year}-${mNode.month}-${dNode.dayKey}`;
+                                    const isDExp = expandedNodes[dKey];
+                                    return (
+                                      <div key={dNode.dayKey} style={{ marginBottom: '8px' }}>
+                                        {/* Header DIA/CULTO */}
+                                        <div onClick={() => toggleNode(dKey)} style={{ padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', opacity: 0.9 }}>
+                                          <span style={{ fontSize: '0.6rem', opacity: 0.5 }}>{isDExp ? '▼' : '▶'}</span>
+                                          <span style={{ fontSize: '0.8rem', fontWeight: '500' }}>Dia {dNode.dayKey}</span>
+                                          <span className="badge" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.6rem', padding: '1px 5px', marginLeft: 'auto' }}>{dNode.visitors.length}</span>
+                                        </div>
+                                        
+                                        {isDExp && (
+                                          <div style={{ paddingLeft: '16px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            {dNode.visitors.map((v: any) => {
+                                              const isSel = sel?.id === v.id;
+                                              return (
+                                                <div key={v.id} className={`glass ${isSel ? 'card-selected' : ''}`} style={{ padding: '6px 10px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', borderRadius: '6px', background: 'rgba(255,255,255,0.02)', transition: 'all 0.2s', border: '1px solid rgba(255,255,255,0.03)' }} onClick={() => setSel(v)} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}>
+                                                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: `linear-gradient(135deg, ${col.color}, #8b5cf6)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '700', fontSize: '0.6rem', flexShrink: 0 }}>
+                                                    {v.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                                                  </div>
+                                                  <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                    <span style={{ fontWeight: '600', fontSize: '0.8rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{v.name}</span>
+                                                    {v.wantsVisit && v.status !== 'membro' && <span style={{ fontSize: '0.5rem', padding: '1px 3px', borderRadius: '4px', background: 'rgba(231,76,60,0.15)', color: '#e74c3c', fontWeight: '700', border: '1px solid rgba(231,76,60,0.3)' }}>VISITA</span>}
+                                                  </div>
+                                                  
+                                                  <button 
+                                                    onClick={e => { e.stopPropagation(); openWhatsApp(v.name, v.phone); }} 
+                                                    style={{ width:'22px', height:'22px', borderRadius:'50%', border:'1px solid #25d366', background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all 0.2s' }}
+                                                    onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.background = '#25d366'; (e.currentTarget.querySelector('svg') as SVGElement).style.fill = '#fff'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'transparent'; (e.currentTarget.querySelector('svg') as SVGElement).style.fill = '#25d366'; }}
+                                                  >
+                                                    <svg viewBox="0 0 24 24" width="10" height="10" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                                  </button>
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 );
-              })}
+              }) : (
+                <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                  <div style={{ fontSize: '2rem', marginBottom: '8px', opacity: 0.3 }}>👋</div>
+                  <p style={{ fontSize: '0.85rem' }}>Nenhum registro</p>
+                </div>
+              )}
             </div>
           </div>
-        )) : (
-          <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-secondary)' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '12px', opacity: 0.3 }}>👋</div>
-            <p style={{ fontSize: '1rem' }}>Nenhum visitante encontrado</p>
-          </div>
-        )}
+        ))}
       </div>
     )}
 
