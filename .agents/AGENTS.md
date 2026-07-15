@@ -36,3 +36,6 @@
   * **Membros** são todos aqueles com `status` igual a: `"ativo"`, `"inativo"` ou `"aguardando_aprovacao"`.
   * **Visitantes / Pessoas em Conversão** são todos aqueles com `status` igual a: `"visitante"`, `"em_conversao"` ou `"pendente"`. 
   * Qualquer painel, dashboard ou gráfico que precise totalizar "Membros" deve filtrar estritamente usando essas 3 strings de status válidas para evitar a inclusão de contatos em triagem ou consolidação nas estatísticas da membresia da Igreja.
+
+### 9. Sincronia de Campos (Formulários Públicos vs Modais Internos)
+* **Regra**: Todo e qualquer novo campo de cadastro adicionado aos modais internos da Secretaria (ex: `app/dashboard-secretaria/page.tsx` ou `app/visitantes/page.tsx`) DEVE OBRIGATORIAMENTE ser refletido e atualizado também nos formulários públicos de auto-cadastro (`app/formulario/page.tsx` para visitantes e `app/formulario-membro/page.tsx` para membros). O inverso também é válido. O objetivo é manter os canais de entrada de dados totalmente sincronizados arquiteturalmente.

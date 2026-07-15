@@ -191,7 +191,7 @@ export default function FormularioVisitante() {
 
             {/* Seleção do Culto e Horário Manuais */}
             {uniqueCultoNames.length > 0 && (
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Culto da Visita *</label>
                   <select 
@@ -204,7 +204,7 @@ export default function FormularioVisitante() {
                   </select>
                 </div>
                 {availableHorarios.length > 0 && (
-                  <div style={{ flex: 1.2 }}>
+                  <div style={{ flex: 1 }}>
                     <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Horário do Culto *</label>
                     <select 
                       name="horarioSelected" value={form.horarioSelected} onChange={handleChange} required

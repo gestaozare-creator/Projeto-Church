@@ -13,14 +13,18 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function run() {
   console.log("Fetching churches...");
   const { data: churches } = await supabase.from('churches').select('*');
-  const hq = churches.find(c => c.is_headquarters) || churches[0];
-  let config = {};
-  try {
-    config = typeof hq.config === 'string' ? JSON.parse(hq.config) : (hq.config || {});
-  } catch(e) {}
   
-  if (!config.geocache) config.geocache = {};
-  const cache = config.geocache;
+  // Create a unified cache from all churches
+  const cache = {};
+  churches.forEach(c => {
+    try {
+      const config = typeof c.config === 'string' ? JSON.parse(c.config) : (c.config || {});
+      if (config.geocache) {
+        Object.assign(cache, config.geocache);
+      }
+    } catch(e) {}
+  });
+
   let cacheUpdated = false;
 
   console.log("Fetching all members to get unique addresses...");
@@ -50,7 +54,8 @@ async function run() {
     if (cache[address] !== undefined) continue;
 
     let searchQuery = address;
-    if (!searchQuery.toLowerCase().includes('curitiba') && !searchQuery.toLowerCase().includes('pr')) {
+    const lowerQ = searchQuery.toLowerCase();
+    if (!lowerQ.includes('curitiba') && !lowerQ.includes('pr') && !lowerQ.includes('são paulo') && !lowerQ.includes('sao paulo') && !lowerQ.match(/\bsp\b/)) {
        searchQuery += ', Curitiba';
     }
 
@@ -76,9 +81,14 @@ async function run() {
   }
 
   if (cacheUpdated) {
-    console.log("Updating church config geocache in Supabase...");
-    await supabase.from('churches').update({ config: JSON.stringify(config) }).eq('id', hq.id);
-    console.log("Done!");
+    console.log("Updating database with new geocache for ALL churches...");
+    for (const c of churches) {
+      let config = {};
+      try { config = typeof c.config === 'string' ? JSON.parse(c.config) : (c.config || {}); } catch(e) {}
+      config.geocache = cache;
+      await supabase.from('churches').update({ config: JSON.stringify(config) }).eq('id', c.id);
+    }
+    console.log("Geocache updated successfully on all churches.");
   } else {
     console.log("No new addresses to geocode.");
   }

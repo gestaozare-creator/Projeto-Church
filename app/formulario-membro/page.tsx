@@ -234,7 +234,7 @@ export default function FormularioMembro() {
               <input type="text" name="name" value={form.name} onChange={onChange} placeholder="Seu nome completo" style={fieldStyle} required />
             </div>
 
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
               <div style={{ flex: 1 }}>
                 <label style={labelStyle}>Telefone (WhatsApp) *</label>
                 <input type="tel" name="phone" value={form.phone} onChange={onChange} placeholder="(00) 00000-0000" style={fieldStyle} required />
@@ -245,7 +245,7 @@ export default function FormularioMembro() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
               <div style={{ flex: 1 }}>
                 <label style={labelStyle}>Data de Nascimento</label>
                 <input type="date" name="birth_date" value={form.birth_date} onChange={onChange} style={fieldStyle} />
@@ -264,7 +264,7 @@ export default function FormularioMembro() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
               <div style={{ flex: 1 }}>
                 <label style={labelStyle}>Situação Profissional</label>
                 <select name="employment_status" value={form.employment_status} onChange={onChange} style={fieldStyle}>
