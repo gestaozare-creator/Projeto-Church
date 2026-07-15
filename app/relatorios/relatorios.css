@@ -157,7 +157,7 @@
 }
 
 .tables-row.finance-tables {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 55fr 45fr;
 }
 
 .tables-row.one-col-print {
@@ -211,8 +211,6 @@
 .rel-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
-  word-wrap: break-word;
 }
 
 .rel-table th, .rel-table td {
@@ -273,6 +271,10 @@
 .highlight-orange { color: #d35400; }
 .text-green { color: #27ae60 !important; }
 .text-red { color: #c0392b !important; }
+
+.text-nowrap {
+  white-space: nowrap;
+}
 
 /* Assinatura */
 .signature-block {

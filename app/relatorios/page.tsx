@@ -478,10 +478,10 @@ export default function RelatoriosPage() {
                       <table className="rel-table">
                         <thead>
                           <tr>
-                            <th>Data</th>
+                            <th className="text-nowrap">Data</th>
                             <th>Categoria / Culto</th>
                             <th>Forma Pag.</th>
-                            <th style={{ textAlign: 'right' }}>Valor</th>
+                            <th style={{ textAlign: 'right' }} className="text-nowrap">Valor</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -490,13 +490,13 @@ export default function RelatoriosPage() {
                           ) : (
                             incomes.map(t => (
                               <tr key={t.id}>
-                                <td>{formatDate(t.date)}</td>
+                                <td className="text-nowrap">{formatDate(t.date)}</td>
                                 <td>
                                   <div style={{ fontWeight: 'bold' }}>{t.category || 'Entrada'}</div>
                                   <div style={{ fontSize: '0.75rem', color: '#666' }}>{extractDayTimeFromTransaction(t)}</div>
                                 </td>
                                 <td>{t.payment_method || '-'}</td>
-                                <td style={{ textAlign: 'right' }} className="text-green">{formatCurrency(t.amount)}</td>
+                                <td style={{ textAlign: 'right' }} className="text-green text-nowrap">{formatCurrency(t.amount)}</td>
                               </tr>
                             ))
                           )}
@@ -515,9 +515,9 @@ export default function RelatoriosPage() {
                       <table className="rel-table">
                         <thead>
                           <tr>
-                            <th>Data</th>
+                            <th className="text-nowrap">Data</th>
                             <th>Despesa / Destino</th>
-                            <th style={{ textAlign: 'right' }}>Valor</th>
+                            <th style={{ textAlign: 'right' }} className="text-nowrap">Valor</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -526,12 +526,12 @@ export default function RelatoriosPage() {
                           ) : (
                             expenses.map(t => (
                               <tr key={t.id}>
-                                <td>{formatDate(t.date)}</td>
+                                <td className="text-nowrap">{formatDate(t.date)}</td>
                                 <td>
                                   <div style={{ fontWeight: 'bold' }}>{t.category || 'Despesa'}</div>
                                   <div style={{ fontSize: '0.75rem', color: '#666' }}>{t.description}</div>
                                 </td>
-                                <td style={{ textAlign: 'right' }} className="text-red">{formatCurrency(t.amount)}</td>
+                                <td style={{ textAlign: 'right' }} className="text-red text-nowrap">{formatCurrency(t.amount)}</td>
                               </tr>
                             ))
                           )}
