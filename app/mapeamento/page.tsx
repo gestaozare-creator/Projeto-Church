@@ -64,10 +64,12 @@ export default function Mapeamento() {
     return allPeople.filter(p => p.type === filter);
   }, [allPeople, filter]);
 
-  // Endereço exibido no mapa
-  const churchAddress = activeChurch?.address || activeChurch?.city
-    ? `${activeChurch?.neighborhood || ''}, ${activeChurch?.city || ''}, ${activeChurch?.state || ''}, Brasil`.replace(/^,\s*/, '')
-    : 'São Paulo, SP, Brasil';
+  // Endereço exato da Igreja (agora cadastrado no DB com as coordenadas corretas)
+  const churchAddress = activeChurch?.address 
+    ? activeChurch.address 
+    : activeChurch?.city
+      ? `${activeChurch?.neighborhood || ''}, ${activeChurch?.city || ''}, ${activeChurch?.state || ''}, Brasil`.replace(/^,\s*/, '')
+      : 'São Paulo, SP, Brasil';
 
   const geocache = useMemo(() => {
     if (!activeChurch) return {};
