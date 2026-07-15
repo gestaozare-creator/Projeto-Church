@@ -392,6 +392,10 @@ export default function RedePage() {
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                       <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f1c40f' }}>{memberStats[church.id]?.visitantes || 0}</div>
+                        <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>Visitantes</div>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#2ecc71' }}>{memberStats[church.id]?.total || 0}</div>
                         <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>Membros</div>
                       </div>
@@ -470,6 +474,10 @@ export default function RedePage() {
 
                       {/* Stats */}
                       <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+                        <div style={{ flex: 1, background: 'rgba(241,196,15,0.1)', borderRadius: '8px', padding: '8px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f1c40f' }}>{memberStats[church.id]?.visitantes || 0}</div>
+                          <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>Visitantes</div>
+                        </div>
                         <div style={{ flex: 1, background: 'rgba(46,204,113,0.1)', borderRadius: '8px', padding: '8px', textAlign: 'center' }}>
                           <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#2ecc71' }}>{memberStats[church.id]?.total || 0}</div>
                           <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>Membros</div>
