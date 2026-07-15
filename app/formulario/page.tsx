@@ -166,10 +166,22 @@ export default function FormularioVisitante() {
   const activeChurch = churches.find(c => c.id === form.churchId);
   const activeLogo = activeChurch?.logo_url || activeChurch?.ministries?.logo_url;
   const activeMinistryName = activeChurch?.ministries?.name;
+  
+  let themeColor = '#1e293b';
+  let themeColorLight = '#0f172a';
+  try {
+    if (activeChurch?.config) {
+      const conf = typeof activeChurch.config === 'string' ? JSON.parse(activeChurch.config) : activeChurch.config;
+      if (conf.theme_color) {
+        themeColor = conf.theme_color;
+        themeColorLight = conf.theme_color + 'dd'; // slight transparency or variation
+      }
+    }
+  } catch(e) {}
 
   return (
-    <div style={{ minHeight: '100vh', width: '100%', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', padding: '20px' }}>
-      <div style={{ background: 'rgba(255,255,255,0.95)', borderRadius: '20px', padding: '40px', maxWidth: '480px', width: '100%', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }}>
+    <div style={{ minHeight: '100vh', width: '100%', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${themeColorLight} 0%, ${themeColor} 100%)`, padding: '20px' }}>
+      <div style={{ background: 'rgba(255,255,255,0.95)', borderRadius: '20px', padding: '40px', maxWidth: '420px', width: '100%', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }}>
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
           {activeLogo && (
             <img src={activeLogo} alt="Logo da Igreja" style={{ maxWidth: '140px', maxHeight: '140px', objectFit: 'contain', marginBottom: '15px' }} />
@@ -254,9 +266,15 @@ export default function FormularioVisitante() {
               >
                 <option value="">Selecione...</option>
                 <option value="Amigos / Parentes">Amigos / Parentes</option>
-                <option value="Redes Sociais">Redes Sociais</option>
-                <option value="Passou em frente">Passou em frente</option>
+                <option value="Convite de amigo">Convite de amigo</option>
                 <option value="Convite especial">Convite especial</option>
+                <option value="Evangelismo">Evangelismo</option>
+                <option value="Facebook">Facebook</option>
+                <option value="Instagram">Instagram</option>
+                <option value="Passou em frente">Passou em frente</option>
+                <option value="Rádio">Rádio</option>
+                <option value="Redes Sociais">Redes Sociais</option>
+                <option value="Youtube">Youtube</option>
                 <option value="Outro">Outro</option>
               </select>
             </div>

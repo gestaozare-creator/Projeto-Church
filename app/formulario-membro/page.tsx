@@ -178,10 +178,22 @@ export default function FormularioMembro() {
   const activeChurch = churches.find(c => c.id === form.churchId);
   const activeLogo = activeChurch?.logo_url || activeChurch?.ministries?.logo_url;
   const activeMinistryName = activeChurch?.ministries?.name;
+  
+  let themeColor = '#1e3a5f';
+  let themeColorLight = '#0f172a';
+  try {
+    if (activeChurch?.config) {
+      const conf = typeof activeChurch.config === 'string' ? JSON.parse(activeChurch.config) : activeChurch.config;
+      if (conf.theme_color) {
+        themeColor = conf.theme_color;
+        themeColorLight = conf.theme_color + 'dd';
+      }
+    }
+  } catch(e) {}
 
   return (
-    <div style={{ minHeight: '100vh', width: '100%', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #0f172a, #1e3a5f)', fontFamily: "'Inter', sans-serif", padding: '20px' }}>
-      <div style={{ background: '#fff', borderRadius: '20px', padding: '40px 35px', maxWidth: '480px', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+    <div style={{ minHeight: '100vh', width: '100%', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${themeColorLight}, ${themeColor})`, fontFamily: "'Inter', sans-serif", padding: '20px' }}>
+      <div style={{ background: '#fff', borderRadius: '20px', padding: '35px 25px', maxWidth: '440px', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
 
         <div style={{ textAlign: 'center', marginBottom: '25px' }}>
           {activeLogo && (
