@@ -164,16 +164,42 @@ export default function ContasPagar() {
       if (selectedSupplier === 'NOVO') {
         const customSupplierName = formData.get('customSupplier') as string;
         if (customSupplierName) {
+          const newId = crypto.randomUUID();
           const { data: newSupplier, error: supError } = await supabase
             .from('suppliers')
-            .insert({ name: customSupplierName })
+            .insert({ id: newId, name: customSupplierName })
             .select()
             .single();
             
           if (!supError && newSupplier) {
             finalSupplierId = newSupplier.id;
             setNewSuppliers(prev => [...prev, { id: newSupplier.id, name: newSupplier.name }]);
+          } else if (supError) {
+            alert('Erro ao criar fornecedor: ' + supError.message);
           }
+        }
+      }
+
+      if (selectedCategory === 'NOVA' && finalCategory) {
+        const currentChurch = churches?.find((c: any) => c.id === church);
+        const churchToUpdate = currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d';
+        
+        let existingConfig = currentChurch?.config 
+          ? (typeof currentChurch.config === 'string' ? JSON.parse(currentChurch.config) : currentChurch.config)
+          : {};
+          
+        const currentDespesas = existingConfig.despesas || ['Aluguel', 'Energia', 'Água', 'Internet/Telefone', 'Manutenção', 'Material de Escritório', 'Salários/Ajudas'];
+        
+        if (!currentDespesas.includes(finalCategory)) {
+          const newConfig = {
+            ...existingConfig,
+            despesas: [...currentDespesas, finalCategory]
+          };
+          
+          await supabase
+            .from('churches')
+            .update({ config: newConfig })
+            .eq('id', churchToUpdate);
         }
       }
 

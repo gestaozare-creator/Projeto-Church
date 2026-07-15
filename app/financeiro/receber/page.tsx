@@ -183,6 +183,29 @@ export default function ContasReceber() {
       const formData = new FormData(e.currentTarget);
 
       const finalCategory = selectedCategory === 'NOVA' ? formData.get('customCategory') : selectedCategory;
+
+      if (selectedCategory === 'NOVA' && finalCategory) {
+        const currentChurch = churches?.find((c: any) => c.id === church);
+        const churchToUpdate = currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d';
+        
+        let existingConfig = currentChurch?.config 
+          ? (typeof currentChurch.config === 'string' ? JSON.parse(currentChurch.config) : currentChurch.config)
+          : {};
+          
+        const currentReceitas = existingConfig.receitas || ['Dízimo', 'Oferta', 'Oferta Oficial', 'Campanha', 'Doação', 'Aluguel de Espaço'];
+        
+        if (!currentReceitas.includes(finalCategory)) {
+          const newConfig = {
+            ...existingConfig,
+            receitas: [...currentReceitas, finalCategory]
+          };
+          
+          await supabase
+            .from('churches')
+            .update({ config: newConfig })
+            .eq('id', churchToUpdate);
+        }
+      }
       
       let finalMemberId = formData.get('memberId') as string || undefined;
       if (selectedMember === 'NOVO') {
