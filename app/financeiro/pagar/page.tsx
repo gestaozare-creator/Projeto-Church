@@ -863,6 +863,11 @@ export default function ContasPagar() {
                   <input name="dueDate" type="date" defaultValue={editingFullTransaction?.dueDate || ''} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
                 </div>
                 
+                <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Anexar Comprovante / Nota (Opcional)</label>
+                  <input name="attachment" type="file" accept="image/*,.pdf" className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
+                </div>
+                
                 {!editingFullTransaction && (
                   <div style={{ gridColumn: 'span 2', marginTop: '8px' }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.85rem' }}>
