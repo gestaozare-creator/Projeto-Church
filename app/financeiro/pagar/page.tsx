@@ -133,6 +133,7 @@ export default function ContasPagar() {
   // View States
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [editingFullTransaction, setEditingFullTransaction] = useState<Transaction | null>(null);
   const [attachmentLink, setAttachmentLink] = useState<string | null>(null);
   
   // Patrimônio State
@@ -209,89 +210,138 @@ export default function ContasPagar() {
       }
 
       // Gravar no Supabase
-      const { data: newTxDb, error } = await supabase
-        .from('transactions')
-        .insert({
-          church_id: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
-          supplier_id: finalSupplierId,
+      let newTransaction: Transaction;
+      
+      if (editingFullTransaction) {
+        const { data: updTxDb, error } = await supabase
+          .from('transactions')
+          .update({
+            supplier_id: finalSupplierId,
+            category: finalCategory as string,
+            amount: amount,
+            description: descriptionField,
+            date: dateField,
+            paid_date: statusField === 'confirmado' ? dateField : null,
+            due_date: statusField === 'pendente' ? (dueDateField || dateField) : null,
+            status: statusField,
+            payment_method: paymentMethodField,
+            ...(attachmentUrl ? { attachment_url: attachmentUrl } : {})
+          })
+          .eq('id', editingFullTransaction.id)
+          .select()
+          .single();
+
+        if (error || !updTxDb) {
+          throw new Error('Erro ao editar despesa no banco: ' + error?.message);
+        }
+
+        newTransaction = {
+          id: updTxDb.id,
+          churchId: updTxDb.church_id || '1',
+          supplierId: updTxDb.supplier_id || undefined,
           type: 'despesa',
-          category: finalCategory as string,
-          amount: amount,
-          description: descriptionField,
-          date: dateField,
-          paid_date: statusField === 'confirmado' ? dateField : null,
-          due_date: statusField === 'pendente' ? (dueDateField || dateField) : null,
-          status: statusField,
-          payment_method: paymentMethodField,
-          attachment_url: attachmentUrl
-        })
-        .select()
-        .single();
-
-      if (error || !newTxDb) {
-        throw new Error('Erro ao lançar despesa no banco: ' + error?.message);
-      }
-
-      const newTransaction: Transaction = {
-        id: newTxDb.id,
-        churchId: newTxDb.church_id || '1',
-        supplierId: newTxDb.supplier_id || undefined,
-        type: 'despesa',
-        category: newTxDb.category,
-        amount: Number(newTxDb.amount),
-        description: newTxDb.description || '',
-        date: newTxDb.date,
-        paidDate: newTxDb.paid_date || undefined,
-        dueDate: newTxDb.due_date || undefined,
-        status: newTxDb.status as any,
-        paymentMethod: newTxDb.payment_method || '',
-        attachment_url: newTxDb.attachment_url || undefined
-      };
-
-      // Registrar no patrimônio se a opção estiver ativa
-      let createdAssetObj = null;
-      if (isAsset) {
-        const assetName = formData.get('assetName') as string;
-        const assetLocation = formData.get('assetLocation') as string;
-
-        const { data: newAssetDb, error: assetError } = await supabase
-          .from('assets')
+          category: updTxDb.category,
+          amount: Number(updTxDb.amount),
+          description: updTxDb.description || '',
+          date: updTxDb.date,
+          paidDate: updTxDb.paid_date || undefined,
+          dueDate: updTxDb.due_date || undefined,
+          status: updTxDb.status as any,
+          paymentMethod: updTxDb.payment_method || '',
+          attachment_url: updTxDb.attachment_url || undefined
+        };
+        
+        setLocalTransactions(prev => prev.map(t => t.id === newTransaction.id ? newTransaction : t));
+        setEditingFullTransaction(null);
+      } else {
+        const { data: newTxDb, error } = await supabase
+          .from('transactions')
           .insert({
             church_id: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
-            name: assetName,
+            supplier_id: finalSupplierId,
+            type: 'despesa',
             category: finalCategory as string,
-            condition: 'Novo',
-            location: assetLocation,
-            purchase_value: amount,
-            purchase_date: dateField,
-            expense_id: newTxDb.id
+            amount: amount,
+            description: descriptionField,
+            date: dateField,
+            paid_date: statusField === 'confirmado' ? dateField : null,
+            due_date: statusField === 'pendente' ? (dueDateField || dateField) : null,
+            status: statusField,
+            payment_method: paymentMethodField,
+            attachment_url: attachmentUrl
           })
           .select()
           .single();
 
-        if (assetError) {
-          alert('Despesa lançada, mas erro ao registrar patrimônio: ' + assetError.message);
-        } else if (newAssetDb) {
-          createdAssetObj = {
-            id: newAssetDb.id,
-            churchId: newAssetDb.church_id || '1',
-            name: newAssetDb.name,
-            category: newAssetDb.category,
-            condition: newAssetDb.condition as any,
-            location: newAssetDb.location,
-            purchaseValue: Number(newAssetDb.purchase_value || 0),
-            purchaseDate: newAssetDb.purchase_date || '',
-            expenseId: newAssetDb.expense_id || undefined
-          };
+        if (error || !newTxDb) {
+          throw new Error('Erro ao lançar despesa no banco: ' + error?.message);
+        }
+
+        newTransaction = {
+          id: newTxDb.id,
+          churchId: newTxDb.church_id || '1',
+          supplierId: newTxDb.supplier_id || undefined,
+          type: 'despesa',
+          category: newTxDb.category,
+          amount: Number(newTxDb.amount),
+          description: newTxDb.description || '',
+          date: newTxDb.date,
+          paidDate: newTxDb.paid_date || undefined,
+          dueDate: newTxDb.due_date || undefined,
+          status: newTxDb.status as any,
+          paymentMethod: newTxDb.payment_method || '',
+          attachment_url: newTxDb.attachment_url || undefined
+        };
+        
+        setLocalTransactions(prev => [newTransaction, ...prev]);
+      }
+
+      if (!editingFullTransaction) {
+        // Registrar no patrimônio se a opção estiver ativa
+        let createdAssetObj = null;
+        if (isAsset) {
+          const assetName = formData.get('assetName') as string;
+          const assetLocation = formData.get('assetLocation') as string;
+
+          const { data: newAssetDb, error: assetError } = await supabase
+            .from('assets')
+            .insert({
+              church_id: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+              name: assetName,
+              category: finalCategory as string,
+              condition: 'Novo',
+              location: assetLocation,
+              purchase_value: amount,
+              purchase_date: dateField,
+              expense_id: newTransaction.id
+            })
+            .select()
+            .single();
+
+          if (assetError) {
+            alert('Despesa lançada, mas erro ao registrar patrimônio: ' + assetError.message);
+          } else if (newAssetDb) {
+            createdAssetObj = {
+              id: newAssetDb.id,
+              churchId: newAssetDb.church_id || '1',
+              name: newAssetDb.name,
+              category: newAssetDb.category,
+              condition: newAssetDb.condition as any,
+              location: newAssetDb.location,
+              purchaseValue: Number(newAssetDb.purchase_value || 0),
+              purchaseDate: newAssetDb.purchase_date || '',
+              expenseId: newAssetDb.expense_id || undefined
+            };
+          }
+        }
+        
+        if (createdAssetObj) {
+          setShowAssetLabelModal(createdAssetObj);
         }
       }
       
-      setLocalTransactions(prev => [newTransaction, ...prev]);
       setShowExpenseModal(false);
       setIsAsset(false);
-      if (createdAssetObj) {
-        setShowAssetLabelModal(createdAssetObj);
-      }
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -300,26 +350,40 @@ export default function ContasPagar() {
   };
 
   const handleRemoveAttachment = async (transaction: Transaction) => {
-    if (!transaction.attachment_url) return;
+    if (!confirm('Tem certeza que deseja remover a nota permanentemente?')) return;
     try {
-      const filePath = transaction.attachment_url.split('/receipts/')[1];
-      if (filePath) {
-        await supabase.storage.from('receipts').remove([filePath]);
+      if (transaction.attachment_url) {
+        const urlParts = transaction.attachment_url.split('/');
+        const fileName = urlParts[urlParts.length - 1];
+        const folder = urlParts[urlParts.length - 2];
+        await supabase.storage.from('receipts').remove([`${folder}/${fileName}`]);
       }
       
       const { error } = await supabase
         .from('transactions')
         .update({ attachment_url: null })
         .eq('id', transaction.id);
-        
-      if (error) throw error;
+
+      if (error) throw new Error(error.message);
       
       setLocalTransactions(prev => prev.map(t => t.id === transaction.id ? { ...t, attachment_url: undefined } : t));
       if (selectedTransaction?.id === transaction.id) {
-        setSelectedTransaction({ ...selectedTransaction, attachment_url: undefined });
+        setSelectedTransaction(prev => prev ? { ...prev, attachment_url: undefined } : null);
       }
     } catch (err: any) {
       alert('Erro ao remover anexo: ' + err.message);
+    }
+  };
+
+  const handleDeleteTransaction = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir permanentemente este lançamento de despesa?')) return;
+    try {
+      const { error } = await supabase.from('transactions').delete().eq('id', id);
+      if (error) throw new Error(error.message);
+      setLocalTransactions(prev => prev.filter(t => t.id !== id));
+      setSelectedTransaction(null);
+    } catch (err: any) {
+      alert('Erro ao excluir: ' + err.message);
     }
   };
 
@@ -710,8 +774,8 @@ export default function ContasPagar() {
       {/* MODAL DE DESPESA */}
       {showExpenseModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="glass" style={{ padding: '24px', borderRadius: '16px', width: '100%', maxWidth: '500px' }}>
-            <h3 style={{ marginTop: 0, color: '#e74c3c', display: 'flex', alignItems: 'center', gap: '8px' }}>📉 Nova Despesa</h3>
+          <div className="glass" style={{ padding: '24px', borderRadius: '16px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <h3 style={{ marginTop: 0, color: '#e74c3c', display: 'flex', alignItems: 'center', gap: '8px' }}>🔥 {editingFullTransaction ? 'Editar Despesa' : 'Nova Despesa'}</h3>
             <form onSubmit={handleSave}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -730,11 +794,11 @@ export default function ContasPagar() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Valor (R$)</label>
-                  <input name="amount" type="number" step="0.01" min="0" required placeholder="0.00" className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
+                  <input name="amount" type="number" step="0.01" min="0" required placeholder="0.00" defaultValue={editingFullTransaction?.amount} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Forma de Pagamento</label>
-                  <select name="paymentMethod" required className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Meio de Pagamento</label>
+                  <select name="paymentMethod" required defaultValue={editingFullTransaction?.paymentMethod} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
                     {pagamentosCats.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </div>
@@ -753,67 +817,52 @@ export default function ContasPagar() {
                     </select>
                   )}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Data Competência</label>
-                  <input name="date" type="date" required className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box', colorScheme: 'dark' }} defaultValue={new Date().toISOString().split('T')[0]} />
+                <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Descrição / Histórico</label>
+                  <input name="description" type="text" required placeholder="Ex: Compra de materiais para EBD" defaultValue={editingFullTransaction?.description} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Vencimento</label>
-                  <input name="dueDate" type="date" className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box', colorScheme: 'dark' }} />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Status</label>
-                  <select name="status" required className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Status do Pagamento</label>
+                  <select name="status" defaultValue={editingFullTransaction?.status || 'confirmado'} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
+                    <option value="confirmado">✅ Pago (Liquidado)</option>
                     <option value="pendente">🟡 Pendente (A Pagar)</option>
-                    <option value="confirmado">✅ Confirmado (Pago)</option>
                   </select>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Descrição</label>
-                  <input name="description" type="text" required placeholder="Ex: Pagamento referente a..." className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Data de Competência</label>
+                  <input name="date" type="date" required defaultValue={editingFullTransaction?.date || new Date().toISOString().split('T')[0]} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Anexar Nota Fiscal / Recibo (Opcional)</label>
-                  <input name="attachment" type="file" accept="image/*,.pdf" className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gridColumn: '1 / -1' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Data de Vencimento (Opcional)</label>
+                  <input name="dueDate" type="date" defaultValue={editingFullTransaction?.dueDate || ''} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
                 </div>
                 
-                {/* TOGGLE PATRIMONIO */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', gridColumn: 'span 2', background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px' }}>
-                  <div 
-                    onClick={() => setIsAsset(!isAsset)}
-                    style={{
-                      width: '40px', height: '22px', background: isAsset ? '#3498db' : 'rgba(255,255,255,0.2)', 
-                      borderRadius: '12px', position: 'relative', cursor: 'pointer', transition: 'all 0.3s'
-                    }}
-                  >
-                    <div style={{
-                      width: '18px', height: '18px', background: '#fff', borderRadius: '50%',
-                      position: 'absolute', top: '2px', left: isAsset ? '20px' : '2px', transition: 'all 0.3s'
-                    }} />
+                {!editingFullTransaction && (
+                  <div style={{ gridColumn: 'span 2', marginTop: '8px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.85rem' }}>
+                      <input type="checkbox" checked={isAsset} onChange={e => setIsAsset(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: '#3498db' }} />
+                      Registrar como Patrimônio/Bens (Móveis, Eletrônicos, Imóveis)
+                    </label>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Gerar Ativo de Patrimônio?</span>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Ao pagar esta despesa, um ativo será criado no inventário automaticamente.</span>
+                )}
+                
+                {isAsset && !editingFullTransaction && (
+                  <div style={{ gridColumn: 'span 2', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', background: 'rgba(52, 152, 219, 0.1)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(52, 152, 219, 0.3)', marginTop: '4px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
+                      <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#3498db', marginBottom: '4px' }}>Nome do Bem / Patrimônio</label>
+                      <input name="assetName" type="text" placeholder="Ex: Mesa de Som Yamaha 16 Canais" required={isAsset} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
+                      <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#3498db', marginBottom: '4px' }}>Local de Uso/Armazenamento</label>
+                      <input name="assetLocation" type="text" placeholder="Ex: Templo Principal - Mesa de Som" required={isAsset} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
+                    </div>
                   </div>
-                </div>
-
-                {isAsset && (
-                  <>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#3498db', marginBottom: '4px' }}>Nome do Bem (Patrimônio)</label>
-                      <input name="assetName" type="text" placeholder="Ex: Mesa de Som Yamaha" required={isAsset} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box', border: '1px solid rgba(52,152,219,0.3)' }} />
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#3498db', marginBottom: '4px' }}>Localização Inicial</label>
-                      <input name="assetLocation" type="text" placeholder="Ex: Templo Principal - Altar" required={isAsset} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box', border: '1px solid rgba(52,152,219,0.3)' }} />
-                    </div>
-                  </>
                 )}
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                <button type="button" onClick={() => { setShowExpenseModal(false); setIsAsset(false); }} style={{ padding: '8px 16px', borderRadius: '8px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer' }} disabled={isSubmitting}>Cancelar</button>
-                <button type="submit" style={{ padding: '8px 16px', borderRadius: '8px', background: '#e74c3c', border: 'none', color: '#fff', fontWeight: 600, cursor: 'pointer' }} disabled={isSubmitting}>
-                  {isSubmitting ? 'Enviando...' : '💸 Lançar Despesa'}
+                <button type="button" onClick={() => { setShowExpenseModal(false); setEditingFullTransaction(null); }} style={{ padding: '8px 16px', borderRadius: '8px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer' }}>Cancelar</button>
+                <button type="submit" disabled={isSubmitting} style={{ padding: '8px 16px', borderRadius: '8px', background: '#e74c3c', border: 'none', color: '#fff', fontWeight: 600, cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1 }}>
+                  {isSubmitting ? 'Salvando...' : (editingFullTransaction ? '💾 Salvar Alteração' : '🔥 Lançar Despesa')}
                 </button>
               </div>
             </form>
@@ -882,13 +931,25 @@ export default function ContasPagar() {
             
             <button onClick={() => setSelectedTransaction(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(231,76,60,0.15)', color: '#e74c3c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
-                📉
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(231,76,60,0.15)', color: '#e74c3c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+                  🔥
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.4rem' }}>Detalhes da Despesa</h3>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>ID: #{selectedTransaction.id}</div>
+                </div>
               </div>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.4rem' }}>Detalhes da Despesa</h3>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>ID: #{selectedTransaction.id}</div>
+              <div style={{ display: 'flex', gap: '8px', marginRight: '30px' }}>
+                <button onClick={() => { 
+                  setEditingFullTransaction(selectedTransaction); 
+                  setSelectedCategory(selectedTransaction.category); 
+                  setSelectedSupplier(selectedTransaction.supplierId || ''); 
+                  setShowExpenseModal(true); 
+                  setSelectedTransaction(null); 
+                }} style={{ background: '#3498db', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem' }}>📝 Editar</button>
+                <button onClick={() => handleDeleteTransaction(selectedTransaction.id)} style={{ background: 'transparent', border: '1px solid #e74c3c', color: '#e74c3c', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem' }}>🗑️ Excluir</button>
               </div>
             </div>
 

@@ -94,6 +94,7 @@ export default function ContasReceber() {
   // View States
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [editingFullTransaction, setEditingFullTransaction] = useState<Transaction | null>(null);
   const [attachmentLink, setAttachmentLink] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('Dízimo');
   const [selectedMember, setSelectedMember] = useState('');
@@ -227,46 +228,92 @@ export default function ContasReceber() {
       }
 
       // Gravar no Supabase
-      const { data: newTxDb, error } = await supabase
-        .from('transactions')
-        .insert({
-          church_id: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
-          member_id: finalMemberId && finalMemberId.startsWith('m_') ? null : finalMemberId, // Garante que UUIDs sejam válidos
+      let newTransaction: Transaction;
+      
+      if (editingFullTransaction) {
+        const { data: updTxDb, error } = await supabase
+          .from('transactions')
+          .update({
+            member_id: finalMemberId && finalMemberId.startsWith('m_') ? null : finalMemberId,
+            category: finalCategory as string,
+            amount: amount,
+            description: fullDescription,
+            date: dateField,
+            paid_date: statusField === 'confirmado' ? dateField : null,
+            due_date: statusField === 'pendente' ? dateField : null,
+            status: statusField,
+            payment_method: paymentMethodField,
+            ...(attachmentUrl ? { attachment_url: attachmentUrl } : {})
+          })
+          .eq('id', editingFullTransaction.id)
+          .select()
+          .single();
+
+        if (error || !updTxDb) {
+          throw new Error('Erro ao editar receita no banco: ' + error?.message);
+        }
+
+        newTransaction = {
+          id: updTxDb.id,
+          churchId: updTxDb.church_id || '1',
+          memberId: updTxDb.member_id || undefined,
           type: 'receita',
-          category: finalCategory as string,
-          amount: amount,
-          description: fullDescription,
-          date: dateField,
-          paid_date: statusField === 'confirmado' ? dateField : null,
-          due_date: statusField === 'pendente' ? dateField : null,
-          status: statusField,
-          payment_method: paymentMethodField,
-          attachment_url: attachmentUrl
-        })
-        .select()
-        .single();
+          category: updTxDb.category,
+          amount: Number(updTxDb.amount),
+          description: updTxDb.description || '',
+          date: updTxDb.date,
+          paidDate: updTxDb.paid_date || undefined,
+          dueDate: updTxDb.due_date || undefined,
+          status: updTxDb.status as any,
+          paymentMethod: updTxDb.payment_method || '',
+          attachment_url: updTxDb.attachment_url || undefined
+        };
+        
+        setLocalTransactions(prev => prev.map(t => t.id === newTransaction.id ? newTransaction : t));
+        setEditingFullTransaction(null);
+      } else {
+        const { data: newTxDb, error } = await supabase
+          .from('transactions')
+          .insert({
+            church_id: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+            member_id: finalMemberId && finalMemberId.startsWith('m_') ? null : finalMemberId,
+            type: 'receita',
+            category: finalCategory as string,
+            amount: amount,
+            description: fullDescription,
+            date: dateField,
+            paid_date: statusField === 'confirmado' ? dateField : null,
+            due_date: statusField === 'pendente' ? dateField : null,
+            status: statusField,
+            payment_method: paymentMethodField,
+            attachment_url: attachmentUrl
+          })
+          .select()
+          .single();
 
-      if (error || !newTxDb) {
-        throw new Error('Erro ao lançar receita no banco: ' + error?.message);
+        if (error || !newTxDb) {
+          throw new Error('Erro ao lançar receita no banco: ' + error?.message);
+        }
+
+        newTransaction = {
+          id: newTxDb.id,
+          churchId: newTxDb.church_id || '1', 
+          memberId: newTxDb.member_id || undefined,
+          type: 'receita',
+          category: newTxDb.category,
+          amount: Number(newTxDb.amount),
+          description: newTxDb.description || '',
+          date: newTxDb.date,
+          paidDate: newTxDb.paid_date || undefined,
+          dueDate: newTxDb.due_date || undefined,
+          status: newTxDb.status as any,
+          paymentMethod: newTxDb.payment_method || '',
+          attachment_url: newTxDb.attachment_url || undefined
+        };
+        
+        setLocalTransactions(prev => [newTransaction, ...prev]);
       }
-
-      const newTransaction: Transaction = {
-        id: newTxDb.id,
-        churchId: newTxDb.church_id || '1', 
-        memberId: newTxDb.member_id || undefined,
-        type: 'receita',
-        category: newTxDb.category,
-        amount: Number(newTxDb.amount),
-        description: newTxDb.description || '',
-        date: newTxDb.date,
-        paidDate: newTxDb.paid_date || undefined,
-        dueDate: newTxDb.due_date || undefined,
-        status: newTxDb.status as any,
-        paymentMethod: newTxDb.payment_method || '',
-        attachment_url: newTxDb.attachment_url || undefined
-      };
-
-      setLocalTransactions(prev => [newTransaction, ...prev]);
+      
       setShowRevenueModal(false);
     } catch (err: any) {
       alert(err.message);
@@ -276,26 +323,40 @@ export default function ContasReceber() {
   };
 
   const handleRemoveAttachment = async (transaction: Transaction) => {
-    if (!transaction.attachment_url) return;
+    if (!confirm('Tem certeza que deseja remover o comprovante permanentemente?')) return;
     try {
-      const filePath = transaction.attachment_url.split('/receipts/')[1];
-      if (filePath) {
-        await supabase.storage.from('receipts').remove([filePath]);
+      if (transaction.attachment_url) {
+        const urlParts = transaction.attachment_url.split('/');
+        const fileName = urlParts[urlParts.length - 1];
+        const folder = urlParts[urlParts.length - 2];
+        await supabase.storage.from('receipts').remove([`${folder}/${fileName}`]);
       }
       
       const { error } = await supabase
         .from('transactions')
         .update({ attachment_url: null })
         .eq('id', transaction.id);
-        
-      if (error) throw error;
+
+      if (error) throw new Error(error.message);
       
       setLocalTransactions(prev => prev.map(t => t.id === transaction.id ? { ...t, attachment_url: undefined } : t));
       if (selectedTransaction?.id === transaction.id) {
-        setSelectedTransaction({ ...selectedTransaction, attachment_url: undefined });
+        setSelectedTransaction(prev => prev ? { ...prev, attachment_url: undefined } : null);
       }
     } catch (err: any) {
-      alert('Erro ao remover anexo: ' + err.message);
+      alert('Erro ao remover comprovante: ' + err.message);
+    }
+  };
+
+  const handleDeleteTransaction = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir permanentemente este lançamento de receita?')) return;
+    try {
+      const { error } = await supabase.from('transactions').delete().eq('id', id);
+      if (error) throw new Error(error.message);
+      setLocalTransactions(prev => prev.filter(t => t.id !== id));
+      setSelectedTransaction(null);
+    } catch (err: any) {
+      alert('Erro ao excluir: ' + err.message);
     }
   };
 
@@ -509,7 +570,6 @@ export default function ContasReceber() {
                     🚨 Atrasado
                   </div>
                 )}
-                {/* Botões antigos removidos em favor do Drag and Drop */}
               </div>
              );
           })}
@@ -551,7 +611,6 @@ export default function ContasReceber() {
                 <span>💳 {t.paymentMethod}</span>
                 {t.paidDate && <span>📅 Pago: {t.paidDate.split('-').reverse().join('/')}</span>}
               </div>
-              {/* Botão de estorno removido em favor do Drag and Drop */}
             </div>
           ))}
         </div>
@@ -591,7 +650,6 @@ export default function ContasReceber() {
                 <span>👤 {getMemberName(t.memberId)}</span>
                 {t.dueDate && <span>📅 Venceu: {t.dueDate.split('-').reverse().join('/')}</span>}
               </div>
-              {/* Botões antigos removidos em favor do Drag and Drop */}
             </div>
           ))}
         </div>
@@ -662,7 +720,7 @@ export default function ContasReceber() {
       {showRevenueModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="glass" style={{ padding: '24px', borderRadius: '16px', width: '100%', maxWidth: '500px' }}>
-            <h3 style={{ marginTop: 0, color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '8px' }}>💵 Nova Receita</h3>
+            <h3 style={{ marginTop: 0, color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '8px' }}>💵 {editingFullTransaction ? 'Editar Receita' : 'Nova Receita'}</h3>
             <form onSubmit={handleSave}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -681,11 +739,11 @@ export default function ContasReceber() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Valor (R$)</label>
-                  <input name="amount" type="number" step="0.01" min="0" required placeholder="0.00" className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
+                  <input name="amount" type="number" step="0.01" min="0" required placeholder="0.00" defaultValue={editingFullTransaction?.amount} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Forma de Pagamento</label>
-                  <select name="paymentMethod" required className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
+                  <select name="paymentMethod" required defaultValue={editingFullTransaction?.paymentMethod} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
                     {pagamentosCats.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </div>
@@ -722,20 +780,20 @@ export default function ContasReceber() {
                     </select>
                   </div>
                 )}
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Data</label>
-                  <input name="date" type="date" required className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box', colorScheme: 'dark' }} defaultValue={new Date().toISOString().split('T')[0]} />
+                <div style={{ display: 'flex', flexDirection: 'column', gridColumn: '1 / -1' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Descrição</label>
+                  <input name="description" type="text" required placeholder="Ex: Oferta culto de domingo" defaultValue={editingFullTransaction?.description.split(' - Culto')[0]} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Status</label>
-                  <select name="status" required className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
+                  <select name="status" defaultValue={editingFullTransaction?.status || 'confirmado'} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }}>
                     <option value="confirmado">✅ Confirmado (Recebido)</option>
                     <option value="pendente">🟡 Pendente (A Receber)</option>
                   </select>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Descrição</label>
-                  <input name="description" type="text" required placeholder="Ex: Oferta culto de domingo" className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box' }} />
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Data</label>
+                  <input name="date" type="date" required defaultValue={editingFullTransaction?.date || new Date().toISOString().split('T')[0]} className="search-input glass-input" style={{ padding: '10px', width: '100%', boxSizing: 'border-box', colorScheme: 'dark' }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
                   <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Anexar Comprovante (Opcional)</label>
@@ -743,9 +801,9 @@ export default function ContasReceber() {
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                <button type="button" onClick={() => setShowRevenueModal(false)} style={{ padding: '8px 16px', borderRadius: '8px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer' }} disabled={isSubmitting}>Cancelar</button>
-                <button type="submit" style={{ padding: '8px 16px', borderRadius: '8px', background: '#2ecc71', border: 'none', color: '#fff', fontWeight: 600, cursor: 'pointer' }} disabled={isSubmitting}>
-                  {isSubmitting ? 'Enviando...' : '💰 Lançar Receita'}
+                <button type="button" onClick={() => { setShowRevenueModal(false); setEditingFullTransaction(null); }} style={{ padding: '8px 16px', borderRadius: '8px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer' }}>Cancelar</button>
+                <button type="submit" disabled={isSubmitting} style={{ padding: '8px 16px', borderRadius: '8px', background: '#2ecc71', border: 'none', color: '#fff', fontWeight: 600, cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1 }}>
+                  {isSubmitting ? 'Salvando...' : (editingFullTransaction ? '💾 Salvar Alteração' : '💰 Lançar Receita')}
                 </button>
               </div>
             </form>
@@ -814,13 +872,26 @@ export default function ContasReceber() {
             
             <button onClick={() => setSelectedTransaction(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(46,204,113,0.15)', color: '#2ecc71', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
-                💵
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(46,204,113,0.15)', color: '#2ecc71', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+                  💵
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.4rem' }}>Detalhes da Receita</h3>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>ID: #{selectedTransaction.id}</div>
+                </div>
               </div>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.4rem' }}>Detalhes da Receita</h3>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>ID: #{selectedTransaction.id}</div>
+              <div style={{ display: 'flex', gap: '8px', marginRight: '30px' }}>
+                <button onClick={() => { 
+                  setEditingFullTransaction(selectedTransaction); 
+                  setSelectedCategory(selectedTransaction.category); 
+                  setSelectedMember(selectedTransaction.memberId || ''); 
+                  setSelectedNewCulto(''); 
+                  setShowRevenueModal(true); 
+                  setSelectedTransaction(null); 
+                }} style={{ background: '#3498db', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem' }}>📝 Editar</button>
+                <button onClick={() => handleDeleteTransaction(selectedTransaction.id)} style={{ background: 'transparent', border: '1px solid #e74c3c', color: '#e74c3c', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem' }}>🗑️ Excluir</button>
               </div>
             </div>
 
