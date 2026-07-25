@@ -36,7 +36,7 @@ export default function Visitantes() {
 
   const [showNewModal, setShowNewModal] = useState(false);
   const [newForm, setNewForm] = useState<Partial<Visitor & { churchId?: string, customSourceText?: string }>>({
-    name: '', phone: '', email: '', region: '', source: 'Amigos / Parentes', customSourceText: '', wantsVisit: false, address: '', notes: '', date: new Date().toISOString().split('T')[0], culto: '', horario: '', churchId: ''
+    name: '', phone: '', email: '', region: '', source: '', wantsVisit: undefined, address: '', notes: '', date: new Date().toISOString().split('T')[0], culto: '', horario: '', churchId: ''
   });
 
   // WhatsApp Modal
@@ -330,7 +330,7 @@ export default function Visitantes() {
       setVisitors(p => [newVisitor, ...p]);
     }
     setShowNewModal(false);
-    setNewForm({ name: '', phone: '', email: '', region: '', source: 'Amigos / Parentes', customSourceText: '', wantsVisit: false, address: '', notes: '', date: new Date().toISOString().split('T')[0], culto: '', horario: '', churchId: '' });
+    setNewForm({ name: '', phone: '', email: '', region: '', source: '', customSourceText: '', wantsVisit: undefined, address: '', notes: '', date: new Date().toISOString().split('T')[0], culto: '', horario: '', churchId: '' });
   };
 
   const fmtDate = (d: string) => new Date(d + 'T12:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
@@ -940,17 +940,18 @@ export default function Visitantes() {
 
             <div style={{ display: 'flex', gap: '10px' }}>
               <div style={{ flex: 1 }}>
-                <label className="input-label">Bairro / Região</label>
-                <input type="text" value={newForm.region || ''} onChange={e => setNewForm(p => ({ ...p, region: e.target.value }))} className="search-input glass-input" style={{ width: '100%', padding: '8px' }} />
+                <label className="input-label">Bairro / Região *</label>
+                <input type="text" value={newForm.region || ''} onChange={e => setNewForm(p => ({ ...p, region: e.target.value }))} required className="search-input glass-input" style={{ width: '100%', padding: '8px' }} />
               </div>
               <div style={{ flex: 1 }}>
-                <label className="input-label">Como Conheceu?</label>
-                <select value={newForm.source || ''} onChange={e => setNewForm(p => ({ ...p, source: e.target.value }))} className="search-input glass-input" style={{ width: '100%', padding: '8px' }}>
+                <label className="input-label">Como Conheceu? *</label>
+                <select value={newForm.source || ''} onChange={e => setNewForm(p => ({ ...p, source: e.target.value }))} required className="search-input glass-input" style={{ width: '100%', padding: '8px' }}>
+                  <option value="">Selecione...</option>
                   {availableSources.map(s => <option key={s} value={s}>{s}</option>)}
                   <option value="Outro">Outro (Especificar...)</option>
                 </select>
                 {newForm.source === 'Outro' && (
-                  <input type="text" placeholder="Especifique..." value={newForm.customSourceText || ''} onChange={e => setNewForm(p => ({ ...p, customSourceText: e.target.value }))} className="search-input glass-input" style={{ width: '100%', padding: '8px', marginTop: '6px' }} />
+                  <input type="text" placeholder="Especifique..." value={newForm.customSourceText || ''} onChange={e => setNewForm(p => ({ ...p, customSourceText: e.target.value }))} required className="search-input glass-input" style={{ width: '100%', padding: '8px', marginTop: '6px' }} />
                 )}
               </div>
             </div>
@@ -1011,10 +1012,18 @@ export default function Visitantes() {
             })()}
 
             <div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', cursor: 'pointer', margin: '4px 0' }}>
-                <input type="checkbox" checked={newForm.wantsVisit || false} onChange={e => setNewForm(p => ({ ...p, wantsVisit: e.target.checked }))} />
-                Deseja receber visita (Célula/Secretaria)?
-              </label>
+              <label className="input-label">Deseja receber visita (Célula/Secretaria)? *</label>
+              <select 
+                value={newForm.wantsVisit === true ? 'sim' : (newForm.wantsVisit === false ? 'nao' : '')} 
+                onChange={e => setNewForm(p => ({ ...p, wantsVisit: e.target.value === 'sim' }))} 
+                required 
+                className="search-input glass-input" 
+                style={{ width: '100%', padding: '8px' }}
+              >
+                <option value="">Selecione...</option>
+                <option value="sim">Sim</option>
+                <option value="nao">Não</option>
+              </select>
             </div>
 
             {newForm.wantsVisit && (
