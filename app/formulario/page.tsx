@@ -154,6 +154,10 @@ export default function FormularioVisitante() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.wantsVisit) {
+      alert('Por favor, responda se deseja receber uma visita (Sim ou Não).');
+      return;
+    }
     if (form.wantsVisit === 'sim' && !form.address) {
       setStep('visit');
       return;
@@ -261,7 +265,7 @@ export default function FormularioVisitante() {
             )}
 
             <div>
-              <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Nome Completo</label>
+              <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Nome Completo *</label>
               <input 
                 type="text" name="name" value={form.name} onChange={handleChange} required
                 placeholder="Digite seu nome completo"
@@ -270,7 +274,7 @@ export default function FormularioVisitante() {
             </div>
 
             <div>
-              <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Telefone (WhatsApp)</label>
+              <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Telefone (WhatsApp) *</label>
               <input 
                 type="tel" name="phone" value={form.phone} onChange={handleChange} required
                 placeholder="(11) 99999-9999"
@@ -279,7 +283,7 @@ export default function FormularioVisitante() {
             </div>
 
             <div>
-              <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Região / Bairro</label>
+              <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Região / Bairro *</label>
               <input 
                 type="text" name="region" value={form.region} onChange={handleChange} required
                 placeholder="Ex: Zona Sul, Bela Vista..."
@@ -288,7 +292,7 @@ export default function FormularioVisitante() {
             </div>
 
             <div>
-              <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Como conheceu a igreja?</label>
+              <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Como conheceu a igreja? *</label>
               <select 
                 name="howKnew" value={form.howKnew} onChange={handleChange} required
                 style={{ width: '100%', padding: '12px 15px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none', backgroundColor: '#fff', cursor: 'pointer', boxSizing: 'border-box' }}
@@ -309,7 +313,7 @@ export default function FormularioVisitante() {
             </div>
 
             <div>
-              <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Deseja receber uma visita?</label>
+              <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '6px', color: '#0f172a' }}>Deseja receber uma visita? *</label>
               <div style={{ display: 'flex', gap: '15px' }}>
                 <label style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '10px', cursor: 'pointer', background: form.wantsVisit === 'sim' ? '#ebf5ff' : '#fff', borderColor: form.wantsVisit === 'sim' ? '#3b82f6' : '#e2e8f0', fontWeight: '600', fontSize: '0.95rem' }}>
                   <input type="radio" name="wantsVisit" value="sim" checked={form.wantsVisit === 'sim'} onChange={handleChange} style={{ display: 'none' }} />
