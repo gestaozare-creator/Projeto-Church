@@ -46,7 +46,7 @@ interface MemberStats {
   visitantes: number;
 }
 
-type TabType = 'overview' | 'mapa' | 'relatorios' | 'ranking' | 'vendas';
+type TabType = 'overview' | 'mapa' | 'relatorios' | 'ranking';
 type ViewMode = 'list' | 'grid' | 'table';
 
 export default function RedePage() {
@@ -304,7 +304,6 @@ export default function RedePage() {
           <button style={tabStyle('mapa')} onClick={() => setActiveTab('mapa')}>🗺️ Mapa do Brasil</button>
           <button style={tabStyle('relatorios')} onClick={() => setActiveTab('relatorios')}>📋 Relatórios</button>
           <button style={tabStyle('ranking')} onClick={() => setActiveTab('ranking')}>🏆 Ranking de Almas</button>
-          <button style={tabStyle('vendas')} onClick={() => setActiveTab('vendas')}>💰 Gestão Comercial & Preços</button>
         </div>
       </div>
 
@@ -753,92 +752,6 @@ export default function RedePage() {
       {/* ======================== TAB: RANKING ======================== */}
       {activeTab === 'ranking' && (
         <RankingAlmas editable={true} />
-      )}
-
-      {/* ======================== TAB: GESTÃO COMERCIAL ======================== */}
-      {activeTab === 'vendas' && (
-        <div className="glass" style={{ borderRadius: '16px', padding: '30px', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-            <div>
-              <h2 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.4rem' }}>💰 Gestão de Preços & Página de Vendas (Projeto Church)</h2>
-              <p style={{ margin: '4px 0 0 0', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Configure os valores dos módulos e o conteúdo da página comercial pública.</p>
-            </div>
-            <a href="/vendas" target="_blank" rel="noreferrer" className="modal-btn" style={{ padding: '8px 16px', background: '#6366f1', color: '#fff', textDecoration: 'none', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600 }}>
-              👁️ Ver Página de Vendas
-            </a>
-          </div>
-
-          {/* FORMULARIO DE CONFIGURAÇÃO */}
-          {(() => {
-            const [localCfg, setLocalCfg] = useState({
-              planSecretaria: 97,
-              planFinanceiro: 97,
-              planKids: 47,
-              planCombo: 197,
-              whatsappPhone: '5541999999999',
-              promoBanner: '⚡ Condição Especial de Lançamento: Ganhe 30% de Desconto no Plano Combo Completo!'
-            });
-            const [savedMsg, setSavedMsg] = useState(false);
-
-            useEffect(() => {
-              try {
-                const s = localStorage.getItem('project_church_landing_config');
-                if (s) setLocalCfg(JSON.parse(s));
-              } catch(e) {}
-            }, []);
-
-            const handleSaveConfig = () => {
-              localStorage.setItem('project_church_landing_config', JSON.stringify(localCfg));
-              setSavedMsg(true);
-              setTimeout(() => setSavedMsg(false), 3000);
-            };
-
-            return (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-                  <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Plano Secretaria (R$/mês)</label>
-                    <input type="number" value={localCfg.planSecretaria} onChange={e => setLocalCfg(p => ({ ...p, planSecretaria: Number(e.target.value) }))} className="search-input glass-input" style={{ width: '100%', padding: '10px' }} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Plano Financeiro (R$/mês)</label>
-                    <input type="number" value={localCfg.planFinanceiro} onChange={e => setLocalCfg(p => ({ ...p, planFinanceiro: Number(e.target.value) }))} className="search-input glass-input" style={{ width: '100%', padding: '10px' }} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Plano Kids (R$/mês)</label>
-                    <input type="number" value={localCfg.planKids} onChange={e => setLocalCfg(p => ({ ...p, planKids: Number(e.target.value) }))} className="search-input glass-input" style={{ width: '100%', padding: '10px' }} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#a5b4fc', display: 'block', marginBottom: '6px' }}>Plano Combo Completo (R$/mês)</label>
-                    <input type="number" value={localCfg.planCombo} onChange={e => setLocalCfg(p => ({ ...p, planCombo: Number(e.target.value) }))} className="search-input glass-input" style={{ width: '100%', padding: '10px', border: '1px solid #6366f1' }} />
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '15px' }}>
-                  <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>WhatsApp de Vendas (com DDD e 55)</label>
-                    <input type="text" value={localCfg.whatsappPhone} onChange={e => setLocalCfg(p => ({ ...p, whatsappPhone: e.target.value }))} placeholder="Ex: 5541999999999" className="search-input glass-input" style={{ width: '100%', padding: '10px' }} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Banner de Anúncio / Promoção no Topo</label>
-                    <input type="text" value={localCfg.promoBanner} onChange={e => setLocalCfg(p => ({ ...p, promoBanner: e.target.value }))} placeholder="Texto do banner..." className="search-input glass-input" style={{ width: '100%', padding: '10px' }} />
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '10px' }}>
-                  <button onClick={handleSaveConfig} style={{ padding: '12px 24px', background: '#2ecc71', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem' }}>
-                    💾 Salvar Configurações Comerciais
-                  </button>
-                  {savedMsg && (
-                    <span style={{ color: '#2ecc71', fontSize: '0.85rem', fontWeight: 600 }}>
-                      ✅ Preços e configurações salvos com sucesso!
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })()}
-        </div>
       )}
   </div>
   );

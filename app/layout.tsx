@@ -187,7 +187,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
                     {activeMenu === 'rede' && (
                       <div className="sub-menu">
                         <Link href="/rede" className={`sub-link ${pathname === '/rede' ? 'active' : ''}`}>📊 Painel da Rede</Link>
-                        <Link href="/vendas" target="_blank" rel="noreferrer" className={`sub-link ${pathname === '/vendas' ? 'active' : ''}`}>💰 Página de Vendas</Link>
                       </div>
                     )}
                   </div>
@@ -222,6 +221,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
                     {activeMenu === 'admin' && (
                       <div className="sub-menu">
                         <Link href="/admin/igrejas" className={`sub-link ${pathname === '/admin/igrejas' ? 'active' : ''}`}>🌐 Gestão de Igrejas e Redes</Link>
+                        <Link href="/admin/comercial" className={`sub-link ${pathname === '/admin/comercial' ? 'active' : ''}`}>💰 Gestão da Página de Vendas</Link>
                       </div>
                     )}
                   </div>
