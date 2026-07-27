@@ -58,7 +58,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   };
 
   const isAgendaPublicScale = pathname?.match(/^\/agenda\/[^/]+\/[^/]+$/);
-  const isPublicRoute = pathname?.startsWith('/formulario') || isAgendaPublicScale;
+  const isPublicRoute = pathname?.startsWith('/formulario') || pathname?.startsWith('/vendas') || isAgendaPublicScale;
   const isLoginRoute = pathname === '/login';
   
   useEffect(() => {
@@ -187,6 +187,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
                     {activeMenu === 'rede' && (
                       <div className="sub-menu">
                         <Link href="/rede" className={`sub-link ${pathname === '/rede' ? 'active' : ''}`}>📊 Painel da Rede</Link>
+                        <Link href="/vendas" target="_blank" rel="noreferrer" className={`sub-link ${pathname === '/vendas' ? 'active' : ''}`}>💰 Página de Vendas</Link>
                       </div>
                     )}
                   </div>
