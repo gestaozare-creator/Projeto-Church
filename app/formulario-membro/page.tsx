@@ -208,16 +208,11 @@ export default function FormularioMembro() {
       <div style={{ background: '#fff', borderRadius: '20px', padding: '35px 25px', maxWidth: '440px', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
 
         <div style={{ textAlign: 'center', marginBottom: '25px' }}>
-          {activeLogo ? (
-            <img src={activeLogo} alt="Logo da Igreja" style={{ maxWidth: '100%', maxHeight: '120px', objectFit: 'contain', marginBottom: '10px' }} />
-          ) : (
-            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px auto', fontSize: '1.8rem', color: '#fff', boxShadow: '0 4px 12px rgba(59,130,246,0.3)' }}>
-              ⛪
-            </div>
+          {activeLogo && (
+            <img src={activeLogo} alt="Logo da Igreja" style={{ maxWidth: '100%', maxHeight: '140px', objectFit: 'contain', marginBottom: '15px' }} />
           )}
-          <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>Nome da Igreja</div>
           <h2 style={{ fontSize: '1.3rem', color: '#1e293b', marginBottom: '4px' }}>Cadastro de Membro - {activeMinistryName || 'Geral'}</h2>
-          <p style={{ color: '#475569', fontSize: '0.85rem', marginBottom: '6px' }}>Congregação - <strong>{activeChurch?.name || 'Nome da Igreja'}</strong></p>
+          <p style={{ color: '#475569', fontSize: '0.85rem', marginBottom: '6px' }}>Igreja - <strong>{activeChurch?.name}</strong></p>
           <p style={{ color: '#94a3b8', fontSize: '0.82rem' }}>Preencha seus dados para se cadastrar na igreja</p>
         </div>
 
