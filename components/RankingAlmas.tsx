@@ -43,7 +43,11 @@ export default function RankingAlmas({ editable = false }: { editable?: boolean 
   useEffect(() => {
     async function loadData() {
       const { data: c } = await supabase.from('churches').select('*');
-      if (c) setDbChurches(c);
+      if (c) {
+        // Se for pastor diretor de rede real (ex: IPCN), esconde a igreja demo do ranking
+        const filtered = c.filter(ch => ch.ministry_id !== 'min_demo_standalone');
+        setDbChurches(filtered);
+      }
 
       let allMembers: any[] = [];
       let page = 0;

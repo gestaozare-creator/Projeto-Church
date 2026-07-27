@@ -218,11 +218,16 @@ export default function FormularioVisitante() {
     <div style={{ minHeight: '100vh', width: '100%', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${themeColorLight} 0%, ${themeColor} 100%)`, padding: '20px' }}>
       <div style={{ background: 'rgba(255,255,255,0.95)', borderRadius: '20px', padding: '40px', maxWidth: '420px', width: '100%', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }}>
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          {activeLogo && (
-            <img src={activeLogo} alt="Logo da Igreja" style={{ maxWidth: '100%', maxHeight: '140px', objectFit: 'contain', marginBottom: '15px' }} />
+          {activeLogo ? (
+            <img src={activeLogo} alt="Logo da Igreja" style={{ maxWidth: '100%', maxHeight: '120px', objectFit: 'contain', marginBottom: '10px' }} />
+          ) : (
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px auto', fontSize: '1.8rem', color: '#fff', boxShadow: '0 4px 12px rgba(59,130,246,0.3)' }}>
+              ⛪
+            </div>
           )}
+          <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Nome da Igreja</div>
           <h1 style={{ fontSize: '1.4rem', color: '#0f172a', marginBottom: '5px' }}>Ficha de Visitante - {activeMinistryName || 'Geral'}</h1>
-          <p style={{ color: '#475569', fontSize: '0.9rem', marginBottom: '5px' }}>Igreja - <strong>{activeChurch?.name}</strong></p>
+          <p style={{ color: '#475569', fontSize: '0.9rem', marginBottom: '5px' }}>Congregação - <strong>{activeChurch?.name || 'Nome da Igreja'}</strong></p>
           <div style={{ width: '50px', height: '3px', background: '#3b82f6', margin: '10px auto 15px', borderRadius: '2px' }}></div>
         </div>
 
