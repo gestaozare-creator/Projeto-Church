@@ -81,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.removeItem(ACTIVE_CHURCH_NAME_KEY);
         }
         const isAgendaPublicScale = pathname?.match(/^\/agenda\/[^/]+\/[^/]+$/);
-        const isPublic = pathname === '/login' || pathname?.startsWith('/formulario') || isAgendaPublicScale;
+        const isPublic = pathname === '/login' || pathname?.startsWith('/formulario') || pathname?.startsWith('/vendas') || isAgendaPublicScale;
         if (!isPublic) {
           router.push('/login');
         }
