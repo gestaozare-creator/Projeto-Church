@@ -930,11 +930,12 @@ export default function FinanceiroDashboardPage() {
           title="✝️ Entradas por Dia" 
           data={receitasCultoData.slices} 
           total={receitasCultoData.total} 
-          formatCenterTotal={formatShortCurrency} 
+          formatCenterTotal={formatShortCurrency}
+          formatValue={formatCurrency}
           activeSlice={selectedDia}
           onClickSlice={(key) => setSelectedDia(prev => prev === key ? null : key)}
         />
-        <DonutChart title="🕒 Entradas por Horário" data={receitasHorarioData.slices} total={receitasHorarioData.total} formatCenterTotal={formatShortCurrency} />
+        <DonutChart title="🕒 Entradas por Horário" data={receitasHorarioData.slices} total={receitasHorarioData.total} formatCenterTotal={formatShortCurrency} formatValue={formatCurrency} />
         
         {/* Detalhamento Entradas */}
         <div className="glass" style={{ padding: '20px', borderRadius: '14px', display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -964,7 +965,7 @@ export default function FinanceiroDashboardPage() {
             )}
           </div>
         </div>
-        <DonutChart title="💳 Formas de Pgto (Entradas)" data={pagamentosReceitaData.slices} total={pagamentosReceitaData.total} formatCenterTotal={formatShortCurrency} />
+        <DonutChart title="💳 Formas de Pgto (Entradas)" data={pagamentosReceitaData.slices} total={pagamentosReceitaData.total} formatCenterTotal={formatShortCurrency} formatValue={formatCurrency} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '14px', flexShrink: 0, marginTop: '14px' }}>
@@ -998,7 +999,7 @@ export default function FinanceiroDashboardPage() {
           </div>
         </div>
 
-        <DonutChart title="💸 Formas de Pgto (Saídas)" data={pagamentosSaidaData.slices} total={pagamentosSaidaData.total} formatCenterTotal={formatShortCurrency} />
+        <DonutChart title="💸 Formas de Pgto (Saídas)" data={pagamentosSaidaData.slices} total={pagamentosSaidaData.total} formatCenterTotal={formatShortCurrency} formatValue={formatCurrency} />
 
         {/* Ranking de Entradas por Membro */}
         <div className="glass" style={{ padding: '20px', borderRadius: '14px', display: 'flex', flexDirection: 'column', height: '100%' }}>
