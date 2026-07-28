@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/context/AuthContext';
+import { useChurches } from '@/hooks/useChurches';
 import { Church } from '@/types/database';
 
 type VisitorStatus = 'visitante' | 'em_conversao' | 'membro';
@@ -25,10 +26,10 @@ interface Visitor {
 }
 
 export default function Visitantes() {
-  const { currentUser, canSeeAllChurches, activeChurchId } = useAuth();
-  
-  const [visitors, setVisitors] = useState<Visitor[]>([]);
-  const [dbChurches, setDbChurches] = useState<Church[]>([]);
+  const { currentUser, canSeeAllChurches, activeChurchId, activeMinistryId } = useAuth();
+
+  // SEGURANÇA: igrejas filtradas no banco pelo ministryId da rede ativa
+  const { churches: dbChurches } = useChurches(activeMinistryId);
   const [sel, setSel] = useState<Visitor | null>(null);
 
   const [showConvertModal, setShowConvertModal] = useState(false);
@@ -119,42 +120,19 @@ export default function Visitantes() {
     setHorarioFilter('ALL');
   }, [cultoFilter]);
 
-  useEffect(() => {
-    if (activeChurchId) {
-      setChurchF(activeChurchId);
-    } else if (!canSeeAllChurches && currentUser?.churchId) {
-      setChurchF(currentUser.churchId);
-    }
-  }, [activeChurchId, canSeeAllChurches, currentUser]);
+  const [visitors, setVisitors] = useState<Visitor[]>([]);
 
   useEffect(() => {
+    // Só busca visitantes quando as igrejas da rede já foram carregadas
+    if (!dbChurches || dbChurches.length === 0) return;
+
     async function fetchVisitors() {
-      const { data: churchesDb } = await supabase.from('churches').select('*');
-      const { data: servicesDb } = await supabase.from('church_services').select('*');
+      // SEGURANÇA: busca visitantes apenas das igrejas da rede ativa (já filtradas no banco via useChurches)
+      const networkChurchIds = dbChurches.map(c => c.id);
 
-      if (churchesDb) {
-        const activeChurch = churchesDb.find(c => c.id === activeChurchId) || churchesDb.find(c => c.id === currentUser?.churchId);
-        const activeNetId = activeChurch?.ministry_id || currentUser?.ministryId || churchesDb[0]?.ministry_id;
+      // Se há uma igreja ativa, só busca visitantes dela
+      const targetChurchIds = activeChurchId ? [activeChurchId] : networkChurchIds;
 
-        const networkChurches = activeNetId ? churchesDb.filter(c => c.ministry_id === activeNetId) : churchesDb;
-
-        setDbChurches(networkChurches.map(c => {
-          const svcs = (servicesDb || []).filter(s => s.church_id === c.id).map(s => ({
-            id: s.id,
-            name: s.name,
-            dayOfWeek: s.day_of_week,
-            time: s.time
-          }));
-          return {
-            id: c.id,
-            name: c.name,
-            ministryId: c.ministry_id || '',
-            services: svcs
-          } as any;
-        }));
-      }
-
-      // Procuramos visitantes (membros com função de visitante ou em consolidação)
       let allData: any[] = [];
       let page = 0;
       const pageSize = 1000;
@@ -164,6 +142,7 @@ export default function Visitantes() {
           .from('members')
           .select('*')
           .in('function', ['Visitante (Kids)', 'Visitante', 'Ainda não definida'])
+          .in('church_id', targetChurchIds)
           .range(page * pageSize, (page + 1) * pageSize - 1);
         
         if (error || !data || data.length === 0) {
@@ -190,18 +169,20 @@ export default function Visitantes() {
           region: v.state || 'Geral',
           source: v.ministry || 'Outro',
           wantsVisit: v.address ? true : false,
-          status: v.status === 'ativo' ? 'membro' : v.status === 'em_conversao' ? 'em_conversao' : 'visitante', // Mapeamento correto de status
+          status: v.status === 'ativo' ? 'membro' : v.status === 'em_conversao' ? 'em_conversao' : 'visitante',
           address: v.address || '',
           notes: v.function || '',
           culto: v.culto || '',
           horario: v.horario || ''
         }));
         setVisitors(formatados);
+      } else {
+        setVisitors([]);
       }
     }
 
     fetchVisitors();
-  }, []);
+  }, [dbChurches, activeChurchId]);
 
   const changeStatus = async (id: string, ns: VisitorStatus) => {
     // Mapeamento correto de gravação no banco

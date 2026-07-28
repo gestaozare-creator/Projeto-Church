@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Member } from '@/types/database';
 
-export function useMembers(churchId?: string) {
+/**
+ * Hook para carregar membros FILTRADOS POR REDE.
+ * Se churchIds for fornecido, filtra na query do Supabase (isolamento real).
+ * Se churchId singular for fornecido, usa apenas aquela igreja.
+ */
+export function useMembers(churchId?: string, churchIds?: string[]) {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -11,14 +16,29 @@ export function useMembers(churchId?: string) {
     async function loadMembers() {
       try {
         setLoading(true);
+        setMembers([]);
+
+        // Sem nenhum escopo definido, não carrega nada (segurança)
+        if (!churchId && (!churchIds || churchIds.length === 0)) {
+          setMembers([]);
+          return;
+        }
+
         let allData: any[] = [];
         let page = 0;
         const pageSize = 1000;
+
         while (true) {
           let query = supabase.from('members').select('*');
+
           if (churchId) {
+            // Escopo de uma única igreja
             query = query.eq('church_id', churchId);
+          } else if (churchIds && churchIds.length > 0) {
+            // Escopo de múltiplas igrejas da mesma rede
+            query = query.in('church_id', churchIds);
           }
+
           const { data, error: membersError } = await query.range(page * pageSize, (page + 1) * pageSize - 1);
           if (membersError) throw membersError;
           if (!data || data.length === 0) break;
@@ -46,7 +66,8 @@ export function useMembers(churchId?: string) {
             horario: m.horario || '',
             maritalStatus: m.marital_status || '',
             employmentStatus: m.employment_status || '',
-            profession: m.profession || ''
+            profession: m.profession || '',
+            cardValidity: m.card_validity || '',
           }));
           setMembers(formatted as any);
         }
@@ -57,9 +78,9 @@ export function useMembers(churchId?: string) {
         setLoading(false);
       }
     }
-    
+
     loadMembers();
-  }, [churchId]);
+  }, [churchId, JSON.stringify(churchIds)]);
 
   return { members, setMembers, loading, error };
 }

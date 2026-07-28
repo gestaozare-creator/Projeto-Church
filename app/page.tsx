@@ -25,34 +25,25 @@ const getFunctionColor = (func?: string, cardConfig?: any) => {
 };
 
 export default function Home() {
-  const { currentUser, loading, canSeeAllChurches, activeChurchId } = useAuth();
+  const { currentUser, loading, canSeeAllChurches, activeChurchId, activeMinistryId } = useAuth();
   const [search, setSearch] = useState('');
   const [church, setChurch] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches ? 'ALL' : currentUser?.churchId || ''));
-  const { churches: dbChurches, loading: churchesLoading } = useChurches();
-  const { members: allMembers, loading: membersLoading, setMembers } = useMembers();
+
+  // SEGURANÇA: useChurches filtra por ministryId no banco — nunca carrega igrejas de outras redes
+  const { churches: dbChurches, loading: churchesLoading } = useChurches(activeMinistryId);
 
   if (!loading && !currentUser) {
     return <VendasPage />;
   }
 
-  // 1. Igreja Ativa e Rede Escopada
-  const activeChurchObj = useMemo(() => {
-    if (!activeChurchId) return null;
-    return dbChurches.find(c => c.id === activeChurchId) || null;
-  }, [dbChurches, activeChurchId]);
+  // churchIds da rede ativa — para filtro de membros no banco
+  const scopedChurchIds = useMemo(() => dbChurches.map(c => c.id), [dbChurches]);
 
-  // A rede ativa da visão atual (da igreja ativa ou do usuário)
-  const activeNetworkMinistryId = useMemo(() => {
-    if (activeChurchObj?.ministryId) return activeChurchObj.ministryId;
-    if (currentUser?.ministryId) return currentUser.ministryId;
-    return dbChurches.find(c => c.id === (activeChurchId || currentUser?.churchId))?.ministryId || dbChurches[0]?.ministryId || '';
-  }, [activeChurchObj, currentUser, dbChurches, activeChurchId]);
+  // SEGURANÇA: useMembers usa churchIds da rede ativa, filtra no banco
+  const { members: allMembers, loading: membersLoading, setMembers } = useMembers(undefined, scopedChurchIds);
 
-  // Igrejas permitidas no escopo da visão (APENAS da mesma rede/ministério)
-  const scopedChurches = useMemo(() => {
-    if (!activeNetworkMinistryId) return dbChurches;
-    return dbChurches.filter(c => c.ministryId === activeNetworkMinistryId);
-  }, [dbChurches, activeNetworkMinistryId]);
+  // Igrejas da rede (já chegam filtradas do banco via useChurches)
+  const scopedChurches = dbChurches;
 
   useEffect(() => {
     if (activeChurchId) {
@@ -64,21 +55,16 @@ export default function Home() {
     }
   }, [activeChurchId, scopedChurches]);
 
-  // Membros filtrados estritamente pelo escopo da rede
+  // Membros filtrados — dados já chegam do banco somente da rede ativa
   const members = useMemo(() => {
-    const scopedChurchIds = new Set(scopedChurches.map(c => c.id));
-    const networkMembers = allMembers.filter(m => scopedChurchIds.has(m.church_id));
-
     if (activeChurchId) {
-      return networkMembers.filter(m => m.church_id === activeChurchId);
+      return allMembers.filter(m => m.church_id === activeChurchId);
     }
-
     if (church === 'ALL') {
-      return networkMembers;
+      return allMembers;
     }
-
-    return networkMembers.filter(m => m.church_id === church);
-  }, [allMembers, scopedChurches, activeChurchId, church]);
+    return allMembers.filter(m => m.church_id === church);
+  }, [allMembers, activeChurchId, church]);
 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');

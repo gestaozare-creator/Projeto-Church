@@ -209,9 +209,11 @@ export default function RedePage() {
   };
 
   const handleEnterChurch = (church: Church) => {
-    enterChurch(church.id, church.name);
+    // SEGURANÇA: passa o ministryId da igreja para garantir isolamento de rede na sessão inteira
+    enterChurch(church.id, church.name, church.ministryId);
     router.push('/dashboard-secretaria');
   };
+
 
   if (loading || pageLoading) {
     return (

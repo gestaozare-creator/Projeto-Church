@@ -13,24 +13,28 @@ export interface User {
   role: UserRole;
   churchId: string | null;
   churchName?: string;
-  ministryId?: string | null;
+  ministryId?: string | null;  // ministry_id da igreja do usuário (sua rede nativa)
 }
 
-// Chave usada no localStorage para persistir a igreja ativa ao navegar
+// Chaves usadas no localStorage para persistir a igreja ativa ao navegar
 const ACTIVE_CHURCH_KEY = 'pg_active_church_id';
 const ACTIVE_CHURCH_NAME_KEY = 'pg_active_church_name';
+const ACTIVE_MINISTRY_KEY = 'pg_active_ministry_id';
 
 interface AuthContextType {
   currentUser: User | null;
   loading: boolean;
   canSeeAllChurches: boolean;
+  canSeeRelatorios: boolean;
   canSeeFinanceiro: boolean;
   canManageSystem: boolean;
   signOut: () => Promise<void>;
   // Igreja Ativa (contexto de visão do diretor/master)
   activeChurchId: string | null;
   activeChurchName: string | null;
-  enterChurch: (churchId: string, churchName: string) => void;
+  // Ministério/Rede ativa — SEMPRE isolada
+  activeMinistryId: string | null;
+  enterChurch: (churchId: string, churchName: string, ministryId?: string) => void;
   exitChurch: () => void;
 }
 
@@ -41,6 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [activeChurchId, setActiveChurchId] = useState<string | null>(null);
   const [activeChurchName, setActiveChurchName] = useState<string | null>(null);
+  const [activeMinistryId, setActiveMinistryId] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -49,9 +54,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(ACTIVE_CHURCH_KEY);
       const savedName = localStorage.getItem(ACTIVE_CHURCH_NAME_KEY);
+      const savedMinistry = localStorage.getItem(ACTIVE_MINISTRY_KEY);
       if (saved) {
         setActiveChurchId(saved);
         setActiveChurchName(savedName);
+        if (savedMinistry) setActiveMinistryId(savedMinistry);
       }
     }
   }, []);
@@ -74,12 +81,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setCurrentUser(null);
         setLoading(false);
-        // Limpa a igreja ativa ao fazer logout
         setActiveChurchId(null);
         setActiveChurchName(null);
+        setActiveMinistryId(null);
         if (typeof window !== 'undefined') {
           localStorage.removeItem(ACTIVE_CHURCH_KEY);
           localStorage.removeItem(ACTIVE_CHURCH_NAME_KEY);
+          localStorage.removeItem(ACTIVE_MINISTRY_KEY);
         }
         const isAgendaPublicScale = pathname?.match(/^\/agenda\/[^/]+\/[^/]+$/);
         const isPublic = pathname === '/' || pathname === '/login' || pathname?.startsWith('/formulario') || pathname?.startsWith('/vendas') || isAgendaPublicScale;
@@ -113,32 +121,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       let resolvedChurchId = data?.church_id || null;
       let resolvedChurchName = 'Desconhecida';
+      let resolvedMinistryId: string | null = null;
 
       if (!resolvedChurchId) {
         const { data: firstChurch } = await supabase
           .from('churches')
-          .select('id, name')
+          .select('id, name, ministry_id')
           .limit(1)
           .single();
         resolvedChurchId = firstChurch?.id || null;
-        if (firstChurch) resolvedChurchName = firstChurch.name;
+        if (firstChurch) {
+          resolvedChurchName = firstChurch.name;
+          resolvedMinistryId = firstChurch.ministry_id || null;
+        }
       } else {
         const { data: userChurch } = await supabase
           .from('churches')
-          .select('name')
+          .select('name, ministry_id')
           .eq('id', resolvedChurchId)
           .single();
-        if (userChurch) resolvedChurchName = userChurch.name;
+        if (userChurch) {
+          resolvedChurchName = userChurch.name;
+          resolvedMinistryId = userChurch.ministry_id || null;
+        }
       }
 
-      setCurrentUser({
+      const user: User = {
         id: authUser.id,
         name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário',
         email: authUser.email || '',
         role: finalRole,
         churchId: resolvedChurchId,
         churchName: resolvedChurchName,
-      });
+        ministryId: resolvedMinistryId,
+      };
+      setCurrentUser(user);
+
+      // Se não há church ativa no localStorage, inicializa o activeMinistryId da rede do usuário
+      // (mas apenas se ainda não há um ministryId ativo salvo — para não sobrescrever a sessão do diretor)
+      if (typeof window !== 'undefined') {
+        const savedMinistry = localStorage.getItem(ACTIVE_MINISTRY_KEY);
+        if (!savedMinistry && resolvedMinistryId) {
+          setActiveMinistryId(resolvedMinistryId);
+        }
+      }
+
     } catch (err) {
       console.error(err);
     } finally {
@@ -151,12 +178,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Entra na visão de uma igreja específica (para diretores/master)
-  const enterChurch = (churchId: string, churchName: string) => {
+  // ministryId é obrigatório para garantir o isolamento de rede
+  const enterChurch = (churchId: string, churchName: string, ministryId?: string) => {
     setActiveChurchId(churchId);
     setActiveChurchName(churchName);
+    if (ministryId) {
+      setActiveMinistryId(ministryId);
+    }
     if (typeof window !== 'undefined') {
       localStorage.setItem(ACTIVE_CHURCH_KEY, churchId);
       localStorage.setItem(ACTIVE_CHURCH_NAME_KEY, churchName);
+      if (ministryId) {
+        localStorage.setItem(ACTIVE_MINISTRY_KEY, ministryId);
+      }
     }
   };
 
@@ -164,14 +198,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const exitChurch = () => {
     setActiveChurchId(null);
     setActiveChurchName(null);
+    // Ao sair, restaura o ministryId nativo do usuário
+    const userMinistryId = currentUser?.ministryId || null;
+    setActiveMinistryId(userMinistryId);
     if (typeof window !== 'undefined') {
       localStorage.removeItem(ACTIVE_CHURCH_KEY);
       localStorage.removeItem(ACTIVE_CHURCH_NAME_KEY);
+      if (userMinistryId) {
+        localStorage.setItem(ACTIVE_MINISTRY_KEY, userMinistryId);
+      } else {
+        localStorage.removeItem(ACTIVE_MINISTRY_KEY);
+      }
     }
   };
 
   // Derivações de permissão centralizadas
   const canSeeAllChurches = currentUser?.role === 'superadmin' || currentUser?.role === 'pastor_diretor';
+  const canSeeRelatorios = currentUser?.role !== 'kids_leader';
   const canSeeFinanceiro = currentUser?.role !== 'secretaria' && currentUser?.role !== 'kids_leader';
   const canManageSystem = currentUser?.role === 'superadmin';
 
@@ -189,11 +232,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       currentUser,
       loading,
       canSeeAllChurches,
+      canSeeRelatorios,
       canSeeFinanceiro,
       canManageSystem,
       signOut,
       activeChurchId,
       activeChurchName,
+      activeMinistryId,
       enterChurch,
       exitChurch,
     }}>
