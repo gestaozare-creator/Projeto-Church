@@ -413,9 +413,17 @@ export default function ContasReceber() {
     });
   }, [church, startDate, endDate, cultoFilter, horarioFilter, localTransactions]);
 
-  const pendentes = transactions.filter(t => t.status === 'pendente');
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }, []);
+
+  const pendentes = transactions.filter(t => t.status === 'pendente' && (!t.dueDate || t.dueDate >= todayStr));
   const confirmadas = transactions.filter(t => t.status === 'confirmado');
-  const vencidas = transactions.filter(t => t.status === 'vencido');
+  const vencidas = transactions.filter(t => t.status === 'vencido' || (t.status === 'pendente' && t.dueDate && t.dueDate < todayStr));
 
   const sum = (arr: Transaction[]) => arr.reduce((acc, curr) => acc + curr.amount, 0);
   const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
