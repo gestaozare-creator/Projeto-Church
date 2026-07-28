@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Fragment } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { useGlobalData } from '@/hooks/useGlobalData';
@@ -771,17 +771,31 @@ export default function ContasPagar() {
               </tr>
             </thead>
             <tbody>
-              {transactions.map(t => {
-                const isConfirmed = t.status === 'confirmado';
-                const isLate = t.status === 'vencido' || (t.dueDate && getDaysDiff(t.dueDate) < 0 && !isConfirmed);
-                return (
-                  <tr 
-                    key={t.id} 
-                    onClick={() => { setSelectedTransaction(t); setAttachmentLink(null); }}
-                    style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background 0.2s' }}
-                    className="hover-row"
-                  >
-                    <td style={{ padding: '12px 8px' }}>{t.date.split('-').reverse().join('/')}</td>
+              {(() => {
+                const grouped = transactions.reduce((acc: any, t) => {
+                  if (!acc[t.date]) acc[t.date] = [];
+                  acc[t.date].push(t);
+                  return acc;
+                }, {});
+                const sortedDates = Object.keys(grouped).sort((a,b) => new Date(b).getTime() - new Date(a).getTime());
+                return sortedDates.map(dateStr => (
+                  <Fragment key={dateStr}>
+                    <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
+                      <td colSpan={7} style={{ padding: '10px 12px', fontWeight: 'bold', color: 'var(--primary-light)', fontSize: '0.95rem' }}>
+                        📅 {dateStr.split('-').reverse().join('/')}
+                      </td>
+                    </tr>
+                    {grouped[dateStr].map((t: any) => {
+                      const isConfirmed = t.status === 'confirmado';
+                      const isLate = t.status === 'vencido' || (t.dueDate && getDaysDiff(t.dueDate) < 0 && !isConfirmed);
+                      return (
+                        <tr 
+                          key={t.id} 
+                          onClick={() => { setSelectedTransaction(t); setAttachmentLink(null); }}
+                          style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background 0.2s' }}
+                          className="hover-row"
+                        >
+                          <td style={{ padding: '12px 8px', opacity: 0.5 }}>{t.date.split('-').reverse().join('/')}</td>
                     <td style={{ padding: '12px 8px' }}>{t.description}</td>
                     <td style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>{getSupplierName(t.supplierId)}</td>
                     <td style={{ padding: '12px 8px' }}>
@@ -803,9 +817,12 @@ export default function ContasPagar() {
                     <td style={{ padding: '12px 8px', textAlign: 'right', fontWeight: 600, color: isConfirmed ? '#2ecc71' : isLate ? '#e74c3c' : '#f1c40f' }}>
                       {formatCurrency(t.amount)}
                     </td>
-                  </tr>
-                );
-              })}
+                        </tr>
+                      );
+                    })}
+                  </Fragment>
+                ));
+              })()}
               {transactions.length === 0 && (
                 <tr>
                   <td colSpan={7} style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)' }}>Nenhuma despesa encontrada no período.</td>
