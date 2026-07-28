@@ -165,6 +165,88 @@ export default function VendasPage() {
         </div>
       </section>
 
+      {/* DEMONSTRAÇÃO DO FINANCEIRO */}
+      <section style={{ padding: '80px 20px', maxWidth: '1200px', margin: '0 auto', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+          <div style={{ display: 'inline-block', padding: '6px 16px', borderRadius: '20px', background: 'rgba(46,204,113,0.15)', border: '1px solid rgba(46,204,113,0.3)', color: '#2ecc71', fontSize: '0.82rem', fontWeight: 600, marginBottom: '20px' }}>
+            💰 Inteligência Financeira Real
+          </div>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0 0 15px 0', color: '#fff' }}>O Fim das Planilhas de Tesouraria</h2>
+          <p style={{ color: '#94a3b8', fontSize: '1.1rem', maxWidth: '700px', margin: '0 auto', lineHeight: '1.6' }}>
+            Diferente de sistemas genéricos, o Gestão Church foi desenhado para a realidade da igreja. O gestor, pastor ou tesoureiro tem tudo o que precisa na ponta dos dedos de forma automatizada e visual.
+          </p>
+        </div>
+
+        {/* FEATURE 1: DASHBOARD */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', marginBottom: '80px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/financeiro-dashboard.png" alt="Dashboard Financeiro Real" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Dashboard Analítico Completo</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Visão geral do caixa com inteligência em tempo real e relatórios interativos. Tudo gerado automaticamente a cada lançamento.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#2ecc71' }}>➔</span> 
+                <div><strong>Fluxo de Caixa Vivo:</strong> Saiba exatamente quanto entrou de dízimos e campanhas, separado por culto e horário.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#2ecc71' }}>➔</span> 
+                <div><strong>Inteligência D-Export:</strong> Exportação rápida e estruturada de DRE e gráficos com um clique.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#2ecc71' }}>➔</span> 
+                <div><strong>Comparativo YoY (Year-over-Year):</strong> Entenda o crescimento ou queda das receitas da igreja em relação aos anos anteriores.</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* FEATURE 2: KANBAN E LISTA */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', flexDirection: 'row-reverse', marginBottom: '80px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/financeiro-kanban.png" alt="Kanban de Contas" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', marginBottom: '20px' }} />
+            <img src="/financeiro-lista.png" alt="Agrupamento em Lista" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Organização Kanban e Lista Aninhada</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Gerencie contas a pagar e a receber como preferir: movendo os cartões visualmente no modelo Kanban ou detalhando tudo em lista expansível.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#f39c12' }}>➔</span> 
+                <div><strong>Módulo Kanban:</strong> Visualize suas despesas em colunas claras (A Pagar, Pago, Atrasado) e gerencie o fluxo facilmente.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#f39c12' }}>➔</span> 
+                <div><strong>Lista com Agrupamento Inteligente:</strong> Ao mudar para o modo lista, veja tudo agrupado rigorosamente por Status &gt; Ano &gt; Mês &gt; Dia em uma árvore expansível organizada.</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* FEATURE 3: MODAIS E CONTABILIDADE */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', marginBottom: '40px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/financeiro-modais.png" alt="Modais e Contabilidade" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Agilidade nos Lançamentos e Integração Contábil</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Diga adeus à burocracia de final de mês. Lance tudo na hora do culto de forma rápida e segura, e entregue mastigado para a contabilidade.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#e74c3c' }}>➔</span> 
+                <div><strong>Modais Práticos:</strong> Lançamento em duas etapas simples. Categorize dízimos de membros específicos, anexe comprovantes na hora e escolha o culto/horário.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#e74c3c' }}>➔</span> 
+                <div><strong>Fechamento Contábil Fácil:</strong> Exporte relatórios precisos que podem ser baixados juntamente com uma <strong>pasta zipada contendo todos os comprovantes anexados</strong> daquele período, prontos para enviar ao seu contador.</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </section>
+
       {/* TABELA DE PREÇOS */}
       <section id="planos" style={{ padding: '60px 20px 100px', maxWidth: '1150px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
