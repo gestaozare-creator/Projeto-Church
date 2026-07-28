@@ -114,11 +114,16 @@ export default function FormularioVisitante() {
 
     const cleanPhone = finalForm.phone ? finalForm.phone.replace(/\D/g, '') : '';
     
+    const targetChurch = churches.find((c: any) => c.id === finalForm.churchId);
+    if (!targetChurch) return false;
+    const validChurchIds = churches.filter((c: any) => c.ministry_id === targetChurch.ministry_id).map((c: any) => c.id);
+
     if (cleanPhone) {
       const { data: existing } = await supabase
         .from('members')
         .select('id')
         .eq('phone', cleanPhone)
+        .in('church_id', validChurchIds)
         .limit(1);
         
       if (existing && existing.length > 0) {

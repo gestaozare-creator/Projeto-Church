@@ -93,11 +93,16 @@ export default function FormularioMembro() {
 
     const cleanPhone = form.phone ? form.phone.replace(/\D/g, '') : '';
       
+    const targetChurch = churches.find((c: any) => c.id === form.churchId);
+    if (!targetChurch) return;
+    const validChurchIds = churches.filter((c: any) => c.ministry_id === targetChurch.ministry_id).map((c: any) => c.id);
+
     if (cleanPhone) {
       const { data: existing } = await supabase
         .from('members')
         .select('id')
         .eq('phone', cleanPhone)
+        .in('church_id', validChurchIds)
         .limit(1);
         
       if (existing && existing.length > 0) {

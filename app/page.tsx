@@ -263,10 +263,12 @@ export default function Home() {
     const cleanPhone = editForm.phone ? editForm.phone.replace(/\D/g, '') : '';
 
     if (isCreating && cleanPhone) {
+      const validChurchIds = dbChurches.map(c => c.id);
       const { data: existing } = await supabase
         .from('members')
         .select('id')
         .eq('phone', cleanPhone)
+        .in('church_id', validChurchIds)
         .limit(1);
         
       if (existing && existing.length > 0) {
