@@ -1,39 +1,20 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 
-interface LandingConfig {
-  planSecretaria: number;
-  planFinanceiro: number;
-  planKids: number;
-  planCombo: number;
-  whatsappPhone: string;
-  promoBanner: string;
-}
-
-const defaultConfig: LandingConfig = {
-  planSecretaria: 97,
-  planFinanceiro: 97,
-  planKids: 47,
-  planCombo: 197,
-  whatsappPhone: '5541999999999',
-  promoBanner: '⚡ Condição Especial de Lançamento: Ganhe 30% de Desconto no Plano Combo Completo!'
-};
-
 export default function VendasPage() {
-  const [config, setConfig] = useState<LandingConfig>(defaultConfig);
   const [activeTab, setActiveTab] = useState<'secretaria' | 'financeiro' | 'kids'>('secretaria');
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('project_church_landing_config');
-      if (saved) {
-        setConfig(JSON.parse(saved));
-      }
-    } catch(e) {}
-  }, []);
+  const whatsappPhone = '5541999999999';
+
+  const prices = {
+    secretaria: 97,
+    financeiro: 97,
+    kids: 47,
+    combo: 197
+  };
 
   const getPrice = (monthlyPrice: number) => {
     if (billingCycle === 'yearly') {
@@ -44,18 +25,16 @@ export default function VendasPage() {
 
   const getWhatsAppLink = (planName: string, price: number) => {
     const text = encodeURIComponent(`Olá! Tenho interesse no *${planName}* (R$ ${price}/mês) do Projeto Church. Gostaria de mais informações para minha igreja!`);
-    return `https://wa.me/${config.whatsappPhone}?text=${text}`;
+    return `https://wa.me/${whatsappPhone}?text=${text}`;
   };
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%)', color: '#f8fafc', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       
-      {/* BANNER PROMO */}
-      {config.promoBanner && (
-        <div style={{ background: 'linear-gradient(90deg, #6366f1 0%, #a855f7 100%)', color: '#fff', textAlign: 'center', padding: '10px 15px', fontSize: '0.88rem', fontWeight: 600, boxShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
-          {config.promoBanner}
-        </div>
-      )}
+      {/* BANNER PROMO ESTÁTICO */}
+      <div style={{ background: 'linear-gradient(90deg, #6366f1 0%, #a855f7 100%)', color: '#fff', textAlign: 'center', padding: '10px 15px', fontSize: '0.88rem', fontWeight: 600, boxShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
+        ⚡ Condição Especial de Lançamento: Ganhe 30% de Desconto no Plano Combo Completo!
+      </div>
 
       {/* NAVBAR */}
       <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -100,7 +79,7 @@ export default function VendasPage() {
           <a href="#planos" style={{ padding: '14px 32px', borderRadius: '12px', background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '1rem', boxShadow: '0 10px 25px rgba(99,102,241,0.4)', transition: 'transform 0.2s' }}>
             Conhecer os Planos
           </a>
-          <a href={`https://wa.me/${config.whatsappPhone}`} target="_blank" rel="noreferrer" style={{ padding: '14px 28px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <a href={`https://wa.me/${whatsappPhone}`} target="_blank" rel="noreferrer" style={{ padding: '14px 28px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
             💬 Falar com Consultor
           </a>
         </div>
@@ -212,7 +191,7 @@ export default function VendasPage() {
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0 0 5px 0' }}>Secretaria</h3>
             <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '0 0 20px 0' }}>Para gestão completa de membros e visitantes.</p>
             <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#fff', marginBottom: '20px' }}>
-              R$ {getPrice(config.planSecretaria)} <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 400 }}>/mês</span>
+              R$ {getPrice(prices.secretaria)} <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 400 }}>/mês</span>
             </div>
             <ul style={{ color: '#cbd5e1', fontSize: '0.85rem', lineHeight: '2', paddingLeft: '18px', flex: 1, marginBottom: '25px' }}>
               <li>Membros & Obreiros</li>
@@ -220,7 +199,7 @@ export default function VendasPage() {
               <li>Aniversariantes WhatsApp</li>
               <li>Funil de Visitantes</li>
             </ul>
-            <a href={getWhatsAppLink('Plano Secretaria', getPrice(config.planSecretaria))} target="_blank" rel="noreferrer" style={{ display: 'block', textAlign: 'center', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.1)', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>
+            <a href={getWhatsAppLink('Plano Secretaria', getPrice(prices.secretaria))} target="_blank" rel="noreferrer" style={{ display: 'block', textAlign: 'center', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.1)', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>
               Contratar Secretaria
             </a>
           </div>
@@ -230,7 +209,7 @@ export default function VendasPage() {
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0 0 5px 0' }}>Financeiro</h3>
             <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '0 0 20px 0' }}>Para controle total de entradas e saídas.</p>
             <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#fff', marginBottom: '20px' }}>
-              R$ {getPrice(config.planFinanceiro)} <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 400 }}>/mês</span>
+              R$ {getPrice(prices.financeiro)} <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 400 }}>/mês</span>
             </div>
             <ul style={{ color: '#cbd5e1', fontSize: '0.85rem', lineHeight: '2', paddingLeft: '18px', flex: 1, marginBottom: '25px' }}>
               <li>Dízimos & Ofertas</li>
@@ -238,7 +217,7 @@ export default function VendasPage() {
               <li>Relatórios de DRE</li>
               <li>Gráficos em Tempo Real</li>
             </ul>
-            <a href={getWhatsAppLink('Plano Financeiro', getPrice(config.planFinanceiro))} target="_blank" rel="noreferrer" style={{ display: 'block', textAlign: 'center', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.1)', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>
+            <a href={getWhatsAppLink('Plano Financeiro', getPrice(prices.financeiro))} target="_blank" rel="noreferrer" style={{ display: 'block', textAlign: 'center', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.1)', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>
               Contratar Financeiro
             </a>
           </div>
@@ -248,7 +227,7 @@ export default function VendasPage() {
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0 0 5px 0' }}>Kids</h3>
             <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '0 0 20px 0' }}>Para segurança do Ministério Infantil.</p>
             <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#fff', marginBottom: '20px' }}>
-              R$ {getPrice(config.planKids)} <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 400 }}>/mês</span>
+              R$ {getPrice(prices.kids)} <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 400 }}>/mês</span>
             </div>
             <ul style={{ color: '#cbd5e1', fontSize: '0.85rem', lineHeight: '2', paddingLeft: '18px', flex: 1, marginBottom: '25px' }}>
               <li>Check-in por QR Code</li>
@@ -256,7 +235,7 @@ export default function VendasPage() {
               <li>Alertas de Alergias</li>
               <li>Ficha Kids Dedicada</li>
             </ul>
-            <a href={getWhatsAppLink('Plano Kids', getPrice(config.planKids))} target="_blank" rel="noreferrer" style={{ display: 'block', textAlign: 'center', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.1)', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>
+            <a href={getWhatsAppLink('Plano Kids', getPrice(prices.kids))} target="_blank" rel="noreferrer" style={{ display: 'block', textAlign: 'center', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.1)', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>
               Contratar Kids
             </a>
           </div>
@@ -269,7 +248,7 @@ export default function VendasPage() {
             <h3 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 5px 0', color: '#a5b4fc' }}>Combo Completo</h3>
             <p style={{ fontSize: '0.8rem', color: '#cbd5e1', margin: '0 0 20px 0' }}>Todos os módulos integrados com desconto máximo.</p>
             <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#fff', marginBottom: '20px' }}>
-              R$ {getPrice(config.planCombo)} <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 400 }}>/mês</span>
+              R$ {getPrice(prices.combo)} <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 400 }}>/mês</span>
             </div>
             <ul style={{ color: '#f1f5f9', fontSize: '0.85rem', lineHeight: '2', paddingLeft: '18px', flex: 1, marginBottom: '25px' }}>
               <li><strong>TUDO</strong> do Módulo Secretaria</li>
@@ -277,7 +256,7 @@ export default function VendasPage() {
               <li><strong>TUDO</strong> do Módulo Kids</li>
               <li>Suporte Prioritário VIP</li>
             </ul>
-            <a href={getWhatsAppLink('Combo Completo', getPrice(config.planCombo))} target="_blank" rel="noreferrer" style={{ display: 'block', textAlign: 'center', padding: '14px', borderRadius: '10px', background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '0.95rem', boxShadow: '0 4px 15px rgba(99,102,241,0.4)' }}>
+            <a href={getWhatsAppLink('Combo Completo', getPrice(prices.combo))} target="_blank" rel="noreferrer" style={{ display: 'block', textAlign: 'center', padding: '14px', borderRadius: '10px', background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '0.95rem', boxShadow: '0 4px 15px rgba(99,102,241,0.4)' }}>
               Quero o Combo Completo
             </a>
           </div>
