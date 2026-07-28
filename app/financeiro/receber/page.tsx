@@ -715,51 +715,77 @@ export default function ContasReceber() {
             <tbody>
               {(() => {
                 const grouped = transactions.reduce((acc: any, t) => {
-                  if (!acc[t.date]) acc[t.date] = [];
-                  acc[t.date].push(t);
+                  const [y, m, d] = t.date.split('-');
+                  if (!acc[y]) acc[y] = {};
+                  if (!acc[y][m]) acc[y][m] = {};
+                  if (!acc[y][m][d]) acc[y][m][d] = [];
+                  acc[y][m][d].push(t);
                   return acc;
                 }, {});
-                const sortedDates = Object.keys(grouped).sort((a,b) => new Date(b).getTime() - new Date(a).getTime());
-                return sortedDates.map(dateStr => (
-                  <Fragment key={dateStr}>
-                    <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <td colSpan={7} style={{ padding: '10px 12px', fontWeight: 'bold', color: 'var(--primary-light)', fontSize: '0.95rem' }}>
-                        📅 {dateStr.split('-').reverse().join('/')}
+                
+                const sortedYears = Object.keys(grouped).sort((a,b) => Number(b) - Number(a));
+                
+                return sortedYears.map(year => (
+                  <Fragment key={year}>
+                    <tr style={{ background: 'rgba(255,255,255,0.06)' }}>
+                      <td colSpan={7} style={{ padding: '12px 12px', fontWeight: 'bold', color: 'var(--primary-light)', fontSize: '1.05rem' }}>
+                        📅 {year}
                       </td>
                     </tr>
-                    {grouped[dateStr].map((t: any) => {
-                      const isConfirmed = t.status === 'confirmado';
-                      const isLate = t.status === 'vencido' || (t.dueDate && getDaysDiff(t.dueDate) < 0 && !isConfirmed);
+                    {Object.keys(grouped[year]).sort((a,b) => Number(b) - Number(a)).map(month => {
+                      const monthName = new Date(2000, Number(month)-1, 1).toLocaleString('pt-BR', { month: 'long' });
                       return (
-                        <tr 
-                          key={t.id} 
-                          onClick={() => { setSelectedTransaction(t); setAttachmentLink(null); }}
-                          style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background 0.2s' }}
-                          className="hover-row"
-                        >
-                          <td style={{ padding: '12px 8px', opacity: 0.5 }}>{t.date.split('-').reverse().join('/')}</td>
-                    <td style={{ padding: '12px 8px' }}>{t.description}</td>
-                    <td style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>{getMemberName(t.memberId)}</td>
-                    <td style={{ padding: '12px 8px' }}>
-                      <span style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                        {t.category}
-                        {t.attachment_url && <span title="Possui anexo">📎</span>}
-                      </span>
-                    </td>
-                    <td style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>{t.paymentMethod}</td>
-                    <td style={{ padding: '12px 8px' }}>
-                      <span style={{ 
-                        background: isConfirmed ? 'rgba(46,204,113,0.15)' : isLate ? 'rgba(231,76,60,0.15)' : 'rgba(241,196,15,0.15)',
-                        color: isConfirmed ? '#2ecc71' : isLate ? '#e74c3c' : '#f1c40f',
-                        padding: '4px 10px', borderRadius: '6px', fontWeight: 600, fontSize: '0.75rem'
-                      }}>
-                        {isConfirmed ? '✅ Recebido' : isLate ? '🚨 Atrasado' : '🟡 A Receber'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '12px 8px', textAlign: 'right', fontWeight: 600, color: isConfirmed ? '#2ecc71' : isLate ? '#e74c3c' : '#f1c40f' }}>
-                      {formatCurrency(t.amount)}
-                    </td>
-                        </tr>
+                        <Fragment key={month}>
+                          <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
+                            <td colSpan={7} style={{ padding: '10px 12px', paddingLeft: '24px', fontWeight: '600', color: 'var(--text-primary)', fontSize: '0.95rem', textTransform: 'capitalize' }}>
+                              🗓️ {monthName}
+                            </td>
+                          </tr>
+                          {Object.keys(grouped[year][month]).sort((a,b) => Number(b) - Number(a)).map(day => (
+                            <Fragment key={day}>
+                              <tr style={{ background: 'rgba(255,255,255,0.02)' }}>
+                                <td colSpan={7} style={{ padding: '8px 12px', paddingLeft: '36px', fontWeight: '600', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                                  📌 Dia {day}
+                                </td>
+                              </tr>
+                              {grouped[year][month][day].map((t: any) => {
+                                const isConfirmed = t.status === 'confirmado';
+                                const isLate = t.status === 'vencido' || (t.dueDate && getDaysDiff(t.dueDate) < 0 && !isConfirmed);
+                                return (
+                                  <tr 
+                                    key={t.id} 
+                                    onClick={() => { setSelectedTransaction(t); setAttachmentLink(null); }}
+                                    style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background 0.2s' }}
+                                    className="hover-row"
+                                  >
+                                    <td style={{ padding: '12px 8px', opacity: 0.5, paddingLeft: '48px' }}>{t.date.split('-').reverse().join('/')}</td>
+                                    <td style={{ padding: '12px 8px' }}>{t.description}</td>
+                                    <td style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>{getMemberName(t.memberId)}</td>
+                                    <td style={{ padding: '12px 8px' }}>
+                                      <span style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                        {t.category}
+                                        {t.attachment_url && <span title="Possui anexo">📎</span>}
+                                      </span>
+                                    </td>
+                                    <td style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>{t.paymentMethod}</td>
+                                    <td style={{ padding: '12px 8px' }}>
+                                      <span style={{ 
+                                        background: isConfirmed ? 'rgba(46,204,113,0.15)' : isLate ? 'rgba(231,76,60,0.15)' : 'rgba(241,196,15,0.15)',
+                                        color: isConfirmed ? '#2ecc71' : isLate ? '#e74c3c' : '#f1c40f',
+                                        padding: '4px 10px', borderRadius: '6px', fontWeight: 600, fontSize: '0.75rem'
+                                      }}>
+                                        {isConfirmed ? '✅ Recebido' : isLate ? '🚨 Atrasado' : '🟡 A Receber'}
+                                      </span>
+                                    </td>
+                                    <td style={{ padding: '12px 8px', textAlign: 'right', fontWeight: 600, color: isConfirmed ? '#2ecc71' : isLate ? '#e74c3c' : '#f1c40f' }}>
+                                      {formatCurrency(t.amount)}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </Fragment>
+                          ))}
+                        </Fragment>
                       );
                     })}
                   </Fragment>
