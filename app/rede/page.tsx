@@ -281,7 +281,7 @@ export default function RedePage() {
               }}>⛪</div>
             )}
             <div>
-              {allMinistries.length > 1 && canSeeAllChurches && (
+              {allMinistries.length > 1 && currentUser?.role === 'superadmin' && (
                 <div style={{ marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ fontSize: '0.75rem', color: '#93c5fd', fontWeight: 'bold' }}>🏰 SELEÇÃO DE REDE:</span>
                   <select
