@@ -177,7 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Redirecionamento de proteção de rotas
   useEffect(() => {
     const isAgendaPublicScale = pathname?.match(/^\/agenda\/[^/]+\/[^/]+$/);
-    const isPublic = pathname === '/login' || pathname?.startsWith('/formulario') || isAgendaPublicScale;
+    const isPublic = pathname === '/' || pathname === '/login' || pathname?.startsWith('/formulario') || pathname?.startsWith('/vendas') || isAgendaPublicScale;
     if (!loading && !currentUser && !isPublic) {
       router.push('/login');
     }
