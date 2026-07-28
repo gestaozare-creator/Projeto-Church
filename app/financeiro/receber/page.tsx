@@ -86,6 +86,12 @@ export default function ContasReceber() {
   const [showRevenueModal, setShowRevenueModal] = useState(false);
   const [localTransactions, setLocalTransactions] = useState<Transaction[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({});
+
+  const toggleNode = (e: React.MouseEvent, key: string) => {
+    e.stopPropagation();
+    setExpandedNodes(prev => ({...prev, [key]: !prev[key]}));
+  };
   
   // Kanban DND States
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
@@ -715,81 +721,115 @@ export default function ContasReceber() {
             <tbody>
               {(() => {
                 const grouped = transactions.reduce((acc: any, t) => {
+                  const isConfirmed = t.status === 'confirmado';
+                  const isLate = t.status === 'vencido' || (t.dueDate && getDaysDiff(t.dueDate) < 0 && !isConfirmed);
+                  const statusKey = isConfirmed ? 'confirmado' : isLate ? 'atrasado' : 'pendente';
                   const [y, m, d] = t.date.split('-');
-                  if (!acc[y]) acc[y] = {};
-                  if (!acc[y][m]) acc[y][m] = {};
-                  if (!acc[y][m][d]) acc[y][m][d] = [];
-                  acc[y][m][d].push(t);
+                  if (!acc[statusKey]) acc[statusKey] = {};
+                  if (!acc[statusKey][y]) acc[statusKey][y] = {};
+                  if (!acc[statusKey][y][m]) acc[statusKey][y][m] = {};
+                  if (!acc[statusKey][y][m][d]) acc[statusKey][y][m][d] = [];
+                  acc[statusKey][y][m][d].push(t);
                   return acc;
                 }, {});
-                
-                const sortedYears = Object.keys(grouped).sort((a,b) => Number(b) - Number(a));
-                
-                return sortedYears.map(year => (
-                  <Fragment key={year}>
-                    <tr style={{ background: 'rgba(255,255,255,0.06)' }}>
-                      <td colSpan={7} style={{ padding: '12px 12px', fontWeight: 'bold', color: 'var(--primary-light)', fontSize: '1.05rem' }}>
-                        📅 {year}
-                      </td>
-                    </tr>
-                    {Object.keys(grouped[year]).sort((a,b) => Number(b) - Number(a)).map(month => {
-                      const monthName = new Date(2000, Number(month)-1, 1).toLocaleString('pt-BR', { month: 'long' });
-                      return (
-                        <Fragment key={month}>
-                          <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
-                            <td colSpan={7} style={{ padding: '10px 12px', paddingLeft: '24px', fontWeight: '600', color: 'var(--text-primary)', fontSize: '0.95rem', textTransform: 'capitalize' }}>
-                              🗓️ {monthName}
-                            </td>
-                          </tr>
-                          {Object.keys(grouped[year][month]).sort((a,b) => Number(b) - Number(a)).map(day => (
-                            <Fragment key={day}>
-                              <tr style={{ background: 'rgba(255,255,255,0.02)' }}>
-                                <td colSpan={7} style={{ padding: '8px 12px', paddingLeft: '36px', fontWeight: '600', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                                  📌 Dia {day}
-                                </td>
-                              </tr>
-                              {grouped[year][month][day].map((t: any) => {
-                                const isConfirmed = t.status === 'confirmado';
-                                const isLate = t.status === 'vencido' || (t.dueDate && getDaysDiff(t.dueDate) < 0 && !isConfirmed);
-                                return (
-                                  <tr 
-                                    key={t.id} 
-                                    onClick={() => { setSelectedTransaction(t); setAttachmentLink(null); }}
-                                    style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background 0.2s' }}
-                                    className="hover-row"
-                                  >
-                                    <td style={{ padding: '12px 8px', opacity: 0.5, paddingLeft: '48px' }}>{t.date.split('-').reverse().join('/')}</td>
-                                    <td style={{ padding: '12px 8px' }}>{t.description}</td>
-                                    <td style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>{getMemberName(t.memberId)}</td>
-                                    <td style={{ padding: '12px 8px' }}>
-                                      <span style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                        {t.category}
-                                        {t.attachment_url && <span title="Possui anexo">📎</span>}
-                                      </span>
-                                    </td>
-                                    <td style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>{t.paymentMethod}</td>
-                                    <td style={{ padding: '12px 8px' }}>
-                                      <span style={{ 
-                                        background: isConfirmed ? 'rgba(46,204,113,0.15)' : isLate ? 'rgba(231,76,60,0.15)' : 'rgba(241,196,15,0.15)',
-                                        color: isConfirmed ? '#2ecc71' : isLate ? '#e74c3c' : '#f1c40f',
-                                        padding: '4px 10px', borderRadius: '6px', fontWeight: 600, fontSize: '0.75rem'
-                                      }}>
-                                        {isConfirmed ? '✅ Recebido' : isLate ? '🚨 Atrasado' : '🟡 A Receber'}
-                                      </span>
-                                    </td>
-                                    <td style={{ padding: '12px 8px', textAlign: 'right', fontWeight: 600, color: isConfirmed ? '#2ecc71' : isLate ? '#e74c3c' : '#f1c40f' }}>
-                                      {formatCurrency(t.amount)}
+
+                const statusOrder = ['atrasado', 'pendente', 'confirmado'];
+                const statusConfig: any = {
+                  'atrasado': { label: '🚨 Atrasado', color: '#e74c3c' },
+                  'pendente': { label: '🟡 A Receber', color: '#f1c40f' },
+                  'confirmado': { label: '✅ Recebido', color: '#2ecc71' }
+                };
+
+                return statusOrder.map(sKey => {
+                  if (!grouped[sKey]) return null;
+                  const isStatusExp = expandedNodes[`s-${sKey}`];
+                  
+                  return (
+                    <Fragment key={sKey}>
+                      <tr onClick={(e) => toggleNode(e, `s-${sKey}`)} style={{ background: 'rgba(255,255,255,0.08)', cursor: 'pointer' }}>
+                        <td colSpan={7} style={{ padding: '14px 12px', fontWeight: 'bold', color: statusConfig[sKey].color, fontSize: '1.1rem' }}>
+                          <span style={{ display: 'inline-block', width: '20px', fontSize: '0.8rem', opacity: 0.8 }}>{isStatusExp ? '▼' : '▶'}</span>
+                          {statusConfig[sKey].label}
+                        </td>
+                      </tr>
+                      {isStatusExp && Object.keys(grouped[sKey]).sort((a,b) => Number(b) - Number(a)).map(year => {
+                        const isYearExp = expandedNodes[`y-${sKey}-${year}`];
+                        return (
+                          <Fragment key={year}>
+                            <tr onClick={(e) => toggleNode(e, `y-${sKey}-${year}`)} style={{ background: 'rgba(255,255,255,0.06)', cursor: 'pointer' }}>
+                              <td colSpan={7} style={{ padding: '12px 12px', paddingLeft: '24px', fontWeight: 'bold', color: 'var(--primary-light)', fontSize: '1.05rem' }}>
+                                <span style={{ display: 'inline-block', width: '16px', fontSize: '0.75rem', opacity: 0.8 }}>{isYearExp ? '▼' : '▶'}</span>
+                                📅 {year}
+                              </td>
+                            </tr>
+                            {isYearExp && Object.keys(grouped[sKey][year]).sort((a,b) => Number(b) - Number(a)).map(month => {
+                              const monthName = new Date(2000, Number(month)-1, 1).toLocaleString('pt-BR', { month: 'long' });
+                              const isMonthExp = expandedNodes[`m-${sKey}-${year}-${month}`];
+                              return (
+                                <Fragment key={month}>
+                                  <tr onClick={(e) => toggleNode(e, `m-${sKey}-${year}-${month}`)} style={{ background: 'rgba(255,255,255,0.04)', cursor: 'pointer' }}>
+                                    <td colSpan={7} style={{ padding: '10px 12px', paddingLeft: '40px', fontWeight: '600', color: 'var(--text-primary)', fontSize: '0.95rem', textTransform: 'capitalize' }}>
+                                      <span style={{ display: 'inline-block', width: '14px', fontSize: '0.7rem', opacity: 0.8 }}>{isMonthExp ? '▼' : '▶'}</span>
+                                      🗓️ {monthName}
                                     </td>
                                   </tr>
-                                );
-                              })}
-                            </Fragment>
-                          ))}
-                        </Fragment>
-                      );
-                    })}
-                  </Fragment>
-                ));
+                                  {isMonthExp && Object.keys(grouped[sKey][year][month]).sort((a,b) => Number(b) - Number(a)).map(day => {
+                                    const isDayExp = expandedNodes[`d-${sKey}-${year}-${month}-${day}`];
+                                    return (
+                                      <Fragment key={day}>
+                                        <tr onClick={(e) => toggleNode(e, `d-${sKey}-${year}-${month}-${day}`)} style={{ background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
+                                          <td colSpan={7} style={{ padding: '8px 12px', paddingLeft: '56px', fontWeight: '600', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                                            <span style={{ display: 'inline-block', width: '12px', fontSize: '0.65rem', opacity: 0.8 }}>{isDayExp ? '▼' : '▶'}</span>
+                                            📌 Dia {day}
+                                          </td>
+                                        </tr>
+                                        {isDayExp && grouped[sKey][year][month][day].map((t: any) => {
+                                          const isConfirmed = t.status === 'confirmado';
+                                          const isLate = t.status === 'vencido' || (t.dueDate && getDaysDiff(t.dueDate) < 0 && !isConfirmed);
+                                          return (
+                                            <tr 
+                                              key={t.id} 
+                                              onClick={() => { setSelectedTransaction(t); setAttachmentLink(null); }}
+                                              style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background 0.2s' }}
+                                              className="hover-row"
+                                            >
+                                              <td style={{ padding: '12px 8px', opacity: 0.5, paddingLeft: '72px' }}>{t.date.split('-').reverse().join('/')}</td>
+                                              <td style={{ padding: '12px 8px' }}>{t.description}</td>
+                                              <td style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>{getMemberName(t.memberId)}</td>
+                                              <td style={{ padding: '12px 8px' }}>
+                                                <span style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                                  {t.category}
+                                                  {t.attachment_url && <span title="Possui anexo">📎</span>}
+                                                </span>
+                                              </td>
+                                              <td style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>{t.paymentMethod}</td>
+                                              <td style={{ padding: '12px 8px' }}>
+                                                <span style={{ 
+                                                  background: isConfirmed ? 'rgba(46,204,113,0.15)' : isLate ? 'rgba(231,76,60,0.15)' : 'rgba(241,196,15,0.15)',
+                                                  color: isConfirmed ? '#2ecc71' : isLate ? '#e74c3c' : '#f1c40f',
+                                                  padding: '4px 10px', borderRadius: '6px', fontWeight: 600, fontSize: '0.75rem'
+                                                }}>
+                                                  {isConfirmed ? '✅ Recebido' : isLate ? '🚨 Atrasado' : '🟡 A Receber'}
+                                                </span>
+                                              </td>
+                                              <td style={{ padding: '12px 8px', textAlign: 'right', fontWeight: 600, color: isConfirmed ? '#2ecc71' : isLate ? '#e74c3c' : '#f1c40f' }}>
+                                                {formatCurrency(t.amount)}
+                                              </td>
+                                            </tr>
+                                          );
+                                        })}
+                                      </Fragment>
+                                    );
+                                  })}
+                                </Fragment>
+                              );
+                            })}
+                          </Fragment>
+                        );
+                      })}
+                    </Fragment>
+                  );
+                });
               })()}
               {transactions.length === 0 && (
                 <tr>
