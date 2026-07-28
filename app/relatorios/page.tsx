@@ -36,7 +36,7 @@ interface TransactionData {
 type ReportType = 'TODOS' | 'SECRETARIA' | 'FINANCEIRO' | 'RECEITAS' | 'DESPESAS' | 'CONTABILIDADE' | 'INTELIGENCIA';
 
 export default function RelatoriosPage() {
-  const { currentUser, activeChurchId, canSeeAllChurches } = useAuth();
+  const { currentUser, activeChurchId, canSeeAllChurches, activeMinistryId } = useAuth();
   const router = useRouter();
 
   const [year, setYear] = useState<number>(new Date().getFullYear());
@@ -58,7 +58,9 @@ export default function RelatoriosPage() {
 
   useEffect(() => {
     if (canSeeAllChurches) {
-      supabase.from('churches').select('id, name').order('name').then(({ data }) => {
+      let q = supabase.from('churches').select('id, name').order('name');
+      if (activeMinistryId) q = q.eq('ministry_id', activeMinistryId);
+      q.then(({ data }) => {
         if (data && data.length > 0) {
           setChurchList(data);
           if (!selectedChurch && !activeChurchId) {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/context/AuthContext';
 
 export interface DbChurch {
   id: string;
@@ -43,6 +44,7 @@ export interface DbSupplier {
 }
 
 export function useGlobalData() {
+  const { activeMinistryId } = useAuth();
   const [churches, setChurches] = useState<DbChurch[]>([]);
   const [churchServices, setChurchServices] = useState<DbChurchService[]>([]);
   const [members, setMembers] = useState<DbMember[]>([]);
@@ -52,8 +54,13 @@ export function useGlobalData() {
   useEffect(() => {
     async function loadData() {
       try {
+        let churchQuery = supabase.from('churches').select('*');
+        if (activeMinistryId) {
+          churchQuery = churchQuery.eq('ministry_id', activeMinistryId);
+        }
+
         const [churchesRes, servicesRes, membersRes, suppliersRes] = await Promise.all([
-          supabase.from('churches').select('*'),
+          churchQuery,
           supabase.from('church_services').select('*'),
           supabase.from('members').select('*'),
           supabase.from('suppliers').select('*')

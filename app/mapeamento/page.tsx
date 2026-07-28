@@ -14,7 +14,7 @@ type Person = {
 };
 
 export default function Mapeamento() {
-  const { currentUser, canSeeAllChurches, activeChurchId } = useAuth();
+  const { currentUser, canSeeAllChurches, activeChurchId, activeMinistryId } = useAuth();
   const [dbMembers, setDbMembers] = useState<any[]>([]);
   const [dbChurches, setDbChurches] = useState<any[]>([]);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
@@ -31,9 +31,17 @@ export default function Mapeamento() {
         if (pageData.length < pageSize) break;
         page++;
       }
-      setDbMembers(allMembers);
-      const { data: churchesData } = await supabase.from('churches').select('*');
+      let qChurches = supabase.from('churches').select('*');
+      if (activeMinistryId) qChurches = qChurches.eq('ministry_id', activeMinistryId);
+      const { data: churchesData } = await qChurches;
       if (churchesData) setDbChurches(churchesData);
+
+      // Filtrar membros pelos church_ids da rede ativa
+      if (churchesData && churchesData.length > 0) {
+        const allowedChurchIds = churchesData.map(c => c.id);
+        allMembers = allMembers.filter(m => allowedChurchIds.includes(m.church_id));
+      }
+      setDbMembers(allMembers);
     }
     fetchData();
   }, []);

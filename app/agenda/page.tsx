@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function AgendaPage() {
-  const { currentUser, canSeeAllChurches } = useAuth();
+  const { currentUser, canSeeAllChurches, activeMinistryId } = useAuth();
   
   const [events, setEvents] = useState<ChurchEvent[]>([]);
   const [currentDate, setCurrentDate] = useState<Date>(new Date(2026, 5, 23)); 
@@ -34,7 +34,9 @@ export default function AgendaPage() {
 
   useEffect(() => {
     async function fetchData() {
-      const { data: churchesData } = await supabase.from('churches').select('*');
+      let q = supabase.from('churches').select('*');
+      if (activeMinistryId) q = q.eq('ministry_id', activeMinistryId);
+      const { data: churchesData } = await q;
       if (churchesData) {
         setDbChurches(churchesData.map(c => ({ id: c.id, name: c.name, isHeadquarters: c.is_headquarters })));
       }

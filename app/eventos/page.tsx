@@ -16,7 +16,7 @@ export interface EventGuest {
 }
 
 export default function EventosPage() {
-  const { currentUser, canSeeAllChurches } = useAuth();
+  const { currentUser, canSeeAllChurches, activeMinistryId } = useAuth();
 
   const { events: dbEvents, loading: eventsLoading } = useEvents();
   const [events, setEvents] = useState<ChurchEvent[]>([]);
@@ -66,12 +66,20 @@ export default function EventosPage() {
       }));
 
       // 3. Carregar igrejas e membros
-      const { data: churchesDb } = await supabase.from('churches').select('*');
+      let qChurches = supabase.from('churches').select('*');
+      if (activeMinistryId) qChurches = qChurches.eq('ministry_id', activeMinistryId);
+      const { data: churchesDb } = await qChurches;
+
       if (churchesDb) {
         setDbChurches(churchesDb.map(c => ({ id: c.id, name: c.name, services: [] })));
       }
 
-      const { data: membersDb } = await supabase.from('members').select('*');
+      // Filtrar membros apenas das igrejas carregadas
+      const churchIds = churchesDb ? churchesDb.map(c => c.id) : [];
+      let qMembers = supabase.from('members').select('*');
+      if (churchIds.length > 0) qMembers = qMembers.in('church_id', churchIds);
+      
+      const { data: membersDb } = await qMembers;
       if (membersDb) {
         setDbMembers(membersDb.map(m => ({
           id: m.id,
