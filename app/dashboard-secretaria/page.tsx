@@ -286,7 +286,7 @@ function DonutChart({
 }
 
 export default function DashboardSecretariaPage() {
-  const { currentUser, canSeeAllChurches, activeChurchId, activeChurchName, exitChurch } = useAuth();
+  const { currentUser, canSeeAllChurches, activeChurchId, activeChurchName, exitChurch, activeMinistryId } = useAuth();
 
   const [church, setChurch] = useState(
     activeChurchId ? activeChurchId : (canSeeAllChurches ? "ALL" : currentUser?.churchId || ""),
@@ -368,8 +368,12 @@ export default function DashboardSecretariaPage() {
 
   useEffect(() => {
     async function fetchDashboardData() {
-      // Carregar igrejas e os cultos do Supabase
-      const { data: churchesDb } = await supabase.from("churches").select("*");
+      // Carregar igrejas e os cultos do Supabase (Filtrado por rede/ministryId para isolamento)
+      let churchQuery = supabase.from("churches").select("*");
+      if (activeMinistryId) {
+        churchQuery = churchQuery.eq("ministry_id", activeMinistryId);
+      }
+      const { data: churchesDb } = await churchQuery;
       const { data: servicesDb } = await supabase
         .from("church_services")
         .select("*");
