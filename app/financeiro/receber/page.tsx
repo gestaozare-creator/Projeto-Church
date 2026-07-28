@@ -410,6 +410,9 @@ export default function ContasReceber() {
       }
       
       return true;
+    }).sort((a, b) => {
+      // Ordena do mais recente para o mais antigo (descrescente)
+      return b.date.localeCompare(a.date);
     });
   }, [church, startDate, endDate, cultoFilter, horarioFilter, localTransactions]);
 
