@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { Member, Church } from '@/types/database';
 import { useChurches } from '@/hooks/useChurches';
 import { useMembers } from '@/hooks/useMembers';
+import VendasPage from './vendas/page';
 
 const getFunctionColor = (func?: string, cardConfig?: any) => {
   const f = (func || '').toLowerCase();
@@ -24,11 +25,15 @@ const getFunctionColor = (func?: string, cardConfig?: any) => {
 };
 
 export default function Home() {
-  const { currentUser, canSeeAllChurches, activeChurchId } = useAuth();
+  const { currentUser, loading, canSeeAllChurches, activeChurchId } = useAuth();
   const [search, setSearch] = useState('');
   const [church, setChurch] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches ? 'ALL' : currentUser?.churchId || ''));
   const { churches: dbChurches, loading: churchesLoading } = useChurches();
   const { members: allMembers, loading: membersLoading, setMembers } = useMembers();
+
+  if (!loading && !currentUser) {
+    return <VendasPage />;
+  }
 
   useEffect(() => {
     if (activeChurchId) {

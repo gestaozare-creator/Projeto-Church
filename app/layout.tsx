@@ -58,7 +58,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   };
 
   const isAgendaPublicScale = pathname?.match(/^\/agenda\/[^/]+\/[^/]+$/);
-  const isPublicRoute = pathname?.startsWith('/formulario') || pathname?.startsWith('/vendas') || isAgendaPublicScale;
+  const isPublicRoute = (pathname === '/' && !currentUser) || pathname?.startsWith('/formulario') || pathname?.startsWith('/vendas') || isAgendaPublicScale;
   const isLoginRoute = pathname === '/login';
   
   useEffect(() => {
