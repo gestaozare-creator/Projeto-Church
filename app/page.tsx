@@ -35,20 +35,50 @@ export default function Home() {
     return <VendasPage />;
   }
 
+  // 1. Igreja Ativa e Rede Escopada
+  const activeChurchObj = useMemo(() => {
+    if (!activeChurchId) return null;
+    return dbChurches.find(c => c.id === activeChurchId) || null;
+  }, [dbChurches, activeChurchId]);
+
+  // A rede ativa da visão atual (da igreja ativa ou do usuário)
+  const activeNetworkMinistryId = useMemo(() => {
+    if (activeChurchObj?.ministryId) return activeChurchObj.ministryId;
+    if (currentUser?.ministryId) return currentUser.ministryId;
+    return dbChurches.find(c => c.id === (activeChurchId || currentUser?.churchId))?.ministryId || dbChurches[0]?.ministryId || '';
+  }, [activeChurchObj, currentUser, dbChurches, activeChurchId]);
+
+  // Igrejas permitidas no escopo da visão (APENAS da mesma rede/ministério)
+  const scopedChurches = useMemo(() => {
+    if (!activeNetworkMinistryId) return dbChurches;
+    return dbChurches.filter(c => c.ministryId === activeNetworkMinistryId);
+  }, [dbChurches, activeNetworkMinistryId]);
+
   useEffect(() => {
     if (activeChurchId) {
       setChurch(activeChurchId);
-    } else if (canSeeAllChurches) {
-      setChurch('ALL');
+    } else if (scopedChurches.length > 0) {
+      if (church === 'ALL' || !scopedChurches.some(c => c.id === church)) {
+        setChurch('ALL');
+      }
     }
-  }, [activeChurchId, canSeeAllChurches]);
+  }, [activeChurchId, scopedChurches]);
 
-  // Filtramos os membros na memória para não refazer a chamada de rede à toa no MVP
+  // Membros filtrados estritamente pelo escopo da rede
   const members = useMemo(() => {
-    if (canSeeAllChurches && church === 'ALL') return allMembers;
-    const targetId = !canSeeAllChurches ? currentUser?.churchId : church;
-    return allMembers.filter(m => m.church_id === targetId);
-  }, [allMembers, church, canSeeAllChurches, currentUser]);
+    const scopedChurchIds = new Set(scopedChurches.map(c => c.id));
+    const networkMembers = allMembers.filter(m => scopedChurchIds.has(m.church_id));
+
+    if (activeChurchId) {
+      return networkMembers.filter(m => m.church_id === activeChurchId);
+    }
+
+    if (church === 'ALL') {
+      return networkMembers;
+    }
+
+    return networkMembers.filter(m => m.church_id === church);
+  }, [allMembers, scopedChurches, activeChurchId, church]);
 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -58,9 +88,9 @@ export default function Home() {
   const availableHorarios = useMemo(() => {
     let svcs: any[] = [];
     if (church === 'ALL') {
-      svcs = dbChurches.flatMap(c => c.services || []);
+      svcs = scopedChurches.flatMap(c => c.services || []);
     } else {
-      const c = dbChurches.find(c => c.id === church);
+      const c = scopedChurches.find(c => c.id === church);
       svcs = c?.services || [];
     }
     if (cultoFilter === 'ALL') {
@@ -398,14 +428,14 @@ export default function Home() {
           <span style={{ position:'absolute', left:'10px', top:'50%', transform:'translateY(-50%)', fontSize:'0.8rem', opacity:0.4 }}>🔍</span>
           <input type="text" placeholder="Buscar..." className="search-input glass-input" style={{ width:'100%', padding:'8px 8px 8px 30px', fontSize:'0.82rem' }} value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        {canSeeAllChurches ? (
+        {canSeeAllChurches && !activeChurchId ? (
           <select className="filter-select" style={{ padding:'8px', fontSize:'0.8rem', minWidth:'140px' }} value={church} onChange={e => setChurch(e.target.value)}>
-            <option value="ALL">⛪ Todas</option>
-            {dbChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            <option value="ALL">⛪ Todas as Igrejas da Rede</option>
+            {scopedChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         ) : (
           <div className="filter-select" style={{ padding:'8px', fontSize:'0.8rem', minWidth:'140px', opacity: 0.8, pointerEvents: 'none', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
-            {dbChurches.find(c => c.id === church)?.name || 'Igreja Local'}
+            {scopedChurches.find(c => c.id === (activeChurchId || church))?.name || 'Igreja Local'}
           </div>
         )}
         <select value={cultoFilter} onChange={e => setCultoFilter(e.target.value)} className="search-input glass-input" style={{ padding: '8px', fontSize: '0.8rem' }}>

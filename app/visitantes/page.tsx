@@ -133,7 +133,12 @@ export default function Visitantes() {
       const { data: servicesDb } = await supabase.from('church_services').select('*');
 
       if (churchesDb) {
-        setDbChurches(churchesDb.map(c => {
+        const activeChurch = churchesDb.find(c => c.id === activeChurchId) || churchesDb.find(c => c.id === currentUser?.churchId);
+        const activeNetId = activeChurch?.ministry_id || currentUser?.ministryId || churchesDb[0]?.ministry_id;
+
+        const networkChurches = activeNetId ? churchesDb.filter(c => c.ministry_id === activeNetId) : churchesDb;
+
+        setDbChurches(networkChurches.map(c => {
           const svcs = (servicesDb || []).filter(s => s.church_id === c.id).map(s => ({
             id: s.id,
             name: s.name,
@@ -143,6 +148,7 @@ export default function Visitantes() {
           return {
             id: c.id,
             name: c.name,
+            ministryId: c.ministry_id || '',
             services: svcs
           } as any;
         }));
