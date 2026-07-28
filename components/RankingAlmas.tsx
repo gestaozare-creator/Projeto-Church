@@ -16,7 +16,7 @@ interface RankingVisitor {
   status?: string;
 }
 
-export default function RankingAlmas({ editable = false }: { editable?: boolean }) {
+export default function RankingAlmas({ editable = false, ministryId }: { editable?: boolean; ministryId?: string }) {
   const [year, setYear] = useState('2026');
   const [dbMembers, setDbMembers] = useState<(Member & { churchId: string; integrationDate?: string })[]>([]);
   const [dbChurches, setDbChurches] = useState<Church[]>([]);
@@ -42,7 +42,11 @@ export default function RankingAlmas({ editable = false }: { editable?: boolean 
 
   useEffect(() => {
     async function loadData() {
-      const { data: c } = await supabase.from('churches').select('*');
+      let query = supabase.from('churches').select('*');
+      if (ministryId) {
+        query = query.eq('ministry_id', ministryId);
+      }
+      const { data: c } = await query;
       if (c) setDbChurches(c);
 
       let allMembers: any[] = [];

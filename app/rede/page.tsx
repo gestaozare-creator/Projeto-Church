@@ -54,6 +54,8 @@ export default function RedePage() {
   const router = useRouter();
 
   const [ministry, setMinistry] = useState<Ministry | null>(null);
+  const [allMinistries, setAllMinistries] = useState<Ministry[]>([]);
+  const [selectedMinistryId, setSelectedMinistryId] = useState<string | null>(null);
   const [churches, setChurches] = useState<Church[]>([]);
   const [memberStats, setMemberStats] = useState<Record<string, MemberStats>>({});
   const [activeTab, setActiveTab] = useState<TabType>('overview');
@@ -107,7 +109,7 @@ export default function RedePage() {
       }
       loadData();
     }
-  }, [loading, currentUser]);
+  }, [loading, currentUser, selectedMinistryId]);
 
   const loadData = async () => {
     setPageLoading(true);
@@ -129,8 +131,17 @@ export default function RedePage() {
         }
       }
 
+      let activeMin: Ministry | null = null;
       if (ministries && ministries.length > 0) {
-        setMinistry(ministries[0]);
+        setAllMinistries(ministries);
+        if (selectedMinistryId) {
+          activeMin = ministries.find((m: any) => m.id === selectedMinistryId) || ministries[0];
+        } else if (currentUser?.ministryId) {
+          activeMin = ministries.find((m: any) => m.id === currentUser.ministryId) || ministries[0];
+        } else {
+          activeMin = ministries[0];
+        }
+        setMinistry(activeMin);
       }
 
       if (churchesDb) {
@@ -158,12 +169,22 @@ export default function RedePage() {
             services: svcs
           };
         });
-        setChurches(formatted);
 
-        // Stats por igreja
+        // FILTRAGEM ESTRITA POR REDE/MINISTÉRIO ATIVO
+        const targetMinId = activeMin?.id || '';
+        const filteredChurches = targetMinId 
+          ? formatted.filter((c: any) => c.ministryId === targetMinId)
+          : formatted;
+
+        setChurches(filteredChurches);
+
+        // Stats por igreja (apenas da rede ativa)
+        const churchIdSet = new Set(filteredChurches.map((c: any) => c.id));
+        const networkPeople = allMembersDb.filter((m: any) => churchIdSet.has(m.church_id));
+
         const stats: Record<string, MemberStats> = {};
-        for (const church of formatted) {
-          const allPeople = allMembersDb.filter((m: any) => m.church_id === church.id);
+        for (const church of filteredChurches) {
+          const allPeople = networkPeople.filter((m: any) => m.church_id === church.id);
           const visitors = allPeople.filter((m: any) => m.status === 'pendente' || m.status === 'em_conversao' || m.status === 'visitante');
           const members = allPeople.filter((m: any) => m.status !== 'pendente' && m.status !== 'em_conversao' && m.status !== 'visitante');
 
@@ -175,8 +196,8 @@ export default function RedePage() {
         }
         setMemberStats(stats);
 
-        const globalVisitors = allMembersDb.filter((m: any) => m.status === 'pendente' || m.status === 'em_conversao' || m.status === 'visitante');
-        const globalMembers = allMembersDb.filter((m: any) => m.status !== 'pendente' && m.status !== 'em_conversao' && m.status !== 'visitante');
+        const globalVisitors = networkPeople.filter((m: any) => m.status === 'pendente' || m.status === 'em_conversao' || m.status === 'visitante');
+        const globalMembers = networkPeople.filter((m: any) => m.status !== 'pendente' && m.status !== 'em_conversao' && m.status !== 'visitante');
 
         setTotalMembros(globalMembers.length);
         setTotalAtivos(globalMembers.filter((m: any) => m.status === 'ativo').length);
@@ -258,13 +279,32 @@ export default function RedePage() {
               }}>⛪</div>
             )}
             <div>
+              {allMinistries.length > 1 && canSeeAllChurches && (
+                <div style={{ marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#93c5fd', fontWeight: 'bold' }}>🏰 SELEÇÃO DE REDE:</span>
+                  <select
+                    value={ministry?.id || ''}
+                    onChange={e => setSelectedMinistryId(e.target.value)}
+                    style={{
+                      padding: '4px 10px', borderRadius: '6px', background: 'rgba(30, 41, 59, 0.9)',
+                      border: '1px solid rgba(147, 197, 253, 0.4)', color: '#fff', fontSize: '0.82rem', fontWeight: 600
+                    }}
+                  >
+                    {allMinistries.map(m => (
+                      <option key={m.id} value={m.id} style={{ background: '#0f172a', color: '#fff' }}>
+                        Rede {m.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
                 <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                  {ministry?.name || 'IPCN'}
+                  Rede {ministry?.name || 'IPCN'}
                 </h1>
               </div>
               <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                Igreja Pentecostal Cristo para as Nações
+                {ministry?.director_pastor_name ? `Pr. Diretor: ${ministry.director_pastor_name}` : 'Gestão Unificada de Igrejas da Rede'}
               </p>
             </div>
           </div>
@@ -745,13 +785,14 @@ export default function RedePage() {
           <InteligenciaFinanceiraDashboard 
             year={reportYear} 
             month={reportMonth} 
+            ministryId={ministry?.id}
           />
         </div>
       )}
 
       {/* ======================== TAB: RANKING ======================== */}
       {activeTab === 'ranking' && (
-        <RankingAlmas editable={true} />
+        <RankingAlmas editable={true} ministryId={ministry?.id} />
       )}
   </div>
   );

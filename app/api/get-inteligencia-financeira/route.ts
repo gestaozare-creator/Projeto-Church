@@ -38,11 +38,19 @@ export async function GET(req: Request) {
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch all churches
-    const { data: churches } = await supabaseAdmin
+    const ministryId = searchParams.get('ministryId');
+
+    // Fetch all churches (filtrado por ministério/rede se fornecido)
+    let churchQuery = supabaseAdmin
       .from('churches')
-      .select('id, name, logo_url')
+      .select('id, name, logo_url, ministry_id')
       .order('name');
+
+    if (ministryId) {
+      churchQuery = churchQuery.eq('ministry_id', ministryId);
+    }
+
+    const { data: churches } = await churchQuery;
 
     if (!churches || churches.length === 0) {
       return NextResponse.json({ success: true, churchesData: [], globalData: {}, historyData: [] });

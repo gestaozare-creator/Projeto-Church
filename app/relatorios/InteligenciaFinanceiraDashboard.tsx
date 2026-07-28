@@ -43,6 +43,7 @@ interface GlobalData {
 interface InteligenciaFinanceiraProps {
   year: number;
   month: number;
+  ministryId?: string;
 }
 
 const formatCurrency = (val: number) => {
@@ -153,7 +154,7 @@ const ChurchRow = ({ c }: { c: ChurchData }) => {
   );
 };
 
-export default function InteligenciaFinanceiraDashboard({ year, month }: InteligenciaFinanceiraProps) {
+export default function InteligenciaFinanceiraDashboard({ year, month, ministryId }: InteligenciaFinanceiraProps) {
   const [churches, setChurches] = useState<ChurchData[]>([]);
   const [globalData, setGlobalData] = useState<GlobalData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -162,7 +163,8 @@ export default function InteligenciaFinanceiraDashboard({ year, month }: Intelig
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/get-inteligencia-financeira?year=${year}&month=${month}`);
+        const queryStr = `/api/get-inteligencia-financeira?year=${year}&month=${month}${ministryId ? `&ministryId=${ministryId}` : ''}`;
+        const res = await fetch(queryStr);
         const result = await res.json();
         if (result.success) {
           setChurches(result.churchesData || []);
@@ -177,7 +179,7 @@ export default function InteligenciaFinanceiraDashboard({ year, month }: Intelig
     };
 
     fetchData();
-  }, [year, month]);
+  }, [year, month, ministryId]);
 
   const getRankingMedal = (index: number) => {
     if (index === 0) return '🥇';

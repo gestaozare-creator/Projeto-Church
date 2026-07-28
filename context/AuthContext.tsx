@@ -13,6 +13,7 @@ export interface User {
   role: UserRole;
   churchId: string | null;
   churchName?: string;
+  ministryId?: string | null;
 }
 
 // Chave usada no localStorage para persistir a igreja ativa ao navegar
