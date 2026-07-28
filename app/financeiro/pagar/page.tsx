@@ -95,13 +95,22 @@ export default function ContasPagar() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function loadTransactions() {
-    const { data } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('type', 'despesa');
-
-    if (data && data.length > 0) {
-      const formatadas: Transaction[] = data.map(t => ({
+    let allData: any[] = [];
+    let page = 0;
+    const pageSize = 1000;
+    while (true) {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('type', 'despesa')
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+      if (error || !data || data.length === 0) break;
+      allData = [...allData, ...data];
+      if (data.length < pageSize) break;
+      page++;
+    }
+    if (allData.length > 0) {
+      const formatadas: Transaction[] = allData.map(t => ({
         id: t.id,
         churchId: t.church_id || '1',
         type: 'despesa',
