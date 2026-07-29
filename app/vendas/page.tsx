@@ -7,7 +7,7 @@ export default function VendasPage() {
   const [activeTab, setActiveTab] = useState<'secretaria' | 'financeiro' | 'kids'>('secretaria');
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
-  const whatsappPhone = '5541999999999';
+  const whatsappPhone = '5541999256913';
 
   const prices = {
     secretaria: 97,
