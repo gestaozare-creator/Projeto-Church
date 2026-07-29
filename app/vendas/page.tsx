@@ -269,6 +269,47 @@ export default function VendasPage() {
             </ul>
           </div>
         </div>
+        {/* FEATURE 5: RELATÓRIO CONTABILIDADE E WHATSAPP */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', marginBottom: '80px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/relatorio contabilidade.png" alt="Relatório de Contabilidade e Envio via WhatsApp" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Contabilidade a um Clique no WhatsApp</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Fechamento mensal sem dor de cabeça. Ao final do mês, basta um clique para gerar a pasta com planilhas e comprovantes, e outro clique para enviar direto pelo WhatsApp.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#3498db' }}>➔</span> 
+                <div><strong>Botão de Envio Direto:</strong> Ao gerar o relatório da contabilidade, o sistema compila tudo em um pacote e abre automaticamente o WhatsApp pronto para enviar ao contador.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#3498db' }}>➔</span> 
+                <div><strong>Pasta Zipada Completa:</strong> A contabilidade não precisa implorar por notas. O pacote gerado já contém o Excel com os lançamentos mais a pasta de comprovantes anexados!</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* FEATURE 6: LIVRO CAIXA E RELATÓRIOS AUTOMÁTICOS */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', flexDirection: 'row-reverse', marginBottom: '40px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/relatorios.png" alt="Livro Caixa e Relatórios PDF Automáticos" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Relatórios Automáticos e Livro Caixa</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Só lance entradas e saídas. O sistema faz todo o resto. O livro caixa ganha vida própria e os relatórios ficam disponíveis em PDF sem você precisar montar nada.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#9b59b6' }}>➔</span> 
+                <div><strong>Zero Trabalho Braçal:</strong> Chega de formatar planilhas para gerar o Livro Caixa. A cada lançamento, os relatórios mensais e o balanço do mês se atualizam automaticamente.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#9b59b6' }}>➔</span> 
+                <div><strong>Imprima ou Salve em PDF:</strong> Prestação de contas transparente. Reunião de diretoria chegando? Clique em imprimir ou exportar PDF e apresente relatórios profissionais e irrefutáveis sobre a saúde da igreja.</div>
+              </li>
+            </ul>
+          </div>
+        </div>
 
       </section>
 
