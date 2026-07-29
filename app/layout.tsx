@@ -221,7 +221,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
                     {activeMenu === 'admin' && (
                       <div className="sub-menu">
                         <Link href="/admin/igrejas" className={`sub-link ${pathname === '/admin/igrejas' ? 'active' : ''}`}>🌐 Gestão de Igrejas e Redes</Link>
-                        <a href="/vendas" target="_blank" rel="noreferrer" className="sub-link">🚀 Visualizar Landing Page (/vendas)</a>
+                        <Link href="/admin/comercial" className={`sub-link ${pathname === '/admin/comercial' ? 'active' : ''}`}>📈 Gestão Comercial (Vendas)</Link>
+                        <a href="/vendas" target="_blank" rel="noreferrer" className="sub-link">🚀 Ver Landing Page</a>
                       </div>
                     )}
                   </div>
