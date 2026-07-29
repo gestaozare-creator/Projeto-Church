@@ -167,28 +167,40 @@ export default function VendasPage() {
         <style>{`
           .css-mockup-wrapper {
             position: relative;
-            max-width: 1050px;
+            max-width: 1100px;
+            height: 700px;
             margin: 50px auto 0;
-            padding: 70px 40px 60px;
-            background-image: url('/desk_bg.png');
+            background-image: url('/office_bg_modern.png');
             background-size: cover;
             background-position: center;
             border-radius: 24px;
-            box-shadow: inset 0 0 80px rgba(0,0,0,0.8), 0 20px 50px rgba(0,0,0,0.5);
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.5), 0 20px 50px rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.1);
+            perspective: 2500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+          }
+          .macbook-3d-container {
+            transform: rotateY(-18deg) rotateX(5deg) scale(0.9);
+            transform-style: preserve-3d;
+            position: relative;
+            z-index: 10;
+            left: -8%;
+            top: 2%;
+            box-shadow: 20px 30px 60px rgba(0,0,0,0.6);
+            border-radius: 20px;
           }
           .macbook-frame {
             position: relative;
             width: 100%;
-            max-width: 850px;
-            margin: 0 auto;
+            width: 850px;
             background: #111;
             border-radius: 20px 20px 0 0;
             padding: 15px 15px 25px 15px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
             border: 2px solid #333;
             border-bottom: none;
-            z-index: 1;
           }
           .macbook-screen {
             background: #000;
@@ -210,7 +222,6 @@ export default function VendasPage() {
             background: linear-gradient(to bottom, #cfd8dc, #90a4ae);
             border-radius: 0 0 20px 20px;
             box-shadow: inset 0 -3px 10px rgba(0,0,0,0.5), 0 20px 40px rgba(0,0,0,0.5);
-            z-index: 2;
           }
           .macbook-notch {
             position: absolute;
@@ -223,16 +234,20 @@ export default function VendasPage() {
             border-radius: 0 0 10px 10px;
             z-index: 3;
           }
-          .iphone-frame {
+          .iphone-3d-container {
             position: absolute;
-            bottom: -20px;
-            right: 0;
-            width: 220px;
+            bottom: 40px;
+            right: 8%;
+            transform: rotateY(-22deg) rotateX(8deg) rotateZ(-4deg) scale(0.95);
+            transform-style: preserve-3d;
+            z-index: 20;
+          }
+          .iphone-frame {
+            width: 240px;
             background: #111;
             border-radius: 35px;
             padding: 10px;
-            box-shadow: -10px 20px 40px rgba(0,0,0,0.7), inset 0 0 0 2px #444;
-            z-index: 10;
+            box-shadow: -15px 25px 50px rgba(0,0,0,0.8), inset 0 0 0 2px #444;
           }
           .iphone-screen {
             background: #000;
@@ -262,30 +277,36 @@ export default function VendasPage() {
           html { scroll-behavior: smooth; }
 
           @media (max-width: 768px) {
-            .iphone-frame { display: none; }
-            .macbook-frame { border-radius: 10px 10px 0 0; padding: 10px 10px 15px 10px; }
+            .css-mockup-wrapper { height: auto; padding: 40px 15px; flex-direction: column; perspective: none; }
+            .macbook-3d-container { transform: none; left: 0; top: 0; scale: 1; margin-bottom: 30px; width: 100%; }
+            .macbook-frame { width: 100%; border-radius: 10px 10px 0 0; padding: 10px 10px 15px 10px; }
+            .iphone-3d-container { position: relative; transform: none; bottom: 0; right: 0; margin: 0 auto; scale: 1; }
             .macbook-base { height: 10px; border-radius: 0 0 10px 10px; }
           }
         `}</style>
         
         {/* CSS MOCKUP REAL */}
         <div className="css-mockup-wrapper">
-          <div style={{ position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', padding: '6px 16px', borderRadius: '20px', color: '#fff', fontSize: '0.8rem', fontWeight: 600, border: '1px solid rgba(255,255,255,0.1)', zIndex: 20 }}>
+          <div style={{ position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', padding: '6px 16px', borderRadius: '20px', color: '#fff', fontSize: '0.8rem', fontWeight: 600, border: '1px solid rgba(255,255,255,0.1)', zIndex: 30 }}>
             📸 Imagens Reais do Sistema
           </div>
           
-          <div className="macbook-frame">
-            <div className="macbook-notch"></div>
-            <div className="macbook-screen">
-              <img src="/financeiro-dashboard.png" alt="Dashboard Financeiro" />
+          <div className="macbook-3d-container">
+            <div className="macbook-frame">
+              <div className="macbook-notch"></div>
+              <div className="macbook-screen">
+                <img src="/financeiro-dashboard.png" alt="Dashboard Financeiro" />
+              </div>
             </div>
+            <div className="macbook-base"></div>
           </div>
-          <div className="macbook-base"></div>
           
-          <div className="iphone-frame">
-            <div className="iphone-notch"></div>
-            <div className="iphone-screen">
-              <img src="/secretaria-carteirinha.png" alt="App Mobile" />
+          <div className="iphone-3d-container">
+            <div className="iphone-frame">
+              <div className="iphone-notch"></div>
+              <div className="iphone-screen">
+                <img src="/formulario vistante.png" alt="App Mobile Formulário Visitante" />
+              </div>
             </div>
           </div>
         </div>
