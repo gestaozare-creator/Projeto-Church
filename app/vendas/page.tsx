@@ -199,6 +199,9 @@ export default function VendasPage() {
                 <div><strong>Comparativo YoY (Year-over-Year):</strong> Entenda o crescimento ou queda das receitas da igreja em relação aos anos anteriores.</div>
               </li>
             </ul>
+            <div style={{ marginTop: '25px' }}>
+              <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#2ecc71', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Comece a organizar suas finanças</button>
+            </div>
           </div>
         </div>
 
@@ -221,6 +224,9 @@ export default function VendasPage() {
                 <div><strong>Lista com Agrupamento Inteligente:</strong> Ao mudar para o modo lista, veja tudo agrupado rigorosamente por Status &gt; Ano &gt; Mês &gt; Dia em uma árvore expansível organizada.</div>
               </li>
             </ul>
+            <div style={{ marginTop: '25px' }}>
+              <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#f39c12', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Quero modernizar minha gestão</button>
+            </div>
           </div>
         </div>
 
@@ -242,17 +248,20 @@ export default function VendasPage() {
                 <div><strong>Detalhamento por Culto:</strong> Especifique exatamente em qual culto e horário a entrada ocorreu para gerar estatísticas precisas no painel.</div>
               </li>
             </ul>
+            <div style={{ marginTop: '25px' }}>
+              <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#2ecc71', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Automatize seus dízimos hoje</button>
+            </div>
           </div>
         </div>
 
         {/* FEATURE 4: MODAL DE DESPESAS E PATRIMÔNIO */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', flexDirection: 'row-reverse', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', flexDirection: 'row-reverse', marginBottom: '80px' }}>
           <div style={{ flex: '1 1 500px' }}>
             <img src="/financeiro-modais1.png" alt="Lançamento de Despesas e Patrimônio" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
           </div>
           <div style={{ flex: '1 1 400px' }}>
             <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Gestão de Saídas: Fim da Papelada e Integração Patrimonial</h3>
-            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Diga adeus às pastas cheias de recibos físicos. Centralize tudo na nuvem e facilite o trabalho do contador e da diretoria.</p>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Diga adeus às pastas cheias de recibos físicos. Centralize tudo na nuvem e evite perda de documentos e tempo precioso.</p>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <li style={{ display: 'flex', gap: '10px' }}>
                 <span style={{ color: '#e74c3c' }}>➔</span> 
@@ -262,36 +271,15 @@ export default function VendasPage() {
                 <span style={{ color: '#e74c3c' }}>➔</span> 
                 <div><strong>Gestão de Patrimônio Automática:</strong> Ao registrar a compra de um item (ex: caixa de som, cadeira), marque a opção "Registrar como Patrimônio". O sistema envia o bem diretamente para a página de Gestão de Patrimônio da igreja.</div>
               </li>
-              <li style={{ display: 'flex', gap: '10px' }}>
-                <span style={{ color: '#e74c3c' }}>➔</span> 
-                <div><strong>Integração Contábil em 1 Clique:</strong> No fechamento do mês, baixe não só o DRE, mas também uma <strong>pasta zipada contendo todas as imagens/notas anexadas</strong> daquele período, pronta para enviar para a contabilidade.</div>
-              </li>
             </ul>
-          </div>
-        </div>
-        {/* FEATURE 5: RELATÓRIO CONTABILIDADE E WHATSAPP */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', marginBottom: '80px' }}>
-          <div style={{ flex: '1 1 500px' }}>
-            <img src="/relatorio contabilidade.png" alt="Relatório de Contabilidade e Envio via WhatsApp" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
-          </div>
-          <div style={{ flex: '1 1 400px' }}>
-            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Contabilidade a um Clique no WhatsApp</h3>
-            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Fechamento mensal sem dor de cabeça. Ao final do mês, basta um clique para gerar a pasta com planilhas e comprovantes, e outro clique para enviar direto pelo WhatsApp.</p>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <li style={{ display: 'flex', gap: '10px' }}>
-                <span style={{ color: '#3498db' }}>➔</span> 
-                <div><strong>Botão de Envio Direto:</strong> Ao gerar o relatório da contabilidade, o sistema compila tudo em um pacote e abre automaticamente o WhatsApp pronto para enviar ao contador.</div>
-              </li>
-              <li style={{ display: 'flex', gap: '10px' }}>
-                <span style={{ color: '#3498db' }}>➔</span> 
-                <div><strong>Pasta Zipada Completa:</strong> A contabilidade não precisa implorar por notas. O pacote gerado já contém o Excel com os lançamentos mais a pasta de comprovantes anexados!</div>
-              </li>
-            </ul>
+            <div style={{ marginTop: '25px' }}>
+              <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#e74c3c', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Elimine a papelada agora</button>
+            </div>
           </div>
         </div>
 
         {/* FEATURE 6: LIVRO CAIXA E RELATÓRIOS AUTOMÁTICOS */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', flexDirection: 'row-reverse', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', marginBottom: '80px' }}>
           <div style={{ flex: '1 1 500px' }}>
             <img src="/relatorios.png" alt="Livro Caixa e Relatórios PDF Automáticos" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
           </div>
@@ -308,6 +296,33 @@ export default function VendasPage() {
                 <div><strong>Imprima ou Salve em PDF:</strong> Prestação de contas transparente. Reunião de diretoria chegando? Clique em imprimir ou exportar PDF e apresente relatórios profissionais e irrefutáveis sobre a saúde da igreja.</div>
               </li>
             </ul>
+            <div style={{ marginTop: '25px' }}>
+              <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#9b59b6', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Tenha relatórios automáticos</button>
+            </div>
+          </div>
+        </div>
+
+        {/* FEATURE 5: RELATÓRIO CONTABILIDADE E WHATSAPP */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', flexDirection: 'row-reverse', marginBottom: '40px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/relatorio contabilidade.png" alt="Relatório de Contabilidade e Envio via WhatsApp" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Contabilidade a um Clique no WhatsApp</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Fechamento mensal sem dor de cabeça. Ao final do mês, basta um clique para gerar a pasta com planilhas e comprovantes, e outro clique para enviar direto pelo WhatsApp.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#3498db' }}>➔</span> 
+                <div><strong>Botão de Envio Direto:</strong> Ao gerar o relatório da contabilidade, o sistema compila tudo em um pacote e abre automaticamente o WhatsApp pronto para enviar ao contador.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#3498db' }}>➔</span> 
+                <div><strong>Pasta Zipada Completa:</strong> A contabilidade não precisa implorar por notas. O pacote gerado já contém o Excel com os lançamentos mais a pasta de comprovantes anexados!</div>
+              </li>
+            </ul>
+            <div style={{ marginTop: '25px' }}>
+              <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#3498db', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Facilite sua contabilidade</button>
+            </div>
           </div>
         </div>
 
