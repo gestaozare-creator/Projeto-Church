@@ -163,12 +163,6 @@ export default function VendasPage() {
             💬 Falar com Consultor
           </a>
         </div>
-        
-        {/* HERO IMAGE SECTION - IMPACTO VISUAL */}
-        <div className="hero-image-container">
-          <img src="/secretaria-dashboard.png" alt="Dashboard Principal Projeto Church" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 30px 60px rgba(0,0,0,0.5)' }} />
-          <img src="/secretaria-visitantes.png" alt="Mobile Dashboard" className="floating-mobile-img" />
-        </div>
       </section>
 
       {/* MÓDULOS DESTAQUE */}
@@ -290,23 +284,71 @@ export default function VendasPage() {
         {/* FEATURE 2: CADASTRO ONLINE */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', flexDirection: 'row-reverse', marginBottom: '80px' }}>
           <div style={{ flex: '1 1 500px' }}>
-            <img src="/secretaria-cadastro.png" alt="Formulário Inteligente e Cadastro Online" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+            <img src="/cadastro online.png" alt="Formulário Inteligente e Cadastro Online" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
           </div>
           <div style={{ flex: '1 1 400px' }}>
-            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Cadastro Online Inteligente</h3>
-            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Descentralize o trabalho da secretaria. Envie um link personalizado para que o próprio membro ou visitante preencha seus dados de casa.</p>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Links de Cadastro e QR Code</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Descentralize o trabalho da secretaria. Tenha links inteligentes prontos para serem disparados para sua membresia ou visitantes.</p>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <li style={{ display: 'flex', gap: '10px' }}>
                 <span style={{ color: '#9b59b6' }}>➔</span> 
-                <div><strong>Logo Personalizada:</strong> O formulário carrega automaticamente a identidade visual da sua igreja, passando profissionalismo.</div>
+                <div><strong>QR Code e WhatsApp:</strong> Copie o link direto ou mostre o QR Code gerado pelo sistema para o visitante escanear ainda durante o culto.</div>
               </li>
               <li style={{ display: 'flex', gap: '10px' }}>
                 <span style={{ color: '#9b59b6' }}>➔</span> 
-                <div><strong>Validação de Foto:</strong> Orientações claras para o membro anexar a foto perfeita para a emissão da carteirinha digital.</div>
+                <div><strong>Pré-visualização:</strong> Visualize exatamente como o formulário ficará no celular de quem for preencher, garantindo uma experiência perfeita.</div>
               </li>
             </ul>
             <div style={{ marginTop: '25px' }}>
               <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#9b59b6', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Automatize os cadastros</button>
+            </div>
+          </div>
+        </div>
+
+        {/* FEATURE 2.1: FORMULARIO VISITANTE */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', marginBottom: '80px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/formulario vistante.png" alt="Formulário Exclusivo para Visitantes" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Formulário Inteligente de Visitante</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Esqueça as fichas de papel. Quando o visitante acessa o link, ele encontra um formulário desenhado para gerar conexão.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#e67e22' }}>➔</span> 
+                <div><strong>Identidade Visual:</strong> O formulário carrega automaticamente a logo e o nome da sua igreja, passando máxima credibilidade e profissionalismo.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#e67e22' }}>➔</span> 
+                <div><strong>Cultos e Horários Integrados:</strong> O visitante pode selecionar exatamente em qual culto e horário ele está participando, vinculando a visita diretamente à sua base de dados.</div>
+              </li>
+            </ul>
+            <div style={{ marginTop: '25px' }}>
+              <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#e67e22', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Receba melhor seus visitantes</button>
+            </div>
+          </div>
+        </div>
+
+        {/* FEATURE 2.2: FORMULARIO MEMBRO */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', flexDirection: 'row-reverse', marginBottom: '80px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/formulario membro.png" alt="Formulário de Cadastro de Membro" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Cadastro de Membro com Autonomia</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>O formulário de membros coleta os dados completos e necessários para a secretaria de uma vez por todas.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#34495e' }}>➔</span> 
+                <div><strong>Anexo de Foto (Carteirinha):</strong> O próprio membro seleciona e recorta a foto ideal pelo celular. Você não precisa mais ficar correndo atrás de fotos para a carteirinha.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#34495e' }}>➔</span> 
+                <div><strong>Validação e Pendências:</strong> Após enviar, o cadastro cai na aba "Aguardando Aprovação" da Secretaria, mantendo o controle 100% nas suas mãos antes de o tornar ativo.</div>
+              </li>
+            </ul>
+            <div style={{ marginTop: '25px' }}>
+              <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#34495e', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Evolua sua secretaria</button>
             </div>
           </div>
         </div>
