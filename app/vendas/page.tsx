@@ -646,12 +646,12 @@ export default function VendasPage() {
             <img src="/financeiro-modais.png" alt="Lançamento de Receitas" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
           </div>
           <div style={{ flex: '1 1 400px' }}>
-            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Lançamento Rápido de Receitas e Dízimos</h3>
-            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Registre entradas financeiras em poucos segundos durante ou após o culto, mantendo o histórico de cada membro impecável.</p>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Lançamento Rápido de Receitas</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Registre entradas financeiras em poucos segundos durante ou após o culto, mantendo o fluxo de caixa perfeitamente organizado.</p>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <li style={{ display: 'flex', gap: '10px' }}>
                 <span style={{ color: '#2ecc71' }}>➔</span> 
-                <div><strong>Categorização Inteligente:</strong> Vincule rapidamente dízimos e ofertas a membros específicos para alimentar o ranking de entradas.</div>
+                <div><strong>Categorização Inteligente:</strong> Classifique facilmente cada entrada no Kanban ou em lista, visualizando o fluxo agrupado por status, ano e mês.</div>
               </li>
               <li style={{ display: 'flex', gap: '10px' }}>
                 <span style={{ color: '#2ecc71' }}>➔</span> 
