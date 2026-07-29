@@ -163,6 +163,121 @@ export default function VendasPage() {
             💬 Falar com Consultor
           </a>
         </div>
+        <style>{`
+          .css-mockup-wrapper {
+            position: relative;
+            max-width: 1000px;
+            margin: 40px auto 0;
+            padding-bottom: 60px;
+          }
+          .macbook-frame {
+            position: relative;
+            width: 100%;
+            max-width: 850px;
+            margin: 0 auto;
+            background: #111;
+            border-radius: 20px 20px 0 0;
+            padding: 15px 15px 25px 15px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+            border: 2px solid #333;
+            border-bottom: none;
+            z-index: 1;
+          }
+          .macbook-screen {
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            aspect-ratio: 16/10;
+          }
+          .macbook-screen img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top;
+          }
+          .macbook-base {
+            position: relative;
+            width: 110%;
+            left: -5%;
+            height: 20px;
+            background: linear-gradient(to bottom, #cfd8dc, #90a4ae);
+            border-radius: 0 0 20px 20px;
+            box-shadow: inset 0 -3px 10px rgba(0,0,0,0.5), 0 20px 40px rgba(0,0,0,0.5);
+            z-index: 2;
+          }
+          .macbook-notch {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 15px;
+            background: #000;
+            border-radius: 0 0 10px 10px;
+            z-index: 3;
+          }
+          .iphone-frame {
+            position: absolute;
+            bottom: -20px;
+            right: 0;
+            width: 220px;
+            background: #111;
+            border-radius: 35px;
+            padding: 10px;
+            box-shadow: -10px 20px 40px rgba(0,0,0,0.7), inset 0 0 0 2px #444;
+            z-index: 10;
+          }
+          .iphone-screen {
+            background: #000;
+            border-radius: 25px;
+            overflow: hidden;
+            aspect-ratio: 9/19.5;
+            position: relative;
+          }
+          .iphone-screen img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top;
+          }
+          .iphone-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 25px;
+            background: #111;
+            border-radius: 0 0 15px 15px;
+            z-index: 2;
+          }
+          
+          html { scroll-behavior: smooth; }
+
+          @media (max-width: 768px) {
+            .iphone-frame { display: none; }
+            .macbook-frame { border-radius: 10px 10px 0 0; padding: 10px 10px 15px 10px; }
+            .macbook-base { height: 10px; border-radius: 0 0 10px 10px; }
+          }
+        `}</style>
+        
+        {/* CSS MOCKUP REAL */}
+        <div className="css-mockup-wrapper">
+          <div className="macbook-frame">
+            <div className="macbook-notch"></div>
+            <div className="macbook-screen">
+              <img src="/financeiro-dashboard.png" alt="Dashboard Financeiro" />
+            </div>
+          </div>
+          <div className="macbook-base"></div>
+          
+          <div className="iphone-frame">
+            <div className="iphone-notch"></div>
+            <div className="iphone-screen">
+              <img src="/secretaria-visitantes.png" alt="App Mobile" />
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* MÓDULOS DESTAQUE */}
@@ -172,81 +287,31 @@ export default function VendasPage() {
           <p style={{ color: '#94a3b8', fontSize: '0.95rem' }}>Contrate apenas o que utilizar ou leve o pacote completo com super desconto.</p>
         </div>
 
-        {/* CONTROLE DE ABAS */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '35px' }}>
-          <button 
-            onClick={() => setActiveTab('secretaria')} 
-            style={{ padding: '12px 24px', borderRadius: '10px', border: 'none', background: activeTab === 'secretaria' ? '#6366f1' : 'rgba(255,255,255,0.05)', color: '#fff', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}
-          >
+        {/* NAVEGAÇÃO DE MÓDULOS (ÂNCORAS) */}
+        <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '35px' }}>
+          <a href="#modulo-secretaria" style={{ padding: '12px 24px', borderRadius: '10px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.1)', color: '#fff', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s' }}>
             📇 Secretaria & Membros
-          </button>
-          <button 
-            onClick={() => setActiveTab('financeiro')} 
-            style={{ padding: '12px 24px', borderRadius: '10px', border: 'none', background: activeTab === 'financeiro' ? '#2ecc71' : 'rgba(255,255,255,0.05)', color: '#fff', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}
-          >
+          </a>
+          <a href="#modulo-financeiro" style={{ padding: '12px 24px', borderRadius: '10px', border: '1px solid rgba(46,204,113,0.3)', background: 'rgba(46,204,113,0.1)', color: '#fff', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s' }}>
             💰 Gestão Financeira (DRE)
-          </button>
-          <button 
-            onClick={() => setActiveTab('kids')} 
-            style={{ padding: '12px 24px', borderRadius: '10px', border: 'none', background: activeTab === 'kids' ? '#f39c12' : 'rgba(255,255,255,0.05)', color: '#fff', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}
-          >
+          </a>
+          <a href="#modulo-kids" style={{ padding: '12px 24px', borderRadius: '10px', border: '1px solid rgba(243,156,18,0.3)', background: 'rgba(243,156,18,0.1)', color: '#fff', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s' }}>
             🧸 Ministério Infantil (Kids)
-          </button>
+          </a>
+          <a href="#modulo-celulas" style={{ padding: '12px 24px', borderRadius: '10px', border: '1px solid rgba(155,89,182,0.3)', background: 'rgba(155,89,182,0.1)', color: '#fff', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s' }}>
+            👥 Gestão de Células
+          </a>
         </div>
 
-        {/* CONTEÚDO DA ABA */}
-        <div style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '40px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', alignItems: 'center' }}>
-          <div>
-            {activeTab === 'secretaria' && (
-              <>
-                <h3 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#818cf8', marginTop: 0 }}>Módulo de Secretaria & Membros</h3>
-                <p style={{ color: '#cbd5e1', lineHeight: '1.6' }}>Gerencie todo o rebanho com facilidade. Cadastre membros, obreiros e líderes, emita carteirinhas digitais com QR Code e acompanhe o crescimento.</p>
-                <ul style={{ color: '#94a3b8', lineHeight: '2', paddingLeft: '20px' }}>
-                  <li>✅ Carteirinha Digital de Membro com QR Code</li>
-                  <li>✅ Lembrete de Aniversariantes com Envio no WhatsApp</li>
-                  <li>✅ Gestão de Visitantes e Funil de Acompanhamento (Kanban)</li>
-                  <li>✅ Gestão de Departamentos e Células</li>
-                </ul>
-              </>
-            )}
-            {activeTab === 'financeiro' && (
-              <>
-                <h3 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#4ade80', marginTop: 0 }}>Módulo de Inteligência Financeira</h3>
-                <p style={{ color: '#cbd5e1', lineHeight: '1.6' }}>Controle completo sobre o caixa da igreja com transparência e relatórios prontos em tempo real.</p>
-                <ul style={{ color: '#94a3b8', lineHeight: '2', paddingLeft: '20px' }}>
-                  <li>✅ Lançamento Rápido de Dízimos, Ofertas e Campanhas</li>
-                  <li>✅ Gestão de Despesas com Anexo de Comprovantes/Notas</li>
-                  <li>✅ Relatórios Automáticos de DRE (Demostração do Resultado)</li>
-                  <li>✅ Gráficos Comparativos Mês a Mês</li>
-                </ul>
-              </>
-            )}
-            {activeTab === 'kids' && (
-              <>
-                <h3 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#fbbf24', marginTop: 0 }}>Módulo de Ministério Infantil (Kids)</h3>
-                <p style={{ color: '#cbd5e1', lineHeight: '1.6' }}>Segurança total e tranquilidade para os pais durante os cultos com tecnologia de ponta.</p>
-                <ul style={{ color: '#94a3b8', lineHeight: '2', paddingLeft: '20px' }}>
-                  <li>✅ Check-in e Check-out Seguro por QR Code</li>
-                  <li>✅ Emissão de Etiquetas para Crianças e Responsáveis</li>
-                  <li>✅ Alertas de Alergias e Restrições Alimentares</li>
-                  <li>✅ Ficha Dedicada para Visitantes Kids</li>
-                </ul>
-              </>
-            )}
-          </div>
-
-          <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.08)', padding: '25px', textAlign: 'center' }}>
-            <div style={{ fontSize: '4rem', marginBottom: '10px' }}>
-              {activeTab === 'secretaria' ? '🎴' : activeTab === 'financeiro' ? '📊' : '🏷️'}
-            </div>
-            <h4 style={{ margin: '0 0 8px 0', fontSize: '1.1rem', color: '#fff' }}>Interface Moderna & Intuitiva</h4>
-            <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>Projetada para rodar em computadores, tablets e celulares sem complicações.</p>
-          </div>
+        {/* MENSAGEM DINÂMICA DE EXPLORAÇÃO */}
+        <div style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '30px', textAlign: 'center', color: '#cbd5e1', lineHeight: '1.6' }}>
+          <strong>Abaixo você confere a apresentação completa do nosso sistema em detalhes.</strong><br/> 
+          Se preferir, clique nos botões acima para pular direto para as funcionalidades do módulo do seu interesse. Rola a tela e descubra como o Projeto Church vai revolucionar a gestão da sua igreja!
         </div>
       </section>
 
       {/* DEMONSTRAÇÃO DA SECRETARIA */}
-      <section style={{ padding: '80px 20px', maxWidth: '1200px', margin: '0 auto', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+      <section id="modulo-secretaria" style={{ padding: '80px 20px', maxWidth: '1200px', margin: '0 auto', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
         <div style={{ textAlign: 'center', marginBottom: '60px' }}>
           <div style={{ display: 'inline-block', padding: '6px 16px', borderRadius: '20px', background: 'rgba(52,152,219,0.15)', border: '1px solid rgba(52,152,219,0.3)', color: '#3498db', fontSize: '0.82rem', fontWeight: 600, marginBottom: '20px' }}>
             📇 Gestão de Membros Inteligente
@@ -500,7 +565,7 @@ export default function VendasPage() {
       </section>
 
       {/* DEMONSTRAÇÃO DO FINANCEIRO */}
-      <section style={{ padding: '80px 20px', maxWidth: '1200px', margin: '0 auto', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+      <section id="modulo-financeiro" style={{ padding: '80px 20px', maxWidth: '1200px', margin: '0 auto', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
         <div style={{ textAlign: 'center', marginBottom: '60px' }}>
           <div style={{ display: 'inline-block', padding: '6px 16px', borderRadius: '20px', background: 'rgba(46,204,113,0.15)', border: '1px solid rgba(46,204,113,0.3)', color: '#2ecc71', fontSize: '0.82rem', fontWeight: 600, marginBottom: '20px' }}>
             💰 Inteligência Financeira Real
@@ -660,6 +725,32 @@ export default function VendasPage() {
           </div>
         </div>
 
+      </section>
+
+      {/* DEMONSTRAÇÃO DO MINISTÉRIO INFANTIL (KIDS) */}
+      <section id="modulo-kids" style={{ padding: '80px 20px', maxWidth: '1200px', margin: '0 auto', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+          <div style={{ display: 'inline-block', padding: '6px 16px', borderRadius: '20px', background: 'rgba(243,156,18,0.15)', border: '1px solid rgba(243,156,18,0.3)', color: '#f39c12', fontSize: '0.82rem', fontWeight: 600, marginBottom: '20px' }}>
+            🧸 Segurança e Controle Infantil
+          </div>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0 0 15px 0', color: '#fff' }}>Ministério Infantil Protegido</h2>
+          <p style={{ color: '#94a3b8', fontSize: '1.1rem', maxWidth: '700px', margin: '0 auto', lineHeight: '1.6' }}>
+            Check-in seguro por QR Code, impressão de etiquetas e controle de alergias. Os pais assistem ao culto tranquilos sabendo que os filhos estão seguros.
+          </p>
+        </div>
+      </section>
+
+      {/* DEMONSTRAÇÃO DE CÉLULAS E DEPARTAMENTOS */}
+      <section id="modulo-celulas" style={{ padding: '80px 20px', maxWidth: '1200px', margin: '0 auto', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+          <div style={{ display: 'inline-block', padding: '6px 16px', borderRadius: '20px', background: 'rgba(155,89,182,0.15)', border: '1px solid rgba(155,89,182,0.3)', color: '#9b59b6', fontSize: '0.82rem', fontWeight: 600, marginBottom: '20px' }}>
+            👥 Multiplicação e Discipulado
+          </div>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0 0 15px 0', color: '#fff' }}>Gestão de Células e Departamentos</h2>
+          <p style={{ color: '#94a3b8', fontSize: '1.1rem', maxWidth: '700px', margin: '0 auto', lineHeight: '1.6' }}>
+            Acompanhe a saúde de cada pequeno grupo. Relatórios de frequência, mapa de células, trilha de liderança e muito mais. (Módulo em expansão).
+          </p>
+        </div>
       </section>
 
       {/* TABELA DE PREÇOS */}
