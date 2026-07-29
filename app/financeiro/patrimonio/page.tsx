@@ -31,10 +31,11 @@ export default function GestaoPatrimonio() {
 
   // Carregar dados de Patrimônio do Supabase
   useEffect(() => {
-    async function fetchAssets() {
+    async function fetchAssets(validChurchIds: string[]) {
       const { data, error } = await supabase
         .from('assets')
-        .select('*');
+        .select('*')
+        .in('church_id', validChurchIds);
 
       if (data) {
         const formatados: Asset[] = data.map(a => ({
@@ -51,9 +52,10 @@ export default function GestaoPatrimonio() {
         setDbAssets(formatados);
       }
     }
-
-    fetchAssets();
-  }, []);
+    if (churches.length > 0) {
+      fetchAssets(churches.map((c: any) => c.id));
+    }
+  }, [churches]);
 
   const assets = useMemo(() => {
     return dbAssets.filter(a => {
@@ -70,7 +72,7 @@ export default function GestaoPatrimonio() {
 
     const newAsset = {
       id: targetId,
-      church_id: currentUser?.churchId || '1',
+      church_id: church === 'ALL' ? (currentUser?.churchId || '1') : church,
       name: formData.get('name') as string,
       category: formData.get('category') as string,
       condition: formData.get('condition') as string,

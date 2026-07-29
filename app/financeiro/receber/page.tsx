@@ -149,7 +149,7 @@ export default function ContasReceber() {
     }
   }, [activeChurchId, canSeeAllChurches, currentUser]);
 
-  async function loadTransactions() {
+  async function loadTransactions(validChurchIds: string[]) {
     let allData: any[] = [];
     let page = 0;
     const pageSize = 1000;
@@ -158,6 +158,7 @@ export default function ContasReceber() {
         .from('transactions')
         .select('*')
         .eq('type', 'receita')
+        .in('church_id', validChurchIds)
         .range(page * pageSize, (page + 1) * pageSize - 1);
       if (error || !data || data.length === 0) break;
       allData = [...allData, ...data];
@@ -187,8 +188,10 @@ export default function ContasReceber() {
   }
 
   useEffect(() => {
-    loadTransactions();
-  }, []);
+    if (churches.length > 0) {
+      loadTransactions(churches.map((c: any) => c.id));
+    }
+  }, [churches]);
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -313,7 +316,7 @@ export default function ContasReceber() {
         const { data: newTxDb, error } = await supabase
           .from('transactions')
           .insert({
-            church_id: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+            church_id: church === 'all' ? (currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d') : church,
             member_id: finalMemberId,
             type: 'receita',
             category: finalCategory as string,

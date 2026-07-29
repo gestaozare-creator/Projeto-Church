@@ -183,7 +183,7 @@ export default function FinanceiroDashboardPage() {
   const [dbTransactions, setDbTransactions] = useState<FinancialTransaction[]>([]);
 
   useEffect(() => {
-    async function loadAllTransactions() {
+    async function loadAllTransactions(validChurchIds: string[]) {
       let allData: any[] = [];
       let page = 0;
       const pageSize = 1000;
@@ -194,6 +194,7 @@ export default function FinanceiroDashboardPage() {
         const { data, error } = await supabase
           .from('transactions')
           .select('*')
+          .in('church_id', validChurchIds)
           .range(page * pageSize, (page + 1) * pageSize - 1);
 
         if (error || !data || data.length === 0) break;
@@ -220,8 +221,11 @@ export default function FinanceiroDashboardPage() {
         })));
       }
     }
-    loadAllTransactions();
-  }, []);
+
+    if (churches && churches.length > 0) {
+      loadAllTransactions(churches.map((c: any) => c.id));
+    }
+  }, [churches]);
 
   const [church, setChurch] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches ? 'ALL' : (currentUser?.churchId || 'ALL')));
   const [startDate, setStartDate] = useState(firstDayStr);

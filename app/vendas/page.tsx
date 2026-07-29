@@ -224,22 +224,47 @@ export default function VendasPage() {
           </div>
         </div>
 
-        {/* FEATURE 3: MODAIS E CONTABILIDADE */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', marginBottom: '40px' }}>
+        {/* FEATURE 3: MODAL DE RECEITAS */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', marginBottom: '80px' }}>
           <div style={{ flex: '1 1 500px' }}>
-            <img src="/financeiro-modais.png" alt="Modais e Contabilidade" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+            <img src="/financeiro-modais.png" alt="Lançamento de Receitas" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
           </div>
           <div style={{ flex: '1 1 400px' }}>
-            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Agilidade nos Lançamentos e Integração Contábil</h3>
-            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Diga adeus à burocracia de final de mês. Lance tudo na hora do culto de forma rápida e segura, e entregue mastigado para a contabilidade.</p>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Lançamento Rápido de Receitas e Dízimos</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Registre entradas financeiras em poucos segundos durante ou após o culto, mantendo o histórico de cada membro impecável.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#2ecc71' }}>➔</span> 
+                <div><strong>Categorização Inteligente:</strong> Vincule rapidamente dízimos e ofertas a membros específicos para alimentar o ranking de entradas.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#2ecc71' }}>➔</span> 
+                <div><strong>Detalhamento por Culto:</strong> Especifique exatamente em qual culto e horário a entrada ocorreu para gerar estatísticas precisas no painel.</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* FEATURE 4: MODAL DE DESPESAS E PATRIMÔNIO */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', flexDirection: 'row-reverse', marginBottom: '40px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/financeiro-modais1.png" alt="Lançamento de Despesas e Patrimônio" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Gestão de Saídas: Fim da Papelada e Integração Patrimonial</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Diga adeus às pastas cheias de recibos físicos. Centralize tudo na nuvem e facilite o trabalho do contador e da diretoria.</p>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <li style={{ display: 'flex', gap: '10px' }}>
                 <span style={{ color: '#e74c3c' }}>➔</span> 
-                <div><strong>Modais Práticos:</strong> Lançamento em duas etapas simples. Categorize dízimos de membros específicos, anexe comprovantes na hora e escolha o culto/horário.</div>
+                <div><strong>Armazenamento de Notas:</strong> Tire foto ou suba o arquivo do comprovante/nota fiscal direto no lançamento. O documento fica salvo seguro para consultas futuras, eliminando papéis perdidos.</div>
               </li>
               <li style={{ display: 'flex', gap: '10px' }}>
                 <span style={{ color: '#e74c3c' }}>➔</span> 
-                <div><strong>Fechamento Contábil Fácil:</strong> Exporte relatórios precisos que podem ser baixados juntamente com uma <strong>pasta zipada contendo todos os comprovantes anexados</strong> daquele período, prontos para enviar ao seu contador.</div>
+                <div><strong>Gestão de Patrimônio Automática:</strong> Ao registrar a compra de um item (ex: caixa de som, cadeira), marque a opção "Registrar como Patrimônio". O sistema envia o bem diretamente para a página de Gestão de Patrimônio da igreja.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#e74c3c' }}>➔</span> 
+                <div><strong>Integração Contábil em 1 Clique:</strong> No fechamento do mês, baixe não só o DRE, mas também uma <strong>pasta zipada contendo todas as imagens/notas anexadas</strong> daquele período, pronta para enviar para a contabilidade.</div>
               </li>
             </ul>
           </div>

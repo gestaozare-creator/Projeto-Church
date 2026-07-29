@@ -100,7 +100,7 @@ export default function ContasPagar() {
     setExpandedNodes(prev => ({...prev, [key]: !prev[key]}));
   };
 
-  async function loadTransactions() {
+  async function loadTransactions(validChurchIds: string[]) {
     let allData: any[] = [];
     let page = 0;
     const pageSize = 1000;
@@ -109,6 +109,7 @@ export default function ContasPagar() {
         .from('transactions')
         .select('*')
         .eq('type', 'despesa')
+        .in('church_id', validChurchIds)
         .range(page * pageSize, (page + 1) * pageSize - 1);
       if (error || !data || data.length === 0) break;
       allData = [...allData, ...data];
@@ -138,8 +139,10 @@ export default function ContasPagar() {
   }
 
   useEffect(() => {
-    loadTransactions();
-  }, []);
+    if (churches.length > 0) {
+      loadTransactions(churches.map((c: any) => c.id));
+    }
+  }, [churches]);
 
   // Kanban DND States
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
@@ -298,7 +301,7 @@ export default function ContasPagar() {
         const { data: newTxDb, error } = await supabase
           .from('transactions')
           .insert({
-            church_id: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+            church_id: church === 'all' ? (currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d') : church,
             supplier_id: finalSupplierId,
             type: 'despesa',
             category: finalCategory as string,
@@ -347,7 +350,7 @@ export default function ContasPagar() {
           const { data: newAssetDb, error: assetError } = await supabase
             .from('assets')
             .insert({
-              church_id: currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+              church_id: church === 'all' ? (currentUser?.churchId || 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d') : church,
               name: assetName,
               category: finalCategory as string,
               condition: 'Novo',
