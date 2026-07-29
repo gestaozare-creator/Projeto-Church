@@ -353,22 +353,46 @@ export default function VendasPage() {
           </div>
         </div>
 
-        {/* FEATURE 3.1: GESTÃO DE MEMBROS E ANIVERSARIANTES */}
+        {/* FEATURE 3.0: ANIVERSARIANTES */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', marginBottom: '80px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/aniversariante do mes.png" alt="Controle de Aniversariantes" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Gestão de Aniversariantes e Homenagens</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>O sistema tem uma tela dedicada que lista automaticamente quem faz aniversário hoje e no restante do mês. A igreja nunca mais esquecerá de celebrar com seu rebanho.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#f1c40f' }}>➔</span> 
+                <div><strong>Destaque VIP Diário:</strong> Aniversariantes do dia ganham um painel exclusivo de destaque para que a igreja tome ações imediatas de felicitação.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#f1c40f' }}>➔</span> 
+                <div><strong>WhatsApp Personalizado:</strong> Com um clique no botão do WhatsApp, o sistema abre uma mensagem automática e customizada, parabenizando o membro em nome da sua congregação.</div>
+              </li>
+            </ul>
+            <div style={{ marginTop: '25px' }}>
+              <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#f1c40f', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Celebre com seu rebanho</button>
+            </div>
+          </div>
+        </div>
+
+        {/* FEATURE 3.1: EDIÇÃO DESCOMPLICADA */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', flexDirection: 'row-reverse', marginBottom: '80px' }}>
           <div style={{ flex: '1 1 500px' }}>
             <img src="/secretaria-membro-editar.png" alt="Edição de Membro Simplificada" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
           </div>
           <div style={{ flex: '1 1 400px' }}>
-            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Edição Descomplicada e Aniversariantes</h3>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Edição Descomplicada</h3>
             <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Mantenha o cadastro sempre atualizado. Com apenas um clique, o modal de edição rápida permite ajustar desde o ministério até a validade da carteirinha do membro, sem sair da tela.</p>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <li style={{ display: 'flex', gap: '10px' }}>
                 <span style={{ color: '#2ecc71' }}>➔</span> 
-                <div><strong>Gestão Ágil:</strong> Controle o status (Ativo, Inativo, Aguardando) e filtre facilmente todos os membros pelo quadro visual intuitivo.</div>
+                <div><strong>Gestão Ágil:</strong> Controle o status (Ativo, Inativo, Aguardando) e alterne as configurações rapidamente.</div>
               </li>
               <li style={{ display: 'flex', gap: '10px' }}>
                 <span style={{ color: '#2ecc71' }}>➔</span> 
-                <div><strong>Aniversariantes do Mês:</strong> O sistema tem uma tela dedicada que lista automaticamente quem faz aniversário hoje e no mês, para a igreja nunca esquecer de celebrar com seu rebanho.</div>
+                <div><strong>Integração Imediata:</strong> Altere departamentos, redes e cargos ministeriais com um quadro visual 100% intuitivo.</div>
               </li>
             </ul>
             <div style={{ marginTop: '25px' }}>
@@ -378,7 +402,7 @@ export default function VendasPage() {
         </div>
 
         {/* FEATURE 3.2: INTEGRAÇÃO WHATSAPP */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', flexDirection: 'row-reverse', marginBottom: '80px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', marginBottom: '80px' }}>
           <div style={{ flex: '1 1 500px' }}>
             <img src="/secretaria-whatsapp.png" alt="Integração Automática com WhatsApp" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
           </div>
@@ -402,7 +426,7 @@ export default function VendasPage() {
         </div>
 
         {/* FEATURE 3.3: CARTEIRINHA DIGITAL */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', marginBottom: '80px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', flexDirection: 'row-reverse', marginBottom: '80px' }}>
           <div style={{ flex: '1 1 500px' }}>
             <img src="/secretaria-carteirinha.png" alt="Carteirinha de Membro Oficial" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
           </div>
