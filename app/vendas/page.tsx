@@ -165,6 +165,188 @@ export default function VendasPage() {
         </div>
       </section>
 
+      {/* DEMONSTRAÇÃO DA SECRETARIA */}
+      <section style={{ padding: '80px 20px', maxWidth: '1200px', margin: '0 auto', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+          <div style={{ display: 'inline-block', padding: '6px 16px', borderRadius: '20px', background: 'rgba(52,152,219,0.15)', border: '1px solid rgba(52,152,219,0.3)', color: '#3498db', fontSize: '0.82rem', fontWeight: 600, marginBottom: '20px' }}>
+            📇 Gestão de Membros Inteligente
+          </div>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0 0 15px 0', color: '#fff' }}>Muito Mais que uma Ficha Cadastral</h2>
+          <p style={{ color: '#94a3b8', fontSize: '1.1rem', maxWidth: '700px', margin: '0 auto', lineHeight: '1.6' }}>
+            Transforme a secretaria da sua igreja em um centro de comando ativo. Automatize cadastros, mapeie seus membros e acompanhe a conversão de visitantes de forma visual.
+          </p>
+        </div>
+
+        {/* FEATURE 1: DASHBOARD SECRETARIA */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', marginBottom: '80px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/secretaria-dashboard.png" alt="Dashboard da Secretaria" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Dashboard Consolidado</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Métricas precisas e em tempo real sobre o rebanho. Saiba exatamente a saúde demográfica e ministerial da sua igreja em uma única tela.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#3498db' }}>➔</span> 
+                <div><strong>Distribuição Ministerial:</strong> Gráficos detalhados mostrando membros por funções, departamentos e ministérios.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#3498db' }}>➔</span> 
+                <div><strong>Evolução e Funil:</strong> Acompanhe a evolução mensal de conversão de visitantes e a taxa de retenção da igreja.</div>
+              </li>
+            </ul>
+            <div style={{ marginTop: '25px' }}>
+              <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#3498db', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Tenha métricas exatas</button>
+            </div>
+          </div>
+        </div>
+
+        {/* FEATURE 2: CADASTRO ONLINE */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', flexDirection: 'row-reverse', marginBottom: '80px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/secretaria-cadastro.png" alt="Formulário Inteligente e Cadastro Online" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Cadastro Online Inteligente</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Descentralize o trabalho da secretaria. Envie um link personalizado para que o próprio membro ou visitante preencha seus dados de casa.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#9b59b6' }}>➔</span> 
+                <div><strong>Logo Personalizada:</strong> O formulário carrega automaticamente a identidade visual da sua igreja, passando profissionalismo.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#9b59b6' }}>➔</span> 
+                <div><strong>Validação de Foto:</strong> Orientações claras para o membro anexar a foto perfeita para a emissão da carteirinha digital.</div>
+              </li>
+            </ul>
+            <div style={{ marginTop: '25px' }}>
+              <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#9b59b6', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Automatize os cadastros</button>
+            </div>
+          </div>
+        </div>
+
+        {/* FEATURE 3.1: GESTÃO DE MEMBROS E ANIVERSARIANTES */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', marginBottom: '80px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/secretaria-membro-editar.png" alt="Edição de Membro Simplificada" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Edição Descomplicada e Aniversariantes</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Mantenha o cadastro sempre atualizado. Com apenas um clique, o modal de edição rápida permite ajustar desde o ministério até a validade da carteirinha do membro, sem sair da tela.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#2ecc71' }}>➔</span> 
+                <div><strong>Gestão Ágil:</strong> Controle o status (Ativo, Inativo, Aguardando) e filtre facilmente todos os membros pelo quadro visual intuitivo.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#2ecc71' }}>➔</span> 
+                <div><strong>Aniversariantes do Mês:</strong> O sistema tem uma tela dedicada que lista automaticamente quem faz aniversário hoje e no mês, para a igreja nunca esquecer de celebrar com seu rebanho.</div>
+              </li>
+            </ul>
+            <div style={{ marginTop: '25px' }}>
+              <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#2ecc71', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Organize seu rebanho</button>
+            </div>
+          </div>
+        </div>
+
+        {/* FEATURE 3.2: INTEGRAÇÃO WHATSAPP */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', flexDirection: 'row-reverse', marginBottom: '80px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/secretaria-whatsapp.png" alt="Integração Automática com WhatsApp" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Comunicação por WhatsApp a um Clique</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Aproximar o pastor e a secretaria dos membros nunca foi tão fácil. O contato é direto, humano e ultra veloz.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#10b981' }}>➔</span> 
+                <div><strong>Mensagens Inteligentes:</strong> Ao clicar no ícone do WhatsApp no card do membro, o sistema já gera uma mensagem automática personalizada com o nome dele (ex: "Olá, João. Boa noite, como vai?").</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#10b981' }}>➔</span> 
+                <div><strong>Sem Agendar Contatos:</strong> Você não precisa adicionar o número na sua agenda do celular. O disparo é imediato direto para a janela de conversa oficial do membro.</div>
+              </li>
+            </ul>
+            <div style={{ marginTop: '25px' }}>
+              <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#10b981', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Conecte sua igreja</button>
+            </div>
+          </div>
+        </div>
+
+        {/* FEATURE 3.3: CARTEIRINHA DIGITAL */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', marginBottom: '80px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/secretaria-carteirinha.png" alt="Carteirinha de Membro Oficial" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Carteirinha Digital Oficial</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Gere um documento de identificação impecável para os membros da sua congregação. Automático e pronto para emissão.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#0ea5e9' }}>➔</span> 
+                <div><strong>Design Profissional:</strong> A carteirinha carrega automaticamente a foto aprovada do membro, a logo da igreja, função, data de batismo e congregação.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#0ea5e9' }}>➔</span> 
+                <div><strong>Impressão e PDF:</strong> Envie o PDF no WhatsApp do membro para que ele tenha no celular ou imprima crachás para toda a diretoria de forma padronizada com um clique.</div>
+              </li>
+            </ul>
+            <div style={{ marginTop: '25px' }}>
+              <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#0ea5e9', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Emita credenciais agora</button>
+            </div>
+          </div>
+        </div>
+
+        {/* FEATURE 4: GESTÃO DE VISITANTES */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', flexDirection: 'row-reverse', marginBottom: '80px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/secretaria-visitantes.png" alt="Gestão de Visitantes" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Acompanhamento de Visitantes (CRM)</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Não deixe nenhum visitante escapar. Trate cada alma com exclusividade usando nosso quadro de acompanhamento no estilo Kanban.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#f39c12' }}>➔</span> 
+                <div><strong>Esteira de Conversão:</strong> Mova o visitante de "1º Contato" para "Em Conversão" e, finalmente, integre-o como Membro Oficial com um único botão.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#f39c12' }}>➔</span> 
+                <div><strong>Histórico e Engajamento:</strong> Registre como o visitante conheceu a igreja e mantenha a janela de conexão sempre quente via WhatsApp.</div>
+              </li>
+            </ul>
+            <div style={{ marginTop: '25px' }}>
+              <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#f39c12', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Multiplique sua membresia</button>
+            </div>
+          </div>
+        </div>
+
+        {/* FEATURE 5: MAPEAMENTO */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', marginBottom: '40px' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <img src="/secretaria-mapeamento.png" alt="Mapeamento Local" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+          <div style={{ flex: '1 1 400px' }}>
+            <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Mapeamento Geográfico Automático</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.7', marginBottom: '20px' }}>Visualize onde sua membresia mora de forma inteligente. Ideal para planejar a abertura de novas congregações ou células.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#e74c3c' }}>➔</span> 
+                <div><strong>Geolocalização via Satélite:</strong> O sistema converte automaticamente o endereço de cada membro em um pino no mapa, sem nenhum esforço da sua parte.</div>
+              </li>
+              <li style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ color: '#e74c3c' }}>➔</span> 
+                <div><strong>Raio de Influência:</strong> Identifique imediatamente se um visitante mora perto da igreja ou de algum líder, facilitando o acolhimento local.</div>
+              </li>
+            </ul>
+            <div style={{ marginTop: '25px' }}>
+              <button onClick={() => window.location.href = '#planos'} className="glass-button" style={{ background: '#e74c3c', color: '#fff', border: 'none', padding: '10px 20px', fontSize: '0.95rem' }}>Mapeie sua igreja</button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
       {/* DEMONSTRAÇÃO DO FINANCEIRO */}
       <section style={{ padding: '80px 20px', maxWidth: '1200px', margin: '0 auto', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
         <div style={{ textAlign: 'center', marginBottom: '60px' }}>
