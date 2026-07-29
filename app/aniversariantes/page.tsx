@@ -27,7 +27,7 @@ export default function AniversariantesPage() {
     else if (hour >= 18) greeting = 'Boa noite';
     
     const firstName = name.split(' ')[0];
-    const msg = `${greeting}, ${firstName}! 🎉🎂\n\nEm nome de toda a nossa igreja IPCN ${churchName}, queremos te desejar um feliz aniversário! Que Deus continue abençoando sua vida, te dando muita saúde, paz e alegria. Amamos a sua vida! 🙌`;
+    const msg = `${greeting}, ${firstName}! 🎉🎂\n\nEm nome de toda a nossa igreja ${churchName}, queremos te desejar um feliz aniversário! Que Deus continue abençoando sua vida, te dando muita saúde, paz e alegria. Amamos a sua vida! 🙌`;
 
     setWhatsappMessage(msg);
     setWhatsappPhone(phone.replace(/\D/g, ''));
