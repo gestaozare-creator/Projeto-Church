@@ -176,20 +176,20 @@ export default function VendasPage() {
             border-radius: 24px;
             box-shadow: inset 0 0 100px rgba(0,0,0,0.5), 0 20px 50px rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.1);
-            perspective: 2500px;
+            perspective: 3000px;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
           }
           .macbook-3d-container {
-            transform: rotateY(-18deg) rotateX(5deg) scale(0.9);
+            transform: rotateY(15deg) scale(0.9);
             transform-style: preserve-3d;
             position: relative;
             z-index: 10;
-            left: -8%;
-            top: 2%;
-            box-shadow: 20px 30px 60px rgba(0,0,0,0.6);
+            left: 10%;
+            top: 0;
+            box-shadow: -20px 30px 60px rgba(0,0,0,0.6);
             border-radius: 20px;
           }
           .macbook-frame {
@@ -236,18 +236,18 @@ export default function VendasPage() {
           }
           .iphone-3d-container {
             position: absolute;
-            bottom: 40px;
-            right: 8%;
-            transform: rotateY(-22deg) rotateX(8deg) rotateZ(-4deg) scale(0.95);
+            bottom: 30px;
+            left: 8%;
+            transform: rotateY(5deg) scale(1.1);
             transform-style: preserve-3d;
             z-index: 20;
           }
           .iphone-frame {
-            width: 240px;
+            width: 250px;
             background: #111;
             border-radius: 35px;
             padding: 10px;
-            box-shadow: -15px 25px 50px rgba(0,0,0,0.8), inset 0 0 0 2px #444;
+            box-shadow: -25px 35px 60px rgba(0,0,0,0.8), inset 0 0 0 2px #444;
           }
           .iphone-screen {
             background: #000;
