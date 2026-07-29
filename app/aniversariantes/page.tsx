@@ -8,7 +8,7 @@ import { useChurches } from '@/hooks/useChurches';
 import { ChevronLeft, Cake, CalendarHeart, Gift } from 'lucide-react';
 
 export default function AniversariantesPage() {
-  const { currentUser, canSeeAllChurches, activeChurchId } = useAuth();
+  const { currentUser, canSeeAllChurches, activeChurchId, activeMinistryId } = useAuth();
   const [churchF, setChurchF] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches ? 'ALL' : currentUser?.churchId || ''));
 
   const [showWhatsappModal, setShowWhatsappModal] = useState(false);
@@ -50,9 +50,9 @@ export default function AniversariantesPage() {
     }
   }, [activeChurchId, canSeeAllChurches, currentUser]);
   
-  const { churches: dbChurches } = useChurches();
-  const { members: allMembers, loading } = useMembers();
-
+  const { churches: dbChurches } = useChurches(activeMinistryId);
+  const scopedChurchIds = useMemo(() => dbChurches.map(c => c.id), [dbChurches]);
+  const { members: allMembers, loading } = useMembers(undefined, scopedChurchIds);
   // Filtra por igreja selecionada na hierarquia
   const filteredMembers = useMemo(() => {
     return allMembers.filter(m => {
