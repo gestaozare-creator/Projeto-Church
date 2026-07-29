@@ -21,25 +21,28 @@ export default function Mapeamento() {
 
   useEffect(() => {
     async function fetchData() {
-      let allMembers: any[] = [];
-      let page = 0;
-      const pageSize = 1000;
-      while (true) {
-        const { data: pageData } = await supabase.from('members').select('*').range(page * pageSize, (page + 1) * pageSize - 1);
-        if (!pageData || pageData.length === 0) break;
-        allMembers = [...allMembers, ...pageData];
-        if (pageData.length < pageSize) break;
-        page++;
-      }
       let qChurches = supabase.from('churches').select('*');
       if (activeMinistryId) qChurches = qChurches.eq('ministry_id', activeMinistryId);
       const { data: churchesData } = await qChurches;
       if (churchesData) setDbChurches(churchesData);
 
-      // Filtrar membros pelos church_ids da rede ativa
-      if (churchesData && churchesData.length > 0) {
-        const allowedChurchIds = churchesData.map(c => c.id);
-        allMembers = allMembers.filter(m => allowedChurchIds.includes(m.church_id));
+      const allowedChurchIds = churchesData ? churchesData.map(c => c.id) : [];
+
+      let allMembers: any[] = [];
+      if (allowedChurchIds.length > 0) {
+        let page = 0;
+        const pageSize = 1000;
+        while (true) {
+          const { data: pageData } = await supabase
+            .from('members')
+            .select('*')
+            .in('church_id', allowedChurchIds)
+            .range(page * pageSize, (page + 1) * pageSize - 1);
+          if (!pageData || pageData.length === 0) break;
+          allMembers = [...allMembers, ...pageData];
+          if (pageData.length < pageSize) break;
+          page++;
+        }
       }
       setDbMembers(allMembers);
     }
@@ -88,6 +91,68 @@ export default function Mapeamento() {
       return {};
     }
   }, [activeChurch]);
+
+  // Geocoding Effect - Process missing addresses
+  useEffect(() => {
+    if (!activeChurch || !churchAddress) return;
+    
+    const addressesToGeocode: string[] = [];
+    
+    if (!geocache[churchAddress.trim()]) {
+      addressesToGeocode.push(churchAddress.trim());
+    }
+    
+    const uniqueAddresses = new Set(filteredPeople.map(p => p.address?.trim()).filter(Boolean));
+    for (const addr of uniqueAddresses) {
+      if (addr && geocache[addr as string] === undefined) {
+        addressesToGeocode.push(addr as string);
+      }
+    }
+    
+    if (addressesToGeocode.length === 0) return;
+    
+    const batch = addressesToGeocode.slice(0, 5); // Process max 5 at a time
+    let isCancelled = false;
+
+    const runGeocoding = async () => {
+      let updatedCache = { ...geocache };
+      let hasChanges = false;
+      
+      for (const address of batch) {
+        if (isCancelled) break;
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+          const data = await res.json();
+          if (data && data.length > 0) {
+            updatedCache[address] = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+            hasChanges = true;
+          } else {
+            updatedCache[address] = null; // Mark as null so we don't retry endlessly
+            hasChanges = true;
+          }
+        } catch (e) {
+          console.error('Geocoding error', e);
+        }
+        await new Promise(r => setTimeout(r, 1500)); // Respect rate limits
+      }
+      
+      if (hasChanges && !isCancelled) {
+        const currentConfig = typeof activeChurch.config === 'string' 
+          ? JSON.parse(activeChurch.config || '{}') 
+          : (activeChurch.config || {});
+          
+        currentConfig.geocache = updatedCache;
+        
+        await supabase.from('churches').update({ config: currentConfig }).eq('id', activeChurch.id);
+        
+        setDbChurches(prev => prev.map(c => c.id === activeChurch.id ? { ...c, config: currentConfig } : c));
+      }
+    };
+    
+    runGeocoding();
+
+    return () => { isCancelled = true; };
+  }, [activeChurch, churchAddress, filteredPeople, geocache]);
 
   const totalMembros = allPeople.filter(p => p.type === 'membro').length;
   const totalVisitantes = allPeople.filter(p => p.type === 'visitante').length;
