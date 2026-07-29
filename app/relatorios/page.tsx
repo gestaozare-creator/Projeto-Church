@@ -352,7 +352,7 @@ export default function RelatoriosPage() {
       {reportType === 'CONTABILIDADE' ? (
         <ContabilidadeDashboard churchId={selectedChurch || activeChurchId || currentUser?.churchId || ''} year={year} />
       ) : reportType === 'INTELIGENCIA' ? (
-        <InteligenciaFinanceiraDashboard year={year} month={month} />
+        <InteligenciaFinanceiraDashboard year={year} month={month} ministryId={activeMinistryId || undefined} />
       ) : loading ? (
         <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-secondary)' }}>Carregando dados detalhados...</div>
       ) : (
