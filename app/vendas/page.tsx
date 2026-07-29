@@ -31,57 +31,143 @@ export default function VendasPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%)', color: '#f8fafc', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       
+      <style>{`
+        .hero-title {
+          font-size: 3.5rem;
+          font-weight: 800;
+          line-height: 1.2;
+          margin: 0 0 20px 0;
+          background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .nav-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 20px 40px;
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+        .hero-section {
+          text-align: center;
+          padding: 60px 20px 80px;
+          max-width: 1000px;
+          margin: 0 auto;
+        }
+        .hero-subtitle {
+          font-size: 1.2rem;
+          color: #94a3b8;
+          line-height: 1.6;
+          margin: 0 auto 35px auto;
+          max-width: 800px;
+        }
+        .logo-title {
+          font-size: 1.8rem;
+          font-weight: 800;
+          background: linear-gradient(90deg, #fff, #cbd5e1);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .logo-subtitle {
+          display: block;
+          font-size: 0.75rem;
+          color: #94a3b8;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+        }
+        .hero-image-container {
+          width: 100%;
+          max-width: 950px;
+          margin: 0 auto;
+          position: relative;
+        }
+        .floating-mobile-img {
+          position: absolute;
+          bottom: -30px;
+          right: -30px;
+          width: 250px;
+          border-radius: 12px;
+          border: 1px solid rgba(255,255,255,0.1);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+        
+        @media (max-width: 768px) {
+          .nav-container {
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px;
+          }
+          .hero-title {
+            font-size: 2.2rem;
+          }
+          .hero-subtitle {
+            font-size: 1rem;
+          }
+          .hero-section {
+            padding: 40px 20px 40px;
+          }
+          .floating-mobile-img {
+            display: none;
+          }
+        }
+      `}</style>
+
       {/* BANNER PROMO ESTÁTICO */}
       <div style={{ background: 'linear-gradient(90deg, #6366f1 0%, #a855f7 100%)', color: '#fff', textAlign: 'center', padding: '10px 15px', fontSize: '0.88rem', fontWeight: 600, boxShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
         ⚡ Condição Especial de Lançamento: Ganhe 30% de Desconto no Plano Combo Completo!
       </div>
 
       {/* NAVBAR */}
-      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg, #6366f1, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', boxShadow: '0 4px 15px rgba(99,102,241,0.4)' }}>
+      <nav className="nav-container">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'linear-gradient(135deg, #6366f1, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', boxShadow: '0 4px 15px rgba(99,102,241,0.4)' }}>
             ⛪
           </div>
           <div>
-            <span style={{ fontSize: '1.3rem', fontWeight: 800, background: 'linear-gradient(90deg, #fff, #cbd5e1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <span className="logo-title">
               Projeto Church
             </span>
-            <span style={{ display: 'block', fontSize: '0.65rem', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase' }}>
+            <span className="logo-subtitle">
               Gestão Eclesiástica Inteligente
             </span>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <a href="#modulos" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Módulos</a>
-          <a href="#planos" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Planos & Preços</a>
-          <Link href="/login" style={{ padding: '8px 18px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600 }}>
-            Entrar no Sistema
-          </Link>
+        <div style={{ display: 'flex', gap: '25px', alignItems: 'center' }}>
+          <a href="#modulos" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '0.95rem', fontWeight: 500 }}>Módulos</a>
+          <a href="#planos" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '0.95rem', fontWeight: 500 }}>Planos & Preços</a>
+          {/* Removido o botão Entrar no Sistema */}
         </div>
       </nav>
 
       {/* HERO SECTION */}
-      <section style={{ textAlign: 'center', padding: '60px 20px 80px', maxWidth: '900px', margin: '0 auto' }}>
-        <div style={{ display: 'inline-block', padding: '6px 16px', borderRadius: '20px', background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', color: '#a5b4fc', fontSize: '0.82rem', fontWeight: 600, marginBottom: '20px' }}>
+      <section className="hero-section">
+        <div style={{ display: 'inline-block', padding: '6px 16px', borderRadius: '20px', background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', color: '#a5b4fc', fontSize: '0.82rem', fontWeight: 600, marginBottom: '25px' }}>
           ✨ A Plataforma Completa Para Sua Igreja Crescer com Organização
         </div>
 
-        <h1 style={{ fontSize: '3rem', fontWeight: 800, lineHeight: '1.25', margin: '0 0 20px 0', background: 'linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+        <h1 className="hero-title">
           Tecnologia Moderna para Secretaria, Financeiro e Ministério Infantil
         </h1>
 
-        <p style={{ fontSize: '1.15rem', color: '#94a3b8', lineHeight: '1.6', margin: '0 0 35px 0' }}>
-          Controle membros, dízimos, despesas e visitantes com dashboards inteligentes, automação via WhatsApp e relatórios em tempo real.
+        <p className="hero-subtitle">
+          Controle membros, dízimos, despesas e visitantes com dashboards inteligentes, automação via WhatsApp e relatórios em tempo real. Uma plataforma visual, rápida e fácil de usar.
         </p>
 
-        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <a href="#planos" style={{ padding: '14px 32px', borderRadius: '12px', background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '1rem', boxShadow: '0 10px 25px rgba(99,102,241,0.4)', transition: 'transform 0.2s' }}>
-            Conhecer os Planos
+        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '60px' }}>
+          <a href="#modulos" style={{ padding: '14px 32px', borderRadius: '12px', background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '1.05rem', boxShadow: '0 10px 25px rgba(99,102,241,0.4)', transition: 'transform 0.2s' }}>
+            Conhecer Módulos
           </a>
-          <a href={`https://wa.me/${whatsappPhone}`} target="_blank" rel="noreferrer" style={{ padding: '14px 28px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <a href={`https://wa.me/${whatsappPhone}`} target="_blank" rel="noreferrer" style={{ padding: '14px 28px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
             💬 Falar com Consultor
           </a>
+        </div>
+        
+        {/* HERO IMAGE SECTION - IMPACTO VISUAL */}
+        <div className="hero-image-container">
+          <img src="/secretaria-dashboard.png" alt="Dashboard Principal Projeto Church" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 30px 60px rgba(0,0,0,0.5)' }} />
+          <img src="/secretaria-visitantes.png" alt="Mobile Dashboard" className="floating-mobile-img" />
         </div>
       </section>
 
