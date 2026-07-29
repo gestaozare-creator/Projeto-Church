@@ -49,15 +49,24 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
       const { data: c } = await query;
       if (c) setDbChurches(c);
 
+      const validChurchIds = c ? c.map((church: any) => church.id) : [];
+      
       let allMembers: any[] = [];
-      let page = 0;
-      const pageSize = 1000;
-      while (true) {
-        const { data: pageData } = await supabase.from('members').select('*').range(page * pageSize, (page + 1) * pageSize - 1);
-        if (!pageData || pageData.length === 0) break;
-        allMembers = [...allMembers, ...pageData];
-        if (pageData.length < pageSize) break;
-        page++;
+      
+      if (validChurchIds.length > 0) {
+        let page = 0;
+        const pageSize = 1000;
+        while (true) {
+          const { data: pageData } = await supabase
+            .from('members')
+            .select('*')
+            .in('church_id', validChurchIds)
+            .range(page * pageSize, (page + 1) * pageSize - 1);
+          if (!pageData || pageData.length === 0) break;
+          allMembers = [...allMembers, ...pageData];
+          if (pageData.length < pageSize) break;
+          page++;
+        }
       }
 
       if (allMembers.length > 0) {

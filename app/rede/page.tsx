@@ -114,22 +114,7 @@ export default function RedePage() {
   const loadData = async () => {
     setPageLoading(true);
     try {
-      // Carregar dados da rede do usuário
       const { data: ministries } = await supabase.from('ministries').select('*');
-      const { data: churchesDb } = await supabase.from('churches').select('*');
-      const { data: servicesDb } = await supabase.from('church_services').select('*');
-      let allMembersDb: any[] = [];
-      let pageM = 0;
-      while (true) {
-        const { data } = await supabase.from('members').select('id, status, church_id').range(pageM * 1000, (pageM + 1) * 1000 - 1);
-        if (data && data.length > 0) {
-          allMembersDb = allMembersDb.concat(data);
-          if (data.length < 1000) break;
-          pageM++;
-        } else {
-          break;
-        }
-      }
 
       let activeMin: Ministry | null = null;
       if (ministries && ministries.length > 0) {
@@ -142,6 +127,37 @@ export default function RedePage() {
           activeMin = ministries[0];
         }
         setMinistry(activeMin);
+      }
+
+      let churchQuery = supabase.from('churches').select('*');
+      if (activeMin) {
+        churchQuery = churchQuery.eq('ministry_id', activeMin.id);
+      }
+      const { data: churchesDb } = await churchQuery;
+
+      const validChurchIds = churchesDb ? churchesDb.map((c: any) => c.id) : [];
+
+      const { data: servicesDb } = validChurchIds.length > 0 
+        ? await supabase.from('church_services').select('*').in('church_id', validChurchIds)
+        : { data: [] };
+
+      let allMembersDb: any[] = [];
+      if (validChurchIds.length > 0) {
+        let pageM = 0;
+        while (true) {
+          const { data } = await supabase
+            .from('members')
+            .select('id, status, church_id')
+            .in('church_id', validChurchIds)
+            .range(pageM * 1000, (pageM + 1) * 1000 - 1);
+          if (data && data.length > 0) {
+            allMembersDb = allMembersDb.concat(data);
+            if (data.length < 1000) break;
+            pageM++;
+          } else {
+            break;
+          }
+        }
       }
 
       if (churchesDb) {
@@ -172,10 +188,7 @@ export default function RedePage() {
 
         // FILTRAGEM ESTRITA POR REDE/MINISTÉRIO ATIVO
         const targetMinId = activeMin?.id || '';
-        const filteredChurches = targetMinId 
-          ? formatted.filter((c: any) => c.ministryId === targetMinId)
-          : formatted;
-
+        const filteredChurches = formatted;
         setChurches(filteredChurches);
 
         // Stats por igreja (apenas da rede ativa)
