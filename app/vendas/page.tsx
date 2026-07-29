@@ -148,11 +148,12 @@ export default function VendasPage() {
         </div>
 
         <h1 className="hero-title">
-          Tecnologia Moderna para Secretaria, Financeiro e Ministério Infantil
+          O Sistema de Gestão Definitivo para Igrejas que Crescem
         </h1>
 
         <p className="hero-subtitle">
-          Controle membros, dízimos, despesas e visitantes com dashboards inteligentes, automação via WhatsApp e relatórios em tempo real. Uma plataforma visual, rápida e fácil de usar.
+          Secretaria, Financeiro e Ministério Infantil em uma única plataforma inteligente. <br />
+          Telas <strong>100% reais</strong>, construídas para serem rápidas, visuais e fáceis de usar.
         </p>
 
         <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '60px' }}>
@@ -166,9 +167,15 @@ export default function VendasPage() {
         <style>{`
           .css-mockup-wrapper {
             position: relative;
-            max-width: 1000px;
-            margin: 40px auto 0;
-            padding-bottom: 60px;
+            max-width: 1050px;
+            margin: 50px auto 0;
+            padding: 70px 40px 60px;
+            background-image: url('/desk_bg.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 24px;
+            box-shadow: inset 0 0 80px rgba(0,0,0,0.8), 0 20px 50px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
           }
           .macbook-frame {
             position: relative;
@@ -263,6 +270,10 @@ export default function VendasPage() {
         
         {/* CSS MOCKUP REAL */}
         <div className="css-mockup-wrapper">
+          <div style={{ position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', padding: '6px 16px', borderRadius: '20px', color: '#fff', fontSize: '0.8rem', fontWeight: 600, border: '1px solid rgba(255,255,255,0.1)', zIndex: 20 }}>
+            📸 Imagens Reais do Sistema
+          </div>
+          
           <div className="macbook-frame">
             <div className="macbook-notch"></div>
             <div className="macbook-screen">
@@ -274,7 +285,7 @@ export default function VendasPage() {
           <div className="iphone-frame">
             <div className="iphone-notch"></div>
             <div className="iphone-screen">
-              <img src="/secretaria-visitantes.png" alt="App Mobile" />
+              <img src="/secretaria-carteirinha.png" alt="App Mobile" />
             </div>
           </div>
         </div>
