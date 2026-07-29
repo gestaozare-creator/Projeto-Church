@@ -164,151 +164,16 @@ export default function VendasPage() {
             💬 Falar com Consultor
           </a>
         </div>
-        <style>{`
-          .css-mockup-wrapper {
-            position: relative;
-            max-width: 1100px;
-            height: 700px;
-            margin: 50px auto 0;
-            background-image: url('/office_bg_modern.png');
-            background-size: cover;
-            background-position: center;
-            border-radius: 24px;
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.5), 0 20px 50px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.1);
-            perspective: 3000px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-          }
-          .macbook-3d-container {
-            transform: rotateY(15deg) scale(0.9);
-            transform-style: preserve-3d;
-            position: relative;
-            z-index: 10;
-            left: 10%;
-            top: 0;
-            box-shadow: -20px 30px 60px rgba(0,0,0,0.6);
-            border-radius: 20px;
-          }
-          .macbook-frame {
-            position: relative;
-            width: 100%;
-            width: 850px;
-            background: #111;
-            border-radius: 20px 20px 0 0;
-            padding: 15px 15px 25px 15px;
-            border: 2px solid #333;
-            border-bottom: none;
-          }
-          .macbook-screen {
-            background: #000;
-            border-radius: 8px;
-            overflow: hidden;
-            aspect-ratio: 16/10;
-          }
-          .macbook-screen img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: top;
-          }
-          .macbook-base {
-            position: relative;
-            width: 110%;
-            left: -5%;
-            height: 20px;
-            background: linear-gradient(to bottom, #cfd8dc, #90a4ae);
-            border-radius: 0 0 20px 20px;
-            box-shadow: inset 0 -3px 10px rgba(0,0,0,0.5), 0 20px 40px rgba(0,0,0,0.5);
-          }
-          .macbook-notch {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: 15px;
-            background: #000;
-            border-radius: 0 0 10px 10px;
-            z-index: 3;
-          }
-          .iphone-3d-container {
-            position: absolute;
-            bottom: 30px;
-            left: 8%;
-            transform: rotateY(5deg) scale(1.1);
-            transform-style: preserve-3d;
-            z-index: 20;
-          }
-          .iphone-frame {
-            width: 250px;
-            background: #111;
-            border-radius: 35px;
-            padding: 10px;
-            box-shadow: -25px 35px 60px rgba(0,0,0,0.8), inset 0 0 0 2px #444;
-          }
-          .iphone-screen {
-            background: #000;
-            border-radius: 25px;
-            overflow: hidden;
-            aspect-ratio: 9/19.5;
-            position: relative;
-          }
-          .iphone-screen img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: top;
-          }
-          .iphone-notch {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: 25px;
-            background: #111;
-            border-radius: 0 0 15px 15px;
-            z-index: 2;
-          }
-          
-          html { scroll-behavior: smooth; }
-
-          @media (max-width: 768px) {
-            .css-mockup-wrapper { height: auto; padding: 40px 15px; flex-direction: column; perspective: none; }
-            .macbook-3d-container { transform: none; left: 0; top: 0; scale: 1; margin-bottom: 30px; width: 100%; }
-            .macbook-frame { width: 100%; border-radius: 10px 10px 0 0; padding: 10px 10px 15px 10px; }
-            .iphone-3d-container { position: relative; transform: none; bottom: 0; right: 0; margin: 0 auto; scale: 1; }
-            .macbook-base { height: 10px; border-radius: 0 0 10px 10px; }
-          }
-        `}</style>
-        
-        {/* CSS MOCKUP REAL */}
-        <div className="css-mockup-wrapper">
-          <div style={{ position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', padding: '6px 16px', borderRadius: '20px', color: '#fff', fontSize: '0.8rem', fontWeight: 600, border: '1px solid rgba(255,255,255,0.1)', zIndex: 30 }}>
+        {/* MOCKUP 3D FOTORREALISTA */}
+        <div style={{ position: 'relative', maxWidth: '1050px', margin: '60px auto 0', padding: '0 20px' }}>
+          <div style={{ position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', padding: '8px 24px', borderRadius: '30px', color: '#fff', fontSize: '0.85rem', fontWeight: 600, border: '1px solid rgba(255,255,255,0.15)', zIndex: 30, boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
             📸 Imagens Reais do Sistema
           </div>
-          
-          <div className="macbook-3d-container">
-            <div className="macbook-frame">
-              <div className="macbook-notch"></div>
-              <div className="macbook-screen">
-                <img src="/financeiro-dashboard.png" alt="Dashboard Financeiro" />
-              </div>
-            </div>
-            <div className="macbook-base"></div>
-          </div>
-          
-          <div className="iphone-3d-container">
-            <div className="iphone-frame">
-              <div className="iphone-notch"></div>
-              <div className="iphone-screen">
-                <img src="/formulario vistante.png" alt="App Mobile Formulário Visitante" />
-              </div>
-            </div>
-          </div>
+          <img 
+            src="/hero-mockup-final.png" 
+            alt="Dashboard do Projeto Church em um escritório" 
+            style={{ width: '100%', borderRadius: '24px', boxShadow: '0 30px 80px rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.05)' }} 
+          />
         </div>
       </section>
 
