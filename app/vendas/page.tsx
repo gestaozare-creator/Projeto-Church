@@ -6,6 +6,7 @@ import Link from 'next/link';
 export default function VendasPage() {
   const [activeTab, setActiveTab] = useState<'secretaria' | 'financeiro' | 'kids'>('secretaria');
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [theme, setTheme] = useState<'dark'|'light'>('dark');
 
   const whatsappPhone = '5541999256913';
 
@@ -29,14 +30,29 @@ export default function VendasPage() {
   };
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', background: 'linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%)', color: '#f8fafc', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+    <div className={`vendas-container ${theme}`} style={{ width: '100%', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif', transition: 'all 0.3s' }}>
       
       <style>{`
+        .vendas-container.dark {
+          background: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%);
+          color: #f8fafc;
+        }
+        .vendas-container.light {
+          background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+          color: #0f172a;
+        }
+        .vendas-container.light .hero-subtitle, .vendas-container.light .logo-subtitle { color: #475569 !important; }
+        .vendas-container.light .nav-link { color: #1e293b !important; }
+        .vendas-container.light .hero-title, .vendas-container.light .logo-title, .vendas-container.light .section-title {
+          background: linear-gradient(180deg, #0f172a 0%, #334155 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
         .hero-title {
-          font-size: 3.5rem;
+          font-size: 2.8rem;
           font-weight: 800;
           line-height: 1.2;
-          margin: 0 0 20px 0;
+          margin: 0 0 10px 0;
           background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
@@ -51,15 +67,15 @@ export default function VendasPage() {
         }
         .hero-section {
           text-align: center;
-          padding: 60px 20px 80px;
+          padding: 30px 20px 40px;
           max-width: 1000px;
           margin: 0 auto;
         }
         .hero-subtitle {
-          font-size: 1.2rem;
+          font-size: 1.15rem;
           color: #94a3b8;
-          line-height: 1.6;
-          margin: 0 auto 35px auto;
+          line-height: 1.5;
+          margin: 0 auto 20px auto;
           max-width: 800px;
         }
         .logo-title {
@@ -135,9 +151,14 @@ export default function VendasPage() {
         </div>
 
         <div style={{ display: 'flex', gap: '25px', alignItems: 'center' }}>
-          <a href="#modulos" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '0.95rem', fontWeight: 500 }}>Módulos</a>
-          <a href="#planos" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '0.95rem', fontWeight: 500 }}>Planos & Preços</a>
-          {/* Removido o botão Entrar no Sistema */}
+          <a href="#modulos" className="nav-link" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '0.95rem', fontWeight: 500 }}>Módulos</a>
+          <a href="#planos" className="nav-link" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '0.95rem', fontWeight: 500 }}>Planos & Preços</a>
+          <button 
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            style={{ background: 'transparent', border: '1px solid rgba(148,163,184,0.4)', borderRadius: '20px', padding: '6px 14px', color: 'inherit', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}
+          >
+            {theme === 'dark' ? '☀️ Modo Claro' : '🌙 Modo Escuro'}
+          </button>
         </div>
       </nav>
 
@@ -156,23 +177,23 @@ export default function VendasPage() {
           Telas <strong>100% reais</strong>, construídas para serem rápidas, visuais e fáceis de usar.
         </p>
 
-        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '60px' }}>
-          <a href="#modulos" style={{ padding: '14px 32px', borderRadius: '12px', background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '1.05rem', boxShadow: '0 10px 25px rgba(99,102,241,0.4)', transition: 'transform 0.2s' }}>
+        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '30px' }}>
+          <a href="#modulos" style={{ padding: '12px 28px', borderRadius: '12px', background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '1.05rem', boxShadow: '0 10px 25px rgba(99,102,241,0.4)', transition: 'transform 0.2s' }}>
             Conhecer Módulos
           </a>
-          <a href={`https://wa.me/${whatsappPhone}`} target="_blank" rel="noreferrer" style={{ padding: '14px 28px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <a href={`https://wa.me/${whatsappPhone}`} target="_blank" rel="noreferrer" style={{ padding: '12px 24px', borderRadius: '12px', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', color: theme === 'light' ? '#4f46e5' : '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
             💬 Falar com Consultor
           </a>
         </div>
         {/* MOCKUP 3D FOTORREALISTA */}
-        <div style={{ position: 'relative', maxWidth: '1050px', margin: '60px auto 0', padding: '0 20px' }}>
-          <div style={{ position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', padding: '8px 24px', borderRadius: '30px', color: '#fff', fontSize: '0.85rem', fontWeight: 600, border: '1px solid rgba(255,255,255,0.15)', zIndex: 30, boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
+        <div style={{ position: 'relative', maxWidth: '1050px', margin: '20px auto 0', padding: '0 20px' }}>
+          <div style={{ position: 'absolute', top: '15px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)', padding: '6px 20px', borderRadius: '30px', color: '#fff', fontSize: '0.8rem', fontWeight: 600, border: '1px solid rgba(255,255,255,0.2)', zIndex: 30, boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
             📸 Imagens Reais do Sistema
           </div>
           <img 
             src="/hero-mockup-final.png" 
             alt="Dashboard do Projeto Church em um escritório" 
-            style={{ width: '100%', borderRadius: '24px', boxShadow: '0 30px 80px rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.05)' }} 
+            style={{ width: '100%', borderRadius: '24px', boxShadow: theme === 'light' ? '0 20px 60px rgba(0,0,0,0.2)' : '0 30px 80px rgba(0,0,0,0.6)', border: theme === 'light' ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.05)' }} 
           />
         </div>
       </section>
