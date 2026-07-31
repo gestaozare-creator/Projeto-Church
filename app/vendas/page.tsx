@@ -38,8 +38,17 @@ export default function VendasPage() {
           color: #f8fafc;
         }
         .vendas-container.light {
-          background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+          background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #cbd5e1 100%);
           color: #0f172a;
+        }
+        .vendas-container.light h2,
+        .vendas-container.light h3,
+        .vendas-container.light h4,
+        .vendas-container.light li > div {
+          color: #0f172a !important;
+        }
+        .vendas-container.light p {
+          color: #475569 !important;
         }
         .vendas-container.light .hero-subtitle, .vendas-container.light .logo-subtitle { color: #475569 !important; }
         .vendas-container.light .nav-link { color: #1e293b !important; }
@@ -62,13 +71,13 @@ export default function VendasPage() {
           justify-content: space-between;
           align-items: center;
           padding: 20px 40px;
-          max-width: 1200px;
+          max-width: 1400px;
           margin: 0 auto;
         }
         .hero-section {
           text-align: center;
           padding: 30px 20px 40px;
-          max-width: 1000px;
+          max-width: 1200px;
           margin: 0 auto;
         }
         .hero-subtitle {
@@ -94,7 +103,7 @@ export default function VendasPage() {
         }
         .hero-image-container {
           width: 100%;
-          max-width: 950px;
+          max-width: 1200px;
           margin: 0 auto;
           position: relative;
         }
@@ -186,7 +195,7 @@ export default function VendasPage() {
           </a>
         </div>
         {/* MOCKUP 3D FOTORREALISTA */}
-        <div style={{ position: 'relative', maxWidth: '1050px', margin: '20px auto 0', padding: '0 20px' }}>
+        <div style={{ position: 'relative', maxWidth: '1200px', margin: '20px auto 0', padding: '0 20px' }}>
           <div style={{ position: 'absolute', top: '15px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)', padding: '6px 20px', borderRadius: '30px', color: '#fff', fontSize: '0.8rem', fontWeight: 600, border: '1px solid rgba(255,255,255,0.2)', zIndex: 30, boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
             📸 Imagens Reais do Sistema
           </div>
