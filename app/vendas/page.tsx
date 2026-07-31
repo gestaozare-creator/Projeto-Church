@@ -281,7 +281,7 @@ export default function VendasPage() {
             <div style={{ width: '230px', background: '#111', borderRadius: '35px', padding: '10px', boxShadow: '-15px 25px 50px rgba(0,0,0,0.8), inset 0 0 0 2px #444', position: 'relative' }}>
               <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '100px', height: '25px', background: '#111', borderRadius: '0 0 15px 15px', zIndex: 2 }}></div>
               <div style={{ background: '#fff', borderRadius: '25px', overflow: 'hidden', aspectRatio: '9/19.5', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/formulario vistante.png" alt="Formulário Exclusivo para Visitantes" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
+                <img src="/formulario vistante.png" alt="Formulário Exclusivo para Visitantes" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', transform: 'scale(1.08)' }} />
               </div>
             </div>
           </div>
@@ -318,7 +318,7 @@ export default function VendasPage() {
             <div style={{ width: '230px', background: '#111', borderRadius: '35px', padding: '10px', boxShadow: '15px 25px 50px rgba(0,0,0,0.8), inset 0 0 0 2px #444', position: 'relative' }}>
               <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '100px', height: '25px', background: '#111', borderRadius: '0 0 15px 15px', zIndex: 2 }}></div>
               <div style={{ background: '#fff', borderRadius: '25px', overflow: 'hidden', aspectRatio: '9/19.5', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/formulario membro.png" alt="Formulário de Cadastro de Membro" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
+                <img src="/formulario membro.png" alt="Formulário de Cadastro de Membro" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', transform: 'scale(1.08)' }} />
               </div>
             </div>
           </div>
@@ -555,7 +555,9 @@ export default function VendasPage() {
         {/* FEATURE 3: MODAL DE RECEITAS */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', marginBottom: '80px' }}>
           <div style={{ flex: '1 1 500px' }}>
-            <img src="/financeiro-modais.png" alt="Lançamento de Receitas" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+            <div style={{ borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <img src="/financeiro-modais.png" alt="Lançamento de Receitas" style={{ width: '100%', transform: 'scale(1.4)', display: 'block' }} />
+            </div>
           </div>
           <div style={{ flex: '1 1 400px' }}>
             <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Lançamento Rápido de Receitas</h3>
@@ -579,7 +581,9 @@ export default function VendasPage() {
         {/* FEATURE 4: MODAL DE DESPESAS E PATRIMÔNIO */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', flexDirection: 'row-reverse', marginBottom: '80px' }}>
           <div style={{ flex: '1 1 500px' }}>
-            <img src="/financeiro-modais1.png" alt="Lançamento de Despesas e Patrimônio" style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+            <div style={{ borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <img src="/financeiro-modais1.png" alt="Lançamento de Despesas e Patrimônio" style={{ width: '100%', transform: 'scale(1.4)', display: 'block' }} />
+            </div>
           </div>
           <div style={{ flex: '1 1 400px' }}>
             <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '15px' }}>Gestão de Saídas: Fim da Papelada e Integração Patrimonial</h3>
