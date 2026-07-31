@@ -280,8 +280,8 @@ export default function VendasPage() {
             
             <div style={{ width: '230px', background: '#111', borderRadius: '35px', padding: '10px', boxShadow: '-15px 25px 50px rgba(0,0,0,0.8), inset 0 0 0 2px #444', position: 'relative' }}>
               <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '100px', height: '25px', background: '#111', borderRadius: '0 0 15px 15px', zIndex: 2 }}></div>
-              <div style={{ background: '#000', borderRadius: '25px', overflow: 'hidden', aspectRatio: '9/19.5', position: 'relative' }}>
-                <img src="/formulario vistante.png" alt="Formulário Exclusivo para Visitantes" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
+              <div style={{ background: '#fff', borderRadius: '25px', overflow: 'hidden', aspectRatio: '9/19.5', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src="/formulario vistante.png" alt="Formulário Exclusivo para Visitantes" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
               </div>
             </div>
           </div>
@@ -317,8 +317,8 @@ export default function VendasPage() {
             
             <div style={{ width: '230px', background: '#111', borderRadius: '35px', padding: '10px', boxShadow: '15px 25px 50px rgba(0,0,0,0.8), inset 0 0 0 2px #444', position: 'relative' }}>
               <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '100px', height: '25px', background: '#111', borderRadius: '0 0 15px 15px', zIndex: 2 }}></div>
-              <div style={{ background: '#000', borderRadius: '25px', overflow: 'hidden', aspectRatio: '9/19.5', position: 'relative' }}>
-                <img src="/formulario membro.png" alt="Formulário de Cadastro de Membro" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
+              <div style={{ background: '#fff', borderRadius: '25px', overflow: 'hidden', aspectRatio: '9/19.5', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src="/formulario membro.png" alt="Formulário de Cadastro de Membro" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
               </div>
             </div>
           </div>
