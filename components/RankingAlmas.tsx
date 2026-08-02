@@ -50,15 +50,9 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
         query = query.eq('ministry_id', ministryId);
       }
       const { data: c } = await query;
-      
-      let validC = c || [];
-      if (activeChurchId) {
-        validC = validC.filter((church: any) => church.id === activeChurchId || church.hq_id === activeChurchId);
-      }
-      
-      setDbChurches(validC);
+      if (c) setDbChurches(c);
 
-      const validChurchIds = validC.map((church: any) => church.id);
+      const validChurchIds = c ? c.map((church: any) => church.id) : [];
       
       let allMembers: any[] = [];
       
@@ -397,7 +391,9 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
                 {/* Seletor de Igreja */}
                 <select value={chartChurch} onChange={e => setChartChurch(e.target.value)} className="search-input glass-input" style={{ padding:'4px 8px', fontSize:'0.65rem' }}>
                   <option value="ALL">Todas as Igrejas (Global)</option>
-                  {dbChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {dbChurches
+                    .filter(c => !activeChurchId || c.id === activeChurchId || (c as any).hq_id === activeChurchId)
+                    .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
                 {/* Legenda */}
                 <div style={{ display:'flex', gap:'10px', fontSize:'0.55rem' }}>
