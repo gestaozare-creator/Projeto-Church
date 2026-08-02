@@ -149,19 +149,38 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
     let maxMonthWithDataCurr = 0;
     let maxMonthWithDataPrev = 0;
 
+    // Helper to safely parse dates in YYYY-MM-DD or DD/MM/YYYY format
+    const parseYM = (dateStr: string) => {
+      if (!dateStr) return { y: 0, m: 0 };
+      if (dateStr.includes('/')) {
+        const p = dateStr.split('/');
+        if (p.length === 3) return { y: parseInt(p[2]), m: parseInt(p[1]) };
+      }
+      if (dateStr.includes('-')) {
+        const p = dateStr.split('T')[0].split('-');
+        if (p.length >= 2) return { y: parseInt(p[0]), m: parseInt(p[1]) };
+      }
+      return { y: 0, m: 0 };
+    };
+
     for (let i = 1; i <= 12; i++) {
-      const mStr = i.toString().padStart(2, '0');
       dbMembers.forEach(m => {
         if (m.status === 'ativo') {
           const matchChurch = chartChurch === 'ALL' || m.churchId === chartChurch;
-          if (matchChurch && m.integrationDate && m.integrationDate.startsWith(`${currentYear}-${mStr}`)) maxMonthWithDataCurr = i;
-          if (matchChurch && m.integrationDate && m.integrationDate.startsWith(`${prevYear}-${mStr}`)) maxMonthWithDataPrev = i;
+          if (matchChurch && m.integrationDate) {
+            const { y, m: month } = parseYM(m.integrationDate);
+            if (y === currentYear && month === i) maxMonthWithDataCurr = i;
+            if (y === prevYear && month === i) maxMonthWithDataPrev = i;
+          }
         }
       });
       dbVisitors.forEach(v => {
         const matchChurch = chartChurch === 'ALL' || v.churchId === chartChurch;
-        if (matchChurch && v.integrationDate && v.integrationDate.startsWith(`${currentYear}-${mStr}`)) maxMonthWithDataCurr = i;
-        if (matchChurch && v.integrationDate && v.integrationDate.startsWith(`${prevYear}-${mStr}`)) maxMonthWithDataPrev = i;
+        if (matchChurch && v.integrationDate) {
+          const { y, m: month } = parseYM(v.integrationDate);
+          if (y === currentYear && month === i) maxMonthWithDataCurr = i;
+          if (y === prevYear && month === i) maxMonthWithDataPrev = i;
+        }
       });
     }
 
@@ -174,8 +193,9 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
         const matchChurch = chartChurch === 'ALL' || m.churchId === chartChurch;
         if (matchChurch) {
            if (rankingMode === 'conversoes' && !m.id.startsWith('v_')) return;
-           if (m.integrationDate < `${currentYear}-01-01`) baselineCurr++;
-           if (m.integrationDate < `${prevYear}-01-01`) baselinePrev++;
+           const { y } = parseYM(m.integrationDate);
+           if (y > 0 && y < currentYear) baselineCurr++;
+           if (y > 0 && y < prevYear) baselinePrev++;
         }
       }
     });
@@ -185,8 +205,9 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
         if (v.status === 'em_conversao' && v.integrationDate) {
           const matchChurch = chartChurch === 'ALL' || v.churchId === chartChurch;
           if (matchChurch) {
-            if (v.integrationDate < `${currentYear}-01-01`) baselineCurr++;
-            if (v.integrationDate < `${prevYear}-01-01`) baselinePrev++;
+            const { y } = parseYM(v.integrationDate);
+            if (y > 0 && y < currentYear) baselineCurr++;
+            if (y > 0 && y < prevYear) baselinePrev++;
           }
         }
       });
@@ -195,15 +216,17 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
     let cumCurr = baselineCurr, cumPrev = baselinePrev;
 
     for (let i = 1; i <= 12; i++) {
-      const mStr = i.toString().padStart(2, '0');
       let currCount = 0, prevCount = 0;
       dbMembers.forEach(m => {
         if (m.status === 'ativo') {
           const matchChurch = chartChurch === 'ALL' || m.churchId === chartChurch;
           if (matchChurch) {
             if (rankingMode === 'conversoes' && !m.id.startsWith('v_')) return;
-            if (m.integrationDate && m.integrationDate.startsWith(`${currentYear}-${mStr}`)) currCount++;
-            if (m.integrationDate && m.integrationDate.startsWith(`${prevYear}-${mStr}`)) prevCount++;
+            if (m.integrationDate) {
+              const { y, m: month } = parseYM(m.integrationDate);
+              if (y === currentYear && month === i) currCount++;
+              if (y === prevYear && month === i) prevCount++;
+            }
           }
         }
       });
@@ -212,9 +235,10 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
         dbVisitors.forEach(v => {
           if (v.status === 'em_conversao') {
             const matchChurch = chartChurch === 'ALL' || v.churchId === chartChurch;
-            if (matchChurch) {
-              if (v.integrationDate && v.integrationDate.startsWith(`${currentYear}-${mStr}`)) currCount++;
-              if (v.integrationDate && v.integrationDate.startsWith(`${prevYear}-${mStr}`)) prevCount++;
+            if (matchChurch && v.integrationDate) {
+              const { y, m: month } = parseYM(v.integrationDate);
+              if (y === currentYear && month === i) currCount++;
+              if (y === prevYear && month === i) prevCount++;
             }
           }
         });
@@ -228,7 +252,7 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
       currentYearData.push({ 
         label: monthsNames[i-1], 
         count: currCount, 
-        rawMonth: mStr, 
+        rawMonth: i.toString().padStart(2, '0'), 
         cumulative: i <= maxMonthWithDataCurr ? cumCurr : null 
       });
       prevYearData.push({ 
