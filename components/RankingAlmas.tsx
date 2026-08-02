@@ -125,7 +125,15 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
       }
     });
     dbVisitors.forEach(v => {
-      if (stats[v.churchId]) { stats[v.churchId].visitantes++; }
+      if (stats[v.churchId]) { 
+        stats[v.churchId].visitantes++; 
+        if (v.status === 'em_conversao') {
+          stats[v.churchId].conversoes++;
+          if (rankingMode === 'conversoes') {
+            stats[v.churchId].almas++;
+          }
+        }
+      }
     });
     return Object.values(stats).sort((a, b) => b.almas - a.almas);
   }, [year, goals, dbChurches, dbMembers, dbVisitors, rankingMode]);
@@ -165,11 +173,24 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
       if (m.status === 'ativo' && m.integrationDate) {
         const matchChurch = chartChurch === 'ALL' || m.churchId === chartChurch;
         if (matchChurch) {
+           if (rankingMode === 'conversoes' && !m.id.startsWith('v_')) return;
            if (m.integrationDate < `${currentYear}-01-01`) baselineCurr++;
            if (m.integrationDate < `${prevYear}-01-01`) baselinePrev++;
         }
       }
     });
+    
+    if (rankingMode === 'conversoes') {
+      dbVisitors.forEach(v => {
+        if (v.status === 'em_conversao' && v.integrationDate) {
+          const matchChurch = chartChurch === 'ALL' || v.churchId === chartChurch;
+          if (matchChurch) {
+            if (v.integrationDate < `${currentYear}-01-01`) baselineCurr++;
+            if (v.integrationDate < `${prevYear}-01-01`) baselinePrev++;
+          }
+        }
+      });
+    }
 
     let cumCurr = baselineCurr, cumPrev = baselinePrev;
 
@@ -179,10 +200,25 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
       dbMembers.forEach(m => {
         if (m.status === 'ativo') {
           const matchChurch = chartChurch === 'ALL' || m.churchId === chartChurch;
-          if (matchChurch && m.integrationDate && m.integrationDate.startsWith(`${currentYear}-${mStr}`)) currCount++;
-          if (matchChurch && m.integrationDate && m.integrationDate.startsWith(`${prevYear}-${mStr}`)) prevCount++;
+          if (matchChurch) {
+            if (rankingMode === 'conversoes' && !m.id.startsWith('v_')) return;
+            if (m.integrationDate && m.integrationDate.startsWith(`${currentYear}-${mStr}`)) currCount++;
+            if (m.integrationDate && m.integrationDate.startsWith(`${prevYear}-${mStr}`)) prevCount++;
+          }
         }
       });
+      
+      if (rankingMode === 'conversoes') {
+        dbVisitors.forEach(v => {
+          if (v.status === 'em_conversao') {
+            const matchChurch = chartChurch === 'ALL' || v.churchId === chartChurch;
+            if (matchChurch) {
+              if (v.integrationDate && v.integrationDate.startsWith(`${currentYear}-${mStr}`)) currCount++;
+              if (v.integrationDate && v.integrationDate.startsWith(`${prevYear}-${mStr}`)) prevCount++;
+            }
+          }
+        });
+      }
       
       cumCurr += currCount; 
       cumPrev += prevCount;
