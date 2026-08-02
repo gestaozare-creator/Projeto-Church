@@ -167,7 +167,7 @@ export function ChurchIdCardTab({ formData, setFormData }: ChurchIdCardTabProps)
           {/* Member Details */}
           <div style={{ position: 'absolute', top: '165px', left: '175px', right: '15px', fontSize: '0.7rem', display: 'flex', flexDirection: 'column', gap: '3px', zIndex: 1 }}>
             <div><span style={{ opacity: 0.9, fontWeight: 500 }}>NOME:</span> <span style={{ fontWeight: 800, letterSpacing: '0.5px' }}>NOME DO MEMBRO</span></div>
-            <div><span style={{ opacity: 0.9, fontWeight: 500 }}>DATA DE BATISMO:</span> <span style={{ fontWeight: 800, letterSpacing: '0.5px' }}>DATA DO BATISMO</span></div>
+            <div><span style={{ opacity: 0.9, fontWeight: 500 }}>DATA DA INTEGRAÇÃO:</span> <span style={{ fontWeight: 800, letterSpacing: '0.5px' }}>DATA DA INTEGRAÇÃO</span></div>
             <div><span style={{ opacity: 0.9, fontWeight: 500 }}>CONGREGAÇÃO:</span> <span style={{ fontWeight: 800, letterSpacing: '0.5px' }}>NOME DA IGREJA</span></div>
             <div><span style={{ opacity: 0.9, fontWeight: 500 }}>VALIDADE:</span> <span style={{ fontWeight: 800, letterSpacing: '0.5px' }}>{cardConfig.cardValidity || 'VALIDADE DA CARTEIRINHA'}</span></div>
           </div>

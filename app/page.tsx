@@ -559,7 +559,7 @@ export default function Home() {
               {/* Member Details */}
               <div style={{ position: 'absolute', top: '165px', left: '175px', right: '15px', fontSize: '0.7rem', display: 'flex', flexDirection: 'column', gap: '3px', zIndex: 1 }}>
                 <div><span style={{ opacity: 0.9, fontWeight: 500 }}>NOME:</span> <span style={{ fontWeight: 800, letterSpacing: '0.5px' }}>{sel.name?.toUpperCase()}</span></div>
-                <div><span style={{ opacity: 0.9, fontWeight: 500 }}>DATA DE BATISMO:</span> <span style={{ fontWeight: 800, letterSpacing: '0.5px' }}>{fmt(sel.integrationDate)}</span></div>
+                <div><span style={{ opacity: 0.9, fontWeight: 500 }}>DATA DA INTEGRAÇÃO:</span> <span style={{ fontWeight: 800, letterSpacing: '0.5px' }}>{fmt(sel.integrationDate)}</span></div>
                 <div><span style={{ opacity: 0.9, fontWeight: 500 }}>CONGREGAÇÃO:</span> <span style={{ fontWeight: 800, letterSpacing: '0.5px' }}>{selectedChurchObj?.name?.toUpperCase()}</span></div>
                 <div><span style={{ opacity: 0.9, fontWeight: 500 }}>VALIDADE:</span> <span style={{ fontWeight: 800, letterSpacing: '0.5px', color: isExp(sel.cardValidity || sel.integrationDate) ? '#ff6b6b' : '#fff' }}>{sel.cardValidity || calcExp(sel.integrationDate)}</span></div>
               </div>
