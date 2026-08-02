@@ -442,6 +442,22 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
                   return null;
                 })()}
 
+                {/* Baseline Label */}
+                {(() => {
+                  const firstData = trendData.currentYearData[0];
+                  if (firstData && firstData.cumulative !== null) {
+                    const baseline = firstData.cumulative - firstData.count;
+                    if (baseline > 0) {
+                      return (
+                        <text x="4" y={trendData.getY(baseline) - 4} fill="rgba(255,255,255,0.5)" fontSize="2.5" fontWeight="bold" style={{ pointerEvents: 'none' }}>
+                          Anos anteriores: {baseline}
+                        </text>
+                      );
+                    }
+                  }
+                  return null;
+                })()}
+
                 <path d={trendData.areaPath} fill="url(#gradBlueArea)" opacity="0.15" />
                 <defs><linearGradient id="gradBlueArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#00f2fe" /><stop offset="100%" stopColor="transparent" /></linearGradient></defs>
                 <path d={trendData.prevPath} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" strokeDasharray="4,3" vectorEffect="non-scaling-stroke" />
