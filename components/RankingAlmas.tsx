@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/context/AuthContext';
 import { Member, Church } from '@/types/database';
 
 interface RankingGoal {
@@ -17,6 +18,7 @@ interface RankingVisitor {
 }
 
 export default function RankingAlmas({ editable = false, ministryId }: { editable?: boolean; ministryId?: string }) {
+  const { activeChurchId } = useAuth();
   const [year, setYear] = useState('2026');
   const [dbMembers, setDbMembers] = useState<(Member & { churchId: string; integrationDate?: string })[]>([]);
   const [dbChurches, setDbChurches] = useState<Church[]>([]);
@@ -48,9 +50,15 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
         query = query.eq('ministry_id', ministryId);
       }
       const { data: c } = await query;
-      if (c) setDbChurches(c);
+      
+      let validC = c || [];
+      if (activeChurchId) {
+        validC = validC.filter((church: any) => church.id === activeChurchId || church.hq_id === activeChurchId);
+      }
+      
+      setDbChurches(validC);
 
-      const validChurchIds = c ? c.map((church: any) => church.id) : [];
+      const validChurchIds = validC.map((church: any) => church.id);
       
       let allMembers: any[] = [];
       
