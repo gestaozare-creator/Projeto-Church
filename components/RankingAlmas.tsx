@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Member, Church } from '@/types/database';
 
@@ -102,16 +102,33 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
     loadData();
   }, []);
 
+  // Helper to safely parse dates in YYYY-MM-DD or DD/MM/YYYY format
+  const parseYM = useCallback((dateStr: string) => {
+    if (!dateStr) return { y: 0, m: 0 };
+    if (dateStr.includes('/')) {
+      const p = dateStr.split('/');
+      if (p.length === 3) return { y: parseInt(p[2]), m: parseInt(p[1]) };
+    }
+    if (dateStr.includes('-')) {
+      const p = dateStr.split('T')[0].split('-');
+      if (p.length >= 2) return { y: parseInt(p[0]), m: parseInt(p[1]) };
+    }
+    return { y: 0, m: 0 };
+  }, []);
+
   // ── Estatísticas ANUAIS por igreja ──
   const churchStats = useMemo(() => {
     const stats: Record<string, { church: Church; almas: number; membros: number; visitantes: number; goal: number; conversoes: number }> = {};
+    const currentYear = parseInt(year);
+
     dbChurches.forEach(c => {
       const goal = goals.find(g => g.churchId === c.id && g.year.toString() === year)?.target || 0;
       stats[c.id] = { church: c, almas: 0, membros: 0, visitantes: 0, goal, conversoes: 0 };
     });
     dbMembers.forEach(m => {
-      if (m.status === 'ativo') {
-        if (stats[m.churchId]) { 
+      if (m.status === 'ativo' && m.integrationDate) {
+        const { y } = parseYM(m.integrationDate);
+        if (y === currentYear && stats[m.churchId]) { 
           stats[m.churchId].membros++; 
           if (m.id.startsWith('v_')) {
             stats[m.churchId].conversoes++;
@@ -125,12 +142,15 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
       }
     });
     dbVisitors.forEach(v => {
-      if (stats[v.churchId]) { 
-        stats[v.churchId].visitantes++; 
-        if (v.status === 'em_conversao') {
-          stats[v.churchId].conversoes++;
-          if (rankingMode === 'conversoes') {
-            stats[v.churchId].almas++;
+      if (v.integrationDate) {
+        const { y } = parseYM(v.integrationDate);
+        if (y === currentYear && stats[v.churchId]) { 
+          stats[v.churchId].visitantes++; 
+          if (v.status === 'em_conversao') {
+            stats[v.churchId].conversoes++;
+            if (rankingMode === 'conversoes') {
+              stats[v.churchId].almas++;
+            }
           }
         }
       }
@@ -148,20 +168,6 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
     // Find the last month that actually has data to prevent drawing flat lines into the future
     let maxMonthWithDataCurr = 0;
     let maxMonthWithDataPrev = 0;
-
-    // Helper to safely parse dates in YYYY-MM-DD or DD/MM/YYYY format
-    const parseYM = (dateStr: string) => {
-      if (!dateStr) return { y: 0, m: 0 };
-      if (dateStr.includes('/')) {
-        const p = dateStr.split('/');
-        if (p.length === 3) return { y: parseInt(p[2]), m: parseInt(p[1]) };
-      }
-      if (dateStr.includes('-')) {
-        const p = dateStr.split('T')[0].split('-');
-        if (p.length >= 2) return { y: parseInt(p[0]), m: parseInt(p[1]) };
-      }
-      return { y: 0, m: 0 };
-    };
 
     for (let i = 1; i <= 12; i++) {
       dbMembers.forEach(m => {
@@ -187,33 +193,7 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
     const currentYearData: { label: string; count: number; rawMonth: string; cumulative: number | null }[] = [];
     const prevYearData: { count: number; cumulative: number | null }[] = [];
     
-    let baselineCurr = 0, baselinePrev = 0;
-    dbMembers.forEach(m => {
-      if (m.status === 'ativo' && m.integrationDate) {
-        const matchChurch = chartChurch === 'ALL' || m.churchId === chartChurch;
-        if (matchChurch) {
-           if (rankingMode === 'conversoes' && !m.id.startsWith('v_')) return;
-           const { y } = parseYM(m.integrationDate);
-           if (y > 0 && y < currentYear) baselineCurr++;
-           if (y > 0 && y < prevYear) baselinePrev++;
-        }
-      }
-    });
-    
-    if (rankingMode === 'conversoes') {
-      dbVisitors.forEach(v => {
-        if (v.status === 'em_conversao' && v.integrationDate) {
-          const matchChurch = chartChurch === 'ALL' || v.churchId === chartChurch;
-          if (matchChurch) {
-            const { y } = parseYM(v.integrationDate);
-            if (y > 0 && y < currentYear) baselineCurr++;
-            if (y > 0 && y < prevYear) baselinePrev++;
-          }
-        }
-      });
-    }
-
-    let cumCurr = baselineCurr, cumPrev = baselinePrev;
+    let cumCurr = 0, cumPrev = 0;
 
     for (let i = 1; i <= 12; i++) {
       let currCount = 0, prevCount = 0;
@@ -281,7 +261,7 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
 
     const growthRate = cumPrev > 0 ? Math.round(((cumCurr - cumPrev) / cumPrev) * 100) : (cumCurr > 0 ? 100 : 0);
     return { currentYearData, prevYearData, currPath, prevPath, areaPath, maxCount, currentYear, prevYear, getX, getY, growthRate, totalCurr: cumCurr };
-  }, [year, chartChurch, dbMembers, dbVisitors, rankingMode]);
+  }, [year, chartChurch, dbMembers, dbVisitors, rankingMode, parseYM]);
 
   const top3 = churchStats.slice(0, 3);
   const globalTarget = goals.find(g => g.churchId === 'GLOBAL' && g.year.toString() === year)?.target || churchStats.reduce((a, c) => a + c.goal, 0);
@@ -437,22 +417,6 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
                     const yPos = 90 - (targetVal / trendData.maxCount) * 78;
                     if (yPos > 5 && yPos < 95) {
                       return <line x1="4" y1={yPos} x2="96" y2={yPos} stroke="rgba(46,204,113,0.4)" strokeWidth="1" strokeDasharray="3,2" vectorEffect="non-scaling-stroke" />;
-                    }
-                  }
-                  return null;
-                })()}
-
-                {/* Baseline Label */}
-                {(() => {
-                  const firstData = trendData.currentYearData[0];
-                  if (firstData && firstData.cumulative !== null) {
-                    const baseline = firstData.cumulative - firstData.count;
-                    if (baseline > 0) {
-                      return (
-                        <text x="4" y={trendData.getY(baseline) - 4} fill="rgba(255,255,255,0.5)" fontSize="2.5" fontWeight="bold" style={{ pointerEvents: 'none' }}>
-                          Anos anteriores: {baseline}
-                        </text>
-                      );
                     }
                   }
                   return null;
