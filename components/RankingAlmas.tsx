@@ -23,7 +23,6 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
   const [dbMembers, setDbMembers] = useState<(Member & { churchId: string; integrationDate?: string })[]>([]);
   const [dbChurches, setDbChurches] = useState<Church[]>([]);
   const [dbVisitors, setDbVisitors] = useState<RankingVisitor[]>([]);
-  const [goals, setGoals] = useState<RankingGoal[]>([]);
   const [editingGoal, setEditingGoal] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(0);
   const [chartChurch, setChartChurch] = useState('ALL'); // Filtro de igreja no gráfico
@@ -80,27 +79,6 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
       } else {
         setDbVisitors([]);
       }
-      
-      let loadedGoals: RankingGoal[] = [];
-      if (c) {
-        c.forEach((church: any) => {
-          let config = {};
-          try {
-            config = typeof church.config === 'string' ? JSON.parse(church.config) : (church.config || {});
-          } catch (e) {}
-          if ((config as any).ranking_goals) {
-            Object.entries((config as any).ranking_goals).forEach(([y, t]) => {
-              loadedGoals.push({ churchId: church.id, year: parseInt(y), target: Number(t) });
-            });
-          }
-          if (church.is_headquarters && (config as any).global_ranking_goals) {
-            Object.entries((config as any).global_ranking_goals).forEach(([y, t]) => {
-              loadedGoals.push({ churchId: 'GLOBAL', year: parseInt(y), target: Number(t) });
-            });
-          }
-        });
-      }
-      setGoals(loadedGoals);
     }
     loadData();
   }, []);
@@ -118,6 +96,31 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
     }
     return { y: 0, m: 0 };
   }, []);
+
+  const goals = useMemo(() => {
+    const loadedGoals: RankingGoal[] = [];
+    const localGoalKey = rankingMode === 'conversoes' ? 'ranking_goals_conversoes' : 'ranking_goals';
+    const globalGoalKey = rankingMode === 'conversoes' ? 'global_ranking_goals_conversoes' : 'global_ranking_goals';
+
+    dbChurches.forEach((church: any) => {
+      let config = {};
+      try {
+        config = typeof church.config === 'string' ? JSON.parse(church.config) : (church.config || {});
+      } catch (e) {}
+      
+      if ((config as any)[localGoalKey]) {
+        Object.entries((config as any)[localGoalKey]).forEach(([y, t]) => {
+          loadedGoals.push({ churchId: church.id, year: parseInt(y), target: Number(t) });
+        });
+      }
+      if (church.is_headquarters && (config as any)[globalGoalKey]) {
+        Object.entries((config as any)[globalGoalKey]).forEach(([y, t]) => {
+          loadedGoals.push({ churchId: 'GLOBAL', year: parseInt(y), target: Number(t) });
+        });
+      }
+    });
+    return loadedGoals;
+  }, [dbChurches, rankingMode]);
 
   // ── Estatísticas ANUAIS por igreja ──
   const churchStats = useMemo(() => {
@@ -276,19 +279,20 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
 
   const handleSaveGoal = async (churchId: string) => {
     const target = editValue;
-    setGoals(prev => {
-      const idx = prev.findIndex(g => g.churchId === churchId && g.year.toString() === year);
-      if (idx >= 0) { const ng = [...prev]; ng[idx] = { ...ng[idx], target }; return ng; }
-      return [...prev, { churchId, year: parseInt(year), target }];
-    });
+    const localGoalKey = rankingMode === 'conversoes' ? 'ranking_goals_conversoes' : 'ranking_goals';
+    const globalGoalKey = rankingMode === 'conversoes' ? 'global_ranking_goals_conversoes' : 'global_ranking_goals';
+
     setEditingGoal(null);
 
     if (churchId === 'GLOBAL') {
-      const hq = dbChurches.find(c => c.isHeadquarters) || dbChurches[0];
+      const hq = dbChurches.find((c: any) => c.is_headquarters) || dbChurches[0];
       if (hq) {
         let config: any = {};
         try { config = typeof hq.config === 'string' ? JSON.parse(hq.config) : (hq.config || {}); } catch(e){}
-        config.global_ranking_goals = { ...config.global_ranking_goals, [year]: target };
+        config[globalGoalKey] = { ...config[globalGoalKey], [year]: target };
+        
+        setDbChurches(prev => prev.map(c => c.id === hq.id ? { ...c, config: JSON.stringify(config) } as any : c));
+        
         await supabase.from('churches').update({ config: JSON.stringify(config) }).eq('id', hq.id);
       }
     } else {
@@ -296,7 +300,10 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
       if (church) {
         let config: any = {};
         try { config = typeof church.config === 'string' ? JSON.parse(church.config) : (church.config || {}); } catch(e){}
-        config.ranking_goals = { ...config.ranking_goals, [year]: target };
+        config[localGoalKey] = { ...config[localGoalKey], [year]: target };
+        
+        setDbChurches(prev => prev.map(c => c.id === churchId ? { ...c, config: JSON.stringify(config) } as any : c));
+        
         await supabase.from('churches').update({ config: JSON.stringify(config) }).eq('id', churchId);
       }
     }
