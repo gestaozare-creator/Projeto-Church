@@ -235,6 +235,7 @@ export default function Home() {
   const openEdit = (m: Member) => { 
     setEditForm({
       ...m,
+      churchId: m.church_id || (church && church !== 'ALL' ? church : currentUser?.churchId || ''),
       birthDate: m.birthDate || '',
       maritalStatus: m.maritalStatus || '',
       employmentStatus: m.employmentStatus || '',
