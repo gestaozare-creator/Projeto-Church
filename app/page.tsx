@@ -510,8 +510,22 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              <div style={{ display:'flex', gap:'8px', marginTop:'16px', flexShrink:0 }}>
-                <button style={{ flex:1, padding:'10px', border:'1px solid var(--primary-light)', background:'transparent', color:'var(--primary-light)', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'0.8rem' }} onClick={() => { openEdit(sel); setSel(null); }}>📝 Editar</button>
+              <div style={{ display:'flex', gap:'8px', marginTop:'12px', flexShrink:0 }}>
+                {sel.status === 'aguardando_aprovacao' && (
+                  <>
+                    <button style={{ flex:1, padding:'10px', border:'none', background:'#2ecc71', color:'#fff', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'0.8rem' }} onClick={() => changeStatus(sel.id, 'ativo')}>✅ Aprovar (Ativar)</button>
+                    <button style={{ flex:1, padding:'10px', border:'none', background:'#e74c3c', color:'#fff', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'0.8rem' }} onClick={() => changeStatus(sel.id, 'inativo')}>❌ Inativar</button>
+                  </>
+                )}
+                {sel.status === 'ativo' && (
+                  <button style={{ flex:1, padding:'10px', border:'none', background:'rgba(231,76,60,0.2)', color:'#e74c3c', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'0.8rem' }} onClick={() => { if(confirm('Deseja realmente inativar este membro?')) changeStatus(sel.id, 'inativo'); }}>❌ Inativar Membro</button>
+                )}
+                {sel.status === 'inativo' && (
+                  <button style={{ flex:1, padding:'10px', border:'none', background:'#2ecc71', color:'#fff', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'0.8rem' }} onClick={() => changeStatus(sel.id, 'ativo')}>✅ Reativar Membro</button>
+                )}
+              </div>
+              <div style={{ display:'flex', gap:'8px', marginTop:'8px', flexShrink:0 }}>
+                <button style={{ flex:1, padding:'10px', border:'1px solid var(--primary-light)', background:'transparent', color:'var(--primary-light)', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'0.8rem' }} onClick={() => { openEdit(sel); setSel(null); }}>📝 Editar Dados</button>
                 {sel.status === 'ativo' && <button className="modal-btn" style={{ flex:1, margin:0, padding:'10px', fontSize:'0.8rem' }} onClick={() => setShowCard(true)}>🪪 Carteirinha</button>}
               </div>
             </div>
