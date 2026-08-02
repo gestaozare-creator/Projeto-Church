@@ -25,7 +25,7 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
   const [editingGoal, setEditingGoal] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(0);
   const [chartChurch, setChartChurch] = useState('ALL'); // Filtro de igreja no gráfico
-  const [rankingMode, setRankingMode] = useState<'total' | 'conversoes'>('total');
+  const [rankingMode, setRankingMode] = useState<'total' | 'conversoes'>('conversoes');
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
@@ -259,22 +259,13 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
     return { currentYearData, prevYearData, currPath, prevPath, areaPath, maxCount, currentYear, prevYear, getX, getY, growthRate, totalCurr: cumCurr };
   }, [year, chartChurch, dbMembers, dbVisitors, rankingMode]);
 
-  const conversions = useMemo(() => {
-    let count = 0;
-    dbMembers.forEach(m => {
-      if (m.status === 'ativo' && m.id.startsWith('v_') && m.integrationDate && m.integrationDate.startsWith(`${year}-`)) count++;
-    });
-    dbVisitors.forEach(v => {
-      if (v.status === 'em_conversao' && v.integrationDate && v.integrationDate.startsWith(`${year}-`)) count++;
-    });
-    return count;
-  }, [year, dbMembers, dbVisitors]);
-
   const top3 = churchStats.slice(0, 3);
   const globalTarget = goals.find(g => g.churchId === 'GLOBAL' && g.year.toString() === year)?.target || churchStats.reduce((a, c) => a + c.goal, 0);
   const globalCurrent = churchStats.reduce((a, c) => a + c.almas, 0);
   const globalProgress = globalTarget > 0 ? Math.min((globalCurrent / globalTarget) * 100, 100) : 0;
   const globalColor = globalProgress >= 100 ? '#2ecc71' : globalProgress >= 50 ? '#f1c40f' : '#e74c3c';
+  
+  const conversions = churchStats.reduce((a, c) => a + c.conversoes, 0);
 
   const handleSaveGoal = async (churchId: string) => {
     const target = editValue;
