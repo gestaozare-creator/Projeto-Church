@@ -257,11 +257,18 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
 
     const growthRate = cumPrev > 0 ? Math.round(((cumCurr - cumPrev) / cumPrev) * 100) : (cumCurr > 0 ? 100 : 0);
     return { currentYearData, prevYearData, currPath, prevPath, areaPath, maxCount, currentYear, prevYear, getX, getY, growthRate, totalCurr: cumCurr };
-  }, [year, chartChurch, dbMembers, dbVisitors]);
+  }, [year, chartChurch, dbMembers, dbVisitors, rankingMode]);
 
   const conversions = useMemo(() => {
-    return dbVisitors.filter(v => v.integrationDate && v.integrationDate.startsWith(`${year}-`) && v.status === 'em_conversao').length;
-  }, [year, dbVisitors]);
+    let count = 0;
+    dbMembers.forEach(m => {
+      if (m.status === 'ativo' && m.id.startsWith('v_') && m.integrationDate && m.integrationDate.startsWith(`${year}-`)) count++;
+    });
+    dbVisitors.forEach(v => {
+      if (v.status === 'em_conversao' && v.integrationDate && v.integrationDate.startsWith(`${year}-`)) count++;
+    });
+    return count;
+  }, [year, dbMembers, dbVisitors]);
 
   const top3 = churchStats.slice(0, 3);
   const globalTarget = goals.find(g => g.churchId === 'GLOBAL' && g.year.toString() === year)?.target || churchStats.reduce((a, c) => a + c.goal, 0);
