@@ -18,7 +18,7 @@ interface RankingVisitor {
 }
 
 export default function RankingAlmas({ editable = false, ministryId }: { editable?: boolean; ministryId?: string }) {
-  const { activeChurchId } = useAuth();
+  const { activeChurchId, activeMinistryId } = useAuth();
   const [year, setYear] = useState('2026');
   const [dbMembers, setDbMembers] = useState<(Member & { churchId: string; integrationDate?: string })[]>([]);
   const [dbChurches, setDbChurches] = useState<Church[]>([]);
@@ -46,8 +46,9 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
   useEffect(() => {
     async function loadData() {
       let query = supabase.from('churches').select('*');
-      if (ministryId) {
-        query = query.eq('ministry_id', ministryId);
+      const targetMinistry = ministryId || activeMinistryId;
+      if (targetMinistry) {
+        query = query.eq('ministry_id', targetMinistry);
       }
       const { data: c } = await query;
       if (c) setDbChurches(c);
@@ -391,9 +392,7 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
                 {/* Seletor de Igreja */}
                 <select value={chartChurch} onChange={e => setChartChurch(e.target.value)} className="search-input glass-input" style={{ padding:'4px 8px', fontSize:'0.65rem' }}>
                   <option value="ALL">Todas as Igrejas (Global)</option>
-                  {dbChurches
-                    .filter(c => !activeChurchId || c.id === activeChurchId || (c as any).hq_id === activeChurchId)
-                    .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {dbChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
                 {/* Legenda */}
                 <div style={{ display:'flex', gap:'10px', fontSize:'0.55rem' }}>
