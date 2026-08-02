@@ -257,7 +257,7 @@ export default function Home() {
     if (f) { const r = new FileReader(); r.onloadend = () => { const res = r.result as string; setPhotoPreview(res); setEditForm((p:any) => ({...p, photoUrl: res})); }; r.readAsDataURL(f); }
   };
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent | React.MouseEvent, overrideStatus?: string) => {
     e.preventDefault();
     const finalPhoto = editForm.photoUrl || `https://i.pravatar.cc/150?u=${editForm.name.replace(/\s/g,'')}`;
     
@@ -285,7 +285,7 @@ export default function Home() {
       phone: cleanPhone,
       email: editForm.email,
       address: editForm.address,
-      status: editForm.status,
+      status: overrideStatus || editForm.status,
       church_id: editForm.churchId && editForm.churchId.length > 5 ? editForm.churchId : ((church && church !== 'ALL') ? church : (currentUser?.churchId || dbChurches[0]?.id || '')),
       integration_date: editForm.integrationDate,
       photo_url: finalPhoto,
@@ -340,6 +340,7 @@ export default function Home() {
 
       const updatedM: Member = {
         ...editForm,
+        status: overrideStatus || editForm.status,
         photoUrl: finalPhoto
       };
 
@@ -510,22 +511,8 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              <div style={{ display:'flex', gap:'8px', marginTop:'12px', flexShrink:0 }}>
-                {sel.status === 'aguardando_aprovacao' && (
-                  <>
-                    <button style={{ flex:1, padding:'10px', border:'none', background:'#2ecc71', color:'#fff', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'0.8rem' }} onClick={() => changeStatus(sel.id, 'ativo')}>✅ Aprovar (Ativar)</button>
-                    <button style={{ flex:1, padding:'10px', border:'none', background:'#e74c3c', color:'#fff', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'0.8rem' }} onClick={() => changeStatus(sel.id, 'inativo')}>❌ Inativar</button>
-                  </>
-                )}
-                {sel.status === 'ativo' && (
-                  <button style={{ flex:1, padding:'10px', border:'none', background:'rgba(231,76,60,0.2)', color:'#e74c3c', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'0.8rem' }} onClick={() => { if(confirm('Deseja realmente inativar este membro?')) changeStatus(sel.id, 'inativo'); }}>❌ Inativar Membro</button>
-                )}
-                {sel.status === 'inativo' && (
-                  <button style={{ flex:1, padding:'10px', border:'none', background:'#2ecc71', color:'#fff', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'0.8rem' }} onClick={() => changeStatus(sel.id, 'ativo')}>✅ Reativar Membro</button>
-                )}
-              </div>
-              <div style={{ display:'flex', gap:'8px', marginTop:'8px', flexShrink:0 }}>
-                <button style={{ flex:1, padding:'10px', border:'1px solid var(--primary-light)', background:'transparent', color:'var(--primary-light)', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'0.8rem' }} onClick={() => { openEdit(sel); setSel(null); }}>📝 Editar Dados</button>
+              <div style={{ display:'flex', gap:'8px', marginTop:'16px', flexShrink:0 }}>
+                <button style={{ flex:1, padding:'10px', border:'1px solid var(--primary-light)', background:'transparent', color:'var(--primary-light)', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'0.8rem' }} onClick={() => { openEdit(sel); setSel(null); }}>📝 Editar Dados / Status</button>
                 {sel.status === 'ativo' && <button className="modal-btn" style={{ flex:1, margin:0, padding:'10px', fontSize:'0.8rem' }} onClick={() => setShowCard(true)}>🪪 Carteirinha</button>}
               </div>
             </div>
@@ -741,9 +728,34 @@ export default function Home() {
                   <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Validade da Carteirinha</label><input type="text" name="cardValidity" value={editForm.cardValidity || ''} onChange={onChange} placeholder="Ex: 12/2026" className="search-input glass-input" style={{ width:'100%', padding:'8px' }} /></div>
                 </div>
               </div>
-              <div style={{ display:'flex', gap:'10px', marginTop:'12px' }}>
-                <button type="button" className="modal-btn" style={{ flex:1, backgroundColor:'#7f8c8d' }} onClick={() => { setIsEditing(false); setIsCreating(false); setIsApproving(false); }}>Cancelar</button>
-                <button type="submit" className="modal-btn" style={{ flex:2, backgroundColor:'#2ecc71' }}>{isApproving ? '✅ Aprovar' : isCreating ? 'Cadastrar' : 'Salvar'}</button>
+              <div style={{ display:'flex', gap:'10px', marginTop:'16px', flexWrap:'wrap' }}>
+                <button type="button" className="modal-btn" style={{ flex:1, backgroundColor:'#7f8c8d', minWidth:'110px' }} onClick={() => { setIsEditing(false); setIsCreating(false); setIsApproving(false); }}>Cancelar</button>
+                
+                {isCreating ? (
+                  <button type="submit" className="modal-btn" style={{ flex:2, backgroundColor:'#2ecc71', minWidth:'110px' }}>Cadastrar</button>
+                ) : (
+                  <>
+                    {editForm.status === 'aguardando_aprovacao' && (
+                      <>
+                        <button type="submit" className="modal-btn" style={{ flex:1, backgroundColor:'#3498db', minWidth:'110px' }}>💾 Salvar Modificações</button>
+                        <button type="button" className="modal-btn" style={{ flex:1, backgroundColor:'#2ecc71', minWidth:'110px' }} onClick={(e) => handleSave(e, 'ativo')}>✅ Aprovar e Ativar</button>
+                        <button type="button" className="modal-btn" style={{ flex:1, backgroundColor:'#e74c3c', minWidth:'110px' }} onClick={(e) => handleSave(e, 'inativo')}>❌ Inativar</button>
+                      </>
+                    )}
+                    {editForm.status === 'ativo' && (
+                      <>
+                        <button type="submit" className="modal-btn" style={{ flex:2, backgroundColor:'#2ecc71', minWidth:'110px' }}>Salvar Alterações</button>
+                        <button type="button" className="modal-btn" style={{ flex:1, backgroundColor:'rgba(231,76,60,0.2)', color:'#e74c3c', minWidth:'110px' }} onClick={(e) => { if(confirm('Inativar membro?')) handleSave(e, 'inativo'); }}>❌ Inativar</button>
+                      </>
+                    )}
+                    {editForm.status === 'inativo' && (
+                      <>
+                        <button type="submit" className="modal-btn" style={{ flex:2, backgroundColor:'#3498db', minWidth:'110px' }}>Salvar Alterações</button>
+                        <button type="button" className="modal-btn" style={{ flex:1, backgroundColor:'#2ecc71', minWidth:'110px' }} onClick={(e) => handleSave(e, 'ativo')}>✅ Reativar</button>
+                      </>
+                    )}
+                  </>
+                )}
               </div>
             </form>
           </div>
