@@ -25,6 +25,7 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
   const [editingGoal, setEditingGoal] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(0);
   const [chartChurch, setChartChurch] = useState('ALL'); // Filtro de igreja no gráfico
+  const [rankingMode, setRankingMode] = useState<'total' | 'conversoes'>('total');
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
@@ -103,21 +104,31 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
 
   // ── Estatísticas ANUAIS por igreja ──
   const churchStats = useMemo(() => {
-    const stats: Record<string, { church: Church; almas: number; membros: number; visitantes: number; goal: number }> = {};
+    const stats: Record<string, { church: Church; almas: number; membros: number; visitantes: number; goal: number; conversoes: number }> = {};
     dbChurches.forEach(c => {
       const goal = goals.find(g => g.churchId === c.id && g.year.toString() === year)?.target || 0;
-      stats[c.id] = { church: c, almas: 0, membros: 0, visitantes: 0, goal };
+      stats[c.id] = { church: c, almas: 0, membros: 0, visitantes: 0, goal, conversoes: 0 };
     });
     dbMembers.forEach(m => {
       if (m.status === 'ativo') {
-        if (stats[m.churchId]) { stats[m.churchId].membros++; stats[m.churchId].almas++; }
+        if (stats[m.churchId]) { 
+          stats[m.churchId].membros++; 
+          if (m.id.startsWith('v_')) {
+            stats[m.churchId].conversoes++;
+          }
+          if (rankingMode === 'total') {
+            stats[m.churchId].almas++;
+          } else {
+            if (m.id.startsWith('v_')) stats[m.churchId].almas++;
+          }
+        }
       }
     });
     dbVisitors.forEach(v => {
       if (stats[v.churchId]) { stats[v.churchId].visitantes++; }
     });
     return Object.values(stats).sort((a, b) => b.almas - a.almas);
-  }, [year, goals, dbChurches, dbMembers, dbVisitors]);
+  }, [year, goals, dbChurches, dbMembers, dbVisitors, rankingMode]);
 
   // ── Gráfico de Evolução Mensal (filtrável por igreja) ──
   const trendData = useMemo(() => {
@@ -263,7 +274,11 @@ export default function RankingAlmas({ editable = false, ministryId }: { editabl
           <span style={{ fontSize:'0.78rem', color:'var(--text-secondary)' }}>Acompanhamento anual de crescimento por congregação</span>
         </div>
         <div style={{ display:'flex', gap:'8px', alignItems:'center' }}>
-          <span style={{ fontSize:'0.75rem', color:'var(--text-secondary)', fontWeight:'600' }}>Ano:</span>
+          <select value={rankingMode} onChange={e => setRankingMode(e.target.value as any)} className="search-input glass-input" style={{ padding:'6px 12px' }}>
+            <option value="total">📊 Total de Membros</option>
+            <option value="conversoes">🔄 Apenas Conversões</option>
+          </select>
+          <span style={{ fontSize:'0.75rem', color:'var(--text-secondary)', fontWeight:'600', marginLeft: '6px' }}>Ano:</span>
           <select value={year} onChange={e => setYear(e.target.value)} className="search-input glass-input" style={{ padding:'6px 12px' }}>
             {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
