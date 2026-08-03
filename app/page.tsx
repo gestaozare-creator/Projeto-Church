@@ -32,9 +32,7 @@ export default function Home() {
   // SEGURANÇA: useChurches filtra por ministryId no banco — nunca carrega igrejas de outras redes
   const { churches: dbChurches, loading: churchesLoading } = useChurches(activeMinistryId);
 
-  if (!loading && !currentUser) {
-    return <VendasPage />;
-  }
+
 
   // churchIds da rede ativa — para filtro de membros no banco
   const scopedChurchIds = useMemo(() => dbChurches.map(c => c.id), [dbChurches]);
@@ -198,6 +196,10 @@ export default function Home() {
     
     return s && c && isMember && d;
   }), [members, search, church, startDate, endDate, cultoFilter, horarioFilter]);
+
+  if (!loading && !currentUser) {
+    return <VendasPage />;
+  }
 
   const pendentes = filtered.filter(m => m.status === 'aguardando_aprovacao');
   const ativos = filtered.filter(m => m.status === 'ativo');
