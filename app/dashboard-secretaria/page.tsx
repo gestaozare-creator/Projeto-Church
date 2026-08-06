@@ -430,6 +430,10 @@ export default function DashboardSecretariaPage() {
             integrationDate:
               m.integration_date ||
               (m.created_at ? m.created_at.split("T")[0] : "2026-01-01"),
+            employment_status: m.employment_status || "",
+            profession: m.profession || "",
+            is_baptized: m.is_baptized,
+            baptism_date: m.baptism_date
           })),
         );
 
@@ -512,32 +516,26 @@ export default function DashboardSecretariaPage() {
     (m) => m.status === "pendente",
   ).length;
 
-  // --- Gráfico de Ministérios ---
-  const ministriesData = useMemo(() => {
+  // --- Gráfico de Membros Batizados (Sim / Não) ---
+  const baptismData = useMemo(() => {
     const map = new Map<string, number>();
-    filteredMembers
-      .filter((m) => m.status === "ativo")
-      .forEach((m) => {
-        const min = m.ministry || "Sem Ministério";
-        map.set(min, (map.get(min) || 0) + 1);
-      });
+    filteredMembers.forEach((m) => {
+      const isB = m.is_baptized === true || m.is_baptized === 'Sim' ? 'Sim' : (m.is_baptized === false || m.is_baptized === 'Não' ? 'Não' : 'Não Informado');
+      map.set(isB, (map.get(isB) || 0) + 1);
+    });
 
-    const colors = [
-      "#3498db",
-      "#9b59b6",
-      "#2ecc71",
-      "#f1c40f",
-      "#e67e22",
-      "#e74c3c",
-      "#1abc9c",
-      "#34495e",
-    ];
+    const colorMap: Record<string, string> = {
+      'Sim': '#2ecc71',
+      'Não': '#e74c3c',
+      'Não Informado': '#95a5a6'
+    };
+
     return Array.from(map.entries())
-      .map(([key, val], i) => ({
+      .map(([key, val]) => ({
         key,
-        label: key,
+        label: key === 'Sim' ? 'Batizado (Sim)' : (key === 'Não' ? 'Não Batizado' : 'Não Informado'),
         value: val,
-        color: colors[i % colors.length],
+        color: colorMap[key] || '#3498db',
       }))
       .sort((a, b) => b.value - a.value);
   }, [filteredMembers]);
@@ -1077,16 +1075,15 @@ export default function DashboardSecretariaPage() {
         }}
       >
         <DonutChart
-          title="🔊 Membros por Ministérios"
-          data={ministriesData}
-          total={totalActiveMembers}
-        />
-        <DonutChart
           title="🏢 Membros por Funções/Depart."
           data={functionsData}
           total={totalMembersCount}
         />
-
+        <DonutChart
+          title="🌊 Membros Batizados"
+          data={baptismData}
+          total={totalMembersCount}
+        />
         <DonutChart
           title="💼 Situação Profissional"
           data={employmentStatusData}
