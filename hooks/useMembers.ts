@@ -67,6 +67,8 @@ export function useMembers(churchId?: string, churchIds?: string[]) {
             maritalStatus: m.marital_status || '',
             employmentStatus: m.employment_status || '',
             profession: m.profession || '',
+            isBaptized: m.is_baptized === true || m.is_baptized === 'Sim' ? 'Sim' : (m.is_baptized === false || m.is_baptized === 'Não' ? 'Não' : (m.is_baptized || '')),
+            baptismDate: m.baptism_date || '',
             cardValidity: m.card_validity || '',
           }));
           setMembers(formatted as any);

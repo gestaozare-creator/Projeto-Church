@@ -17,7 +17,9 @@ export default function FormularioMembro() {
     birth_date: '',
     marital_status: '',
     employment_status: '',
-    profession: ''
+    profession: '',
+    is_baptized: '',
+    baptism_date: ''
   });
   
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -152,7 +154,9 @@ export default function FormularioMembro() {
           birth_date: form.birth_date || null,
           marital_status: form.marital_status || null,
           employment_status: form.employment_status || null,
-          profession: form.profession === 'Outra' ? customProfession : (form.profession || null)
+          profession: form.profession === 'Outra' ? customProfession : (form.profession || null),
+          is_baptized: form.is_baptized || null,
+          baptism_date: form.is_baptized === 'Sim' ? (form.baptism_date || null) : null
         });
 
       if (error) {
@@ -289,6 +293,24 @@ export default function FormularioMembro() {
                   <option value="Outro">Outro</option>
                 </select>
               </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>É Batizado(a) nas Águas?</label>
+                <select name="is_baptized" value={form.is_baptized} onChange={onChange} style={fieldStyle}>
+                  <option value="">Selecione...</option>
+                  <option value="Sim">Sim</option>
+                  <option value="Não">Não</option>
+                </select>
+              </div>
+
+              {form.is_baptized === 'Sim' && (
+                <div style={{ flex: 1 }}>
+                  <label style={labelStyle}>Data do Batismo</label>
+                  <input type="date" name="baptism_date" value={form.baptism_date} onChange={onChange} style={fieldStyle} />
+                </div>
+              )}
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>

@@ -241,7 +241,9 @@ export default function Home() {
       birthDate: m.birthDate || '',
       maritalStatus: m.maritalStatus || '',
       employmentStatus: m.employmentStatus || '',
-      profession: m.profession || ''
+      profession: m.profession || '',
+      isBaptized: m.isBaptized || '',
+      baptismDate: m.baptismDate || ''
     }); 
     setPhotoPreview(m.photoUrl||null); setIsCreating(false); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomProfession(false); setCustomChurch(false); setIsEditing(true); 
   };
@@ -250,7 +252,7 @@ export default function Home() {
     const defaultIntegration = today.toISOString().split('T')[0];
     const defaultValidity = `${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear() + 1}`;
     
-    setEditForm({ id:'', name:'', function:'Membro', ministry:'Louvor', phone:'', email:'', address:'', integrationDate: defaultIntegration, cardValidity: defaultValidity, churchId: (church && church !== 'ALL') ? church : (currentUser?.churchId || dbChurches[0]?.id || ''), photoUrl:'', status:'ativo', birthDate:'', maritalStatus:'', employmentStatus:'', profession:'' }); 
+    setEditForm({ id:'', name:'', function:'Membro', ministry:'Louvor', phone:'', email:'', address:'', integrationDate: defaultIntegration, cardValidity: defaultValidity, churchId: (church && church !== 'ALL') ? church : (currentUser?.churchId || dbChurches[0]?.id || ''), photoUrl:'', status:'ativo', birthDate:'', maritalStatus:'', employmentStatus:'', profession:'', isBaptized:'', baptismDate:'' }); 
     setPhotoPreview(null); setIsCreating(true); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomProfession(false); setCustomChurch(false); setIsEditing(true); 
   };
 
@@ -295,7 +297,9 @@ export default function Home() {
       birth_date: editForm.birthDate || null,
       marital_status: editForm.maritalStatus || null,
       employment_status: editForm.employmentStatus || null,
-      profession: editForm.profession || null
+      profession: editForm.profession || null,
+      is_baptized: editForm.isBaptized || null,
+      baptism_date: editForm.isBaptized === 'Sim' ? (editForm.baptismDate || null) : null
     };
 
     if (isCreating) {
@@ -503,6 +507,9 @@ export default function Home() {
                 {sel.ministry && <InfoCard label="Ministério" value={sel.ministry} />}
                 <InfoCard label="Contato" value={`📞 ${sel.phone}${sel.email ? '\n✉️ '+sel.email : ''}`} />
                 <InfoCard label="Endereço" value={`📍 ${sel.address}`} />
+                {(sel.maritalStatus || sel.isBaptized) && (
+                  <InfoCard label="Dados Pessoais & Batismo" value={`${sel.maritalStatus ? '💍 Estado Civil: ' + sel.maritalStatus + '\n' : ''}${sel.isBaptized ? '🌊 Batizado: ' + sel.isBaptized + (sel.isBaptized === 'Sim' && sel.baptismDate ? ' (' + fmt(sel.baptismDate) + ')' : '') : ''}`} />
+                )}
                 {sel.integrationDate && (
                   <div className="glass" style={{ padding:'10px 12px', borderRadius:'8px' }}>
                     <div style={{ fontSize:'0.65rem', color:'var(--text-secondary)', fontWeight:'600', marginBottom:'3px', textTransform:'uppercase', letterSpacing:'0.5px' }}>Carteirinha</div>
@@ -650,6 +657,22 @@ export default function Home() {
                       <option value="Outro">Outro</option>
                     </select>
                   </div>
+                </div>
+                <div style={{ display:'flex', gap:'10px', marginBottom:'10px' }}>
+                  <div style={{ flex:1 }}>
+                    <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Já é Batizado(a)?</label>
+                    <select name="isBaptized" value={editForm.isBaptized || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }}>
+                      <option value="">Selecione...</option>
+                      <option value="Sim">Sim</option>
+                      <option value="Não">Não</option>
+                    </select>
+                  </div>
+                  {editForm.isBaptized === 'Sim' && (
+                    <div style={{ flex:1 }}>
+                      <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Data do Batismo</label>
+                      <input type="date" name="baptismDate" value={editForm.baptismDate || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} />
+                    </div>
+                  )}
                 </div>
                 <div style={{ display:'flex', gap:'10px', marginBottom:'10px' }}>
                   <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Situação Profissional</label>

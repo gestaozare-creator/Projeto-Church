@@ -421,27 +421,29 @@ export default function IgrejasPage() {
             
 
 
-            {/* Margem do Plano Gratuito Atual */}
+            {/* Margem do Plano Atual */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <strong style={{ fontSize: '0.8rem', color: '#fff' }}>1. Uso Atual vs Limites do Plano Free (500MB / 10 Conexões)</strong>
+              <strong style={{ fontSize: '0.8rem', color: '#fff' }}>
+                {globalInfraPlan === 'Gratuito' ? '1. Uso Atual vs Limites do Plano Free (500MB / 10 Conexões)' : '1. Uso Atual vs Limites do Plano Pro (8GB / Conexões Ilimitadas)'}
+              </strong>
               
               {/* Barra de Progresso de Memória/Armazenamento */}
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
                   <span>💾 Dados do Projeto (Banco + Fotos)</span>
-                  <span>{globalStats.totalSizeMB.toFixed(2)} MB / 500 MB</span>
+                  <span>{globalStats.totalSizeMB.toFixed(2)} MB / {globalInfraPlan === 'Gratuito' ? '500 MB' : '8.192 MB'}</span>
                 </div>
                 <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
                   <div style={{ 
-                    width: `${Math.min(100, (globalStats.totalSizeMB / 500) * 100)}%`, 
+                    width: `${Math.min(100, (globalStats.totalSizeMB / (globalInfraPlan === 'Gratuito' ? 500 : 8192)) * 100)}%`, 
                     height: '100%', 
-                    background: (globalStats.totalSizeMB / 500) > 0.8 ? '#e74c3c' : '#2ecc71',
+                    background: (globalStats.totalSizeMB / (globalInfraPlan === 'Gratuito' ? 500 : 8192)) > 0.8 ? '#e74c3c' : '#2ecc71',
                     borderRadius: '4px',
                     transition: 'width 0.3s ease'
                   }}></div>
                 </div>
                 <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '2px', display: 'block' }}>
-                  Restam <strong>{Math.max(0, 500 - globalStats.totalSizeMB).toFixed(2)} MB</strong> de espaço gratuito.
+                  Restam <strong>{Math.max(0, (globalInfraPlan === 'Gratuito' ? 500 : 8192) - globalStats.totalSizeMB).toFixed(2)} MB</strong> de espaço no plano atual.
                 </span>
               </div>
 
@@ -449,36 +451,41 @@ export default function IgrejasPage() {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
                   <span>⚡ Conexões de Admins</span>
-                  <span>{globalStats.totalActiveUsers} / 10 ativos</span>
+                  <span>{globalStats.totalActiveUsers} / {globalInfraPlan === 'Gratuito' ? '10 ativos' : 'Ilimitado'}</span>
                 </div>
                 <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
                   <div style={{ 
-                    width: `${Math.min(100, (globalStats.totalActiveUsers / 10) * 100)}%`, 
+                    width: globalInfraPlan === 'Gratuito' ? `${Math.min(100, (globalStats.totalActiveUsers / 10) * 100)}%` : '100%', 
                     height: '100%', 
-                    background: (globalStats.totalActiveUsers / 10) > 0.8 ? '#e74c3c' : '#2ecc71',
+                    background: globalInfraPlan === 'Gratuito' ? ((globalStats.totalActiveUsers / 10) > 0.8 ? '#e74c3c' : '#2ecc71') : '#2ecc71',
                     borderRadius: '4px',
                     transition: 'width 0.3s ease'
                   }}></div>
                 </div>
                 <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '2px', display: 'block' }}>
-                  Restam <strong>{Math.max(0, 10 - globalStats.totalActiveUsers)} conexões</strong> administrativas antes do upgrade.
+                  {globalInfraPlan === 'Gratuito' 
+                    ? <>Restam <strong>{Math.max(0, 10 - globalStats.totalActiveUsers)} conexões</strong> administrativas antes do upgrade.</>
+                    : <>Conexões simultâneas ilimitadas inclusas no plano Pro.</>
+                  }
                 </span>
               </div>
             </div>
 
-            {/* Projeção para o Próximo Nível (Plano Pro) */}
-            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <strong style={{ fontSize: '0.8rem', color: '#1abc9c', display: 'flex', alignItems: 'center', gap: '4px' }}>🚀 Projeção Nível Pro (Plano Pro - $25/mês)</strong>
-              <p style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.4' }}>
-                Caso o projeto ultrapasse os limites gratuitos ou necessite de mais segurança de escalabilidade:
-              </p>
-              <ul style={{ margin: 0, paddingLeft: '14px', fontSize: '0.74rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <li><strong>Banco de Dados:</strong> Expande para <strong style={{ color: '#fff' }}>8 GB</strong> (Você usará apenas {((globalStats.totalSizeMB / 8192) * 100).toFixed(2)}% do plano Pro).</li>
-                <li><strong>Storage de Arquivos:</strong> Expande para <strong style={{ color: '#fff' }}>100 GB</strong> dedicados a fotos de membros.</li>
-                <li><strong>Conexões Simultâneas:</strong> Ilimitadas (sem trava de 10 conexões).</li>
-                <li><strong>Custo Excedente:</strong> Apenas <strong style={{ color: '#e74c3c' }}>US$ 0.50 por GB adicional</strong> de banco ou storage que ultrapassar estes limites inclusos no Pro.</li>
-              </ul>
-            </div>
+            {/* Projeção para o Próximo Nível (Plano Pro) - Só exibe se estiver no Free */}
+            {globalInfraPlan === 'Gratuito' && (
+              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <strong style={{ fontSize: '0.8rem', color: '#1abc9c', display: 'flex', alignItems: 'center', gap: '4px' }}>🚀 Projeção Nível Pro (Plano Pro - $25/mês)</strong>
+                <p style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.4' }}>
+                  Caso o projeto ultrapasse os limites gratuitos ou necessite de mais segurança de escalabilidade:
+                </p>
+                <ul style={{ margin: 0, paddingLeft: '14px', fontSize: '0.74rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <li><strong>Banco de Dados:</strong> Expande para <strong style={{ color: '#fff' }}>8 GB</strong> (Você usará apenas {((globalStats.totalSizeMB / 8192) * 100).toFixed(2)}% do plano Pro).</li>
+                  <li><strong>Storage de Arquivos:</strong> Expande para <strong style={{ color: '#fff' }}>100 GB</strong> dedicados a fotos de membros.</li>
+                  <li><strong>Conexões Simultâneas:</strong> Ilimitadas (sem trava de 10 conexões).</li>
+                  <li><strong>Custo Excedente:</strong> Apenas <strong style={{ color: '#e74c3c' }}>US$ 0.50 por GB adicional</strong> de banco ou storage que ultrapassar estes limites inclusos no Pro.</li>
+                </ul>
+              </div>
+            )}
 
             {/* Projeção para o Nível de Excedente Pro (Pay-As-You-Go) */}
             <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>

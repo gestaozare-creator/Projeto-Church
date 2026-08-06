@@ -45,6 +45,8 @@ export interface Member {
   maritalStatus?: string;
   employmentStatus?: string;
   profession?: string;
+  isBaptized?: boolean | string;
+  baptismDate?: string;
 }
 
 export interface Visitor {
