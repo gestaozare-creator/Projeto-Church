@@ -278,13 +278,13 @@ export default function FormularioMembro() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
               <div style={{ flex: 1 }}>
-                <label style={labelStyle}>Data de Nascimento</label>
-                <input type="date" name="birth_date" value={form.birth_date} onChange={onChange} style={fieldStyle} />
+                <label style={labelStyle}>Data de Nascimento *</label>
+                <input type="date" name="birth_date" value={form.birth_date} onChange={onChange} style={fieldStyle} required />
               </div>
               
               <div style={{ flex: 1 }}>
-                <label style={labelStyle}>Estado Civil</label>
-                <select name="marital_status" value={form.marital_status} onChange={onChange} style={fieldStyle}>
+                <label style={labelStyle}>Estado Civil *</label>
+                <select name="marital_status" value={form.marital_status} onChange={onChange} style={fieldStyle} required>
                   <option value="">Selecione...</option>
                   <option value="Casado(a)">Casado(a)</option>
                   <option value="Solteiro(a)">Solteiro(a)</option>
@@ -297,8 +297,8 @@ export default function FormularioMembro() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
               <div style={{ flex: 1 }}>
-                <label style={labelStyle}>É Batizado(a) nas Águas?</label>
-                <select name="is_baptized" value={form.is_baptized} onChange={onChange} style={fieldStyle}>
+                <label style={labelStyle}>É Batizado(a) nas Águas? *</label>
+                <select name="is_baptized" value={form.is_baptized} onChange={onChange} style={fieldStyle} required>
                   <option value="">Selecione...</option>
                   <option value="Sim">Sim</option>
                   <option value="Não">Não</option>
@@ -307,8 +307,8 @@ export default function FormularioMembro() {
 
               {form.is_baptized === 'Sim' && (
                 <div style={{ flex: 1 }}>
-                  <label style={labelStyle}>Data do Batismo</label>
-                  <input type="date" name="baptism_date" value={form.baptism_date} onChange={onChange} style={fieldStyle} />
+                  <label style={labelStyle}>Data do Batismo *</label>
+                  <input type="date" name="baptism_date" value={form.baptism_date} onChange={onChange} style={fieldStyle} required />
                 </div>
               )}
             </div>

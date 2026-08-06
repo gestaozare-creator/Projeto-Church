@@ -261,8 +261,18 @@ export default function Home() {
     if (f) { const r = new FileReader(); r.onloadend = () => { const res = r.result as string; setPhotoPreview(res); setEditForm((p:any) => ({...p, photoUrl: res})); }; r.readAsDataURL(f); }
   };
 
-  const handleSave = async (e: React.FormEvent | React.MouseEvent, overrideStatus?: string) => {
+    const handleSave = async (e: React.FormEvent | React.MouseEvent, overrideStatus?: string) => {
     e.preventDefault();
+
+    if (!editForm.birthDate || !editForm.maritalStatus || !editForm.isBaptized) {
+      alert('Por favor, preencha os campos obrigatórios: Data de Nascimento, Estado Civil e se é Batizado(a).');
+      return;
+    }
+    if (editForm.isBaptized === 'Sim' && !editForm.baptismDate) {
+      alert('Por favor, informe a Data do Batismo.');
+      return;
+    }
+
     const finalPhoto = editForm.photoUrl || `https://i.pravatar.cc/150?u=${editForm.name.replace(/\s/g,'')}`;
     
     const cleanPhone = editForm.phone ? editForm.phone.replace(/\D/g, '') : '';
@@ -646,9 +656,9 @@ export default function Home() {
                   </div>
                 </div>
                 <div style={{ display:'flex', gap:'10px', marginBottom:'10px' }}>
-                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Data de Nascimento</label><input type="date" name="birthDate" value={editForm.birthDate || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} /></div>
-                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Estado Civil</label>
-                    <select name="maritalStatus" value={editForm.maritalStatus || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }}>
+                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Data de Nascimento *</label><input type="date" name="birthDate" value={editForm.birthDate || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required /></div>
+                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Estado Civil *</label>
+                    <select name="maritalStatus" value={editForm.maritalStatus || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required>
                       <option value="">Selecione...</option>
                       <option value="Casado(a)">Casado(a)</option>
                       <option value="Solteiro(a)">Solteiro(a)</option>
@@ -660,8 +670,8 @@ export default function Home() {
                 </div>
                 <div style={{ display:'flex', gap:'10px', marginBottom:'10px' }}>
                   <div style={{ flex:1 }}>
-                    <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Já é Batizado(a)?</label>
-                    <select name="isBaptized" value={editForm.isBaptized || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }}>
+                    <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Já é Batizado(a)? *</label>
+                    <select name="isBaptized" value={editForm.isBaptized || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required>
                       <option value="">Selecione...</option>
                       <option value="Sim">Sim</option>
                       <option value="Não">Não</option>
@@ -669,8 +679,8 @@ export default function Home() {
                   </div>
                   {editForm.isBaptized === 'Sim' && (
                     <div style={{ flex:1 }}>
-                      <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Data do Batismo</label>
-                      <input type="date" name="baptismDate" value={editForm.baptismDate || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} />
+                      <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Data do Batismo *</label>
+                      <input type="date" name="baptismDate" value={editForm.baptismDate || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required />
                     </div>
                   )}
                 </div>
