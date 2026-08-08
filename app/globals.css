@@ -750,6 +750,29 @@ a.sub-link {
   padding-bottom: 5px;
 }
 
+/* --- KANBAN E PAGE WRAPPER --- */
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 12px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.kanban-board {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.kanban-col {
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  overflow: hidden;
+}
+
 @media (max-width: 768px) {
   .mobile-menu-btn {
     display: none !important; /* Hamburger superior escondido, usaremos o Menu inferior */
@@ -797,6 +820,22 @@ a.sub-link {
   
   div[style*="grid-template-columns"] {
     grid-template-columns: 1fr !important;
+  }
+
+  .page-wrapper, .kanban-board {
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+  
+  .kanban-col {
+    overflow: visible !important;
+    height: auto !important;
+    margin-bottom: 20px;
+  }
+  
+  .scroll-container {
+    overflow-y: visible !important;
   }
 
   /* --- MOBILE FILTERS --- */
@@ -941,6 +980,20 @@ a.sub-link {
     max-height: 90vh;
     overflow-y: auto;
     animation: slideUp 0.3s ease-out;
+    padding: 15px !important;
+  }
+  
+  .modal-content h2, .modal-content h3 {
+    font-size: 1.1rem !important;
+  }
+  
+  .modal-content input, .modal-content select, .modal-content textarea {
+    font-size: 0.9rem !important;
+    padding: 8px !important;
+  }
+  
+  .modal-content p, .modal-content label, .modal-content span {
+    font-size: 0.85rem !important;
   }
 
   @keyframes slideUp {

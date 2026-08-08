@@ -79,6 +79,7 @@ export default function Visitantes() {
   const [horarioFilter, setHorarioFilter] = useState('ALL');
   
   const [filterStatus, setFilterStatus] = useState('all');
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({});
@@ -423,7 +424,7 @@ export default function Visitantes() {
   const treeConversao = useMemo(() => buildTree(filtered.filter(v => v.status === 'em_conversao')), [filtered, buildTree]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', gap: '12px' }}>
+    <div className="page-wrapper">
       {/* STICKY HEADER SECTION */}
       <div style={{ position: 'sticky', top: '-1px', zIndex: 50, paddingTop: '1px', paddingBottom: '12px', display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--bg-base)' }}>
       {/* HEADER + STATS */}
@@ -448,7 +449,13 @@ export default function Visitantes() {
       </div>
 
       {/* BARRA DE FILTROS */}
-      <div className="glass" style={{ padding: '12px 14px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div style={{ display:'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <button className="mobile-only-btn glass-button" style={{ display: 'none', padding: '8px 12px', fontSize: '0.8rem', gap: '5px' }} onClick={() => setShowMobileFilters(!showMobileFilters)}>
+          🔍 {showMobileFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+        </button>
+      </div>
+
+      <div className={`filters-container ${showMobileFilters ? 'mobile-visible' : ''} glass`} style={{ padding: '12px 14px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
         {/* Igreja */}
         {canSeeAllChurches ? (
           <select className="filter-select" style={{ padding:'7px 8px', fontSize:'0.8rem', minWidth:'140px' }} value={churchF} onChange={e => setChurchF(e.target.value)}>
@@ -478,6 +485,7 @@ export default function Visitantes() {
           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Até:</span>
           <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="search-input glass-input" style={{ padding: '6px 8px', fontSize: '0.8rem', colorScheme: 'dark' }} />
         </div>
+        
         {/* Status */}
         <select className="filter-select" style={{ padding: '7px 8px', fontSize: '0.8rem', minWidth: '120px' }} value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
           <option value="all">🏷️ Todos</option>
@@ -485,6 +493,7 @@ export default function Visitantes() {
           <option value="em_conversao">Em Conversão</option>
           <option value="membro">Membro</option>
         </select>
+        
       {/* Busca e Toggle */}
       <div style={{ display: 'flex', gap: '8px', flex: 1, minWidth: '150px' }}>
         <div style={{ position: 'relative', flex: 1 }}>
@@ -500,11 +509,11 @@ export default function Visitantes() {
     </div>
 
     {viewMode === 'kanban' ? (
-      <div className="responsive-grid" style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
+      <div className="responsive-grid kanban-board">
         {/* 2 COLUNAS KANBAN RESTAURADAS */}
 
         {/* COLUNA 1: VISITANTES */}
-        <div className="glass" style={{ display: 'flex', flexDirection: 'column', padding: '14px', overflow: 'hidden' }}>
+        <div className="glass kanban-col">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <h4 style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#3b82f6', display: 'inline-block' }} />Visitante (1º Contato)
@@ -560,7 +569,7 @@ export default function Visitantes() {
         </div>
 
         {/* COLUNA 2: EM CONVERSÃO */}
-        <div className="glass" style={{ display: 'flex', flexDirection: 'column', padding: '14px', overflow: 'hidden' }}>
+        <div className="glass kanban-col">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <h4 style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#f39c12', display: 'inline-block' }} />Em Conversão
