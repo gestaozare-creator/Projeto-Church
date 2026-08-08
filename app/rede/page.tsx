@@ -257,7 +257,7 @@ export default function RedePage() {
   });
 
   return (
-    <div style={{ padding: '32px', minHeight: '100vh' }}>
+    <div className="rede-page-container" style={{ minHeight: '100vh' }}>
 
       {/* CABEÇALHO DA REDE */}
       <div className="glass" style={{
@@ -270,8 +270,7 @@ export default function RedePage() {
         border: '1px solid rgba(255,255,255,0.1)',
         position: 'relative'
       }}>
-        <div style={{
-          padding: '32px 36px',
+        <div className="rede-header-inner" style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -324,23 +323,23 @@ export default function RedePage() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <div className="glass" style={{ padding: '12px 18px', borderRadius: '12px', textAlign: 'center', minWidth: '80px', border: '1px solid rgba(52,152,219,0.3)' }}>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', flex: 1, justifyContent: 'center' }}>
+            <div className="glass rede-stat-box" style={{ borderRadius: '12px', textAlign: 'center', flex: '1 1 45%', minWidth: '100px', border: '1px solid rgba(52,152,219,0.3)' }}>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#3498db' }}>{churches.length}</div>
               <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '1px' }}>Igrejas</div>
               <div style={{ fontSize: '0.58rem', color: 'rgba(52,152,219,0.7)', marginTop: '1px' }}>{churches.filter(c => c.isHeadquarters).length} sede · {churches.filter(c => !c.isHeadquarters).length} filial</div>
             </div>
-            <div className="glass" style={{ padding: '12px 18px', borderRadius: '12px', textAlign: 'center', minWidth: '80px', border: '1px solid rgba(46,204,113,0.3)' }}>
+            <div className="glass rede-stat-box" style={{ borderRadius: '12px', textAlign: 'center', flex: '1 1 45%', minWidth: '100px', border: '1px solid rgba(46,204,113,0.3)' }}>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#2ecc71' }}>{totalMembros}</div>
               <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '1px' }}>Membros</div>
               <div style={{ fontSize: '0.58rem', color: 'rgba(46,204,113,0.7)', marginTop: '1px' }}>{totalAtivos} ativos</div>
             </div>
-            <div className="glass" style={{ padding: '12px 18px', borderRadius: '12px', textAlign: 'center', minWidth: '80px', border: '1px solid rgba(241,196,15,0.3)' }}>
+            <div className="glass rede-stat-box" style={{ borderRadius: '12px', textAlign: 'center', flex: '1 1 45%', minWidth: '100px', border: '1px solid rgba(241,196,15,0.3)' }}>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f1c40f' }}>{totalVisitantes}</div>
               <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '1px' }}>Visitantes</div>
               <div style={{ fontSize: '0.58rem', color: 'rgba(241,196,15,0.7)', marginTop: '1px' }}>em conversão</div>
             </div>
-            <div className="glass" style={{ padding: '12px 18px', borderRadius: '12px', textAlign: 'center', minWidth: '80px', border: '1px solid rgba(155,89,182,0.3)' }}>
+            <div className="glass rede-stat-box" style={{ borderRadius: '12px', textAlign: 'center', flex: '1 1 45%', minWidth: '100px', border: '1px solid rgba(155,89,182,0.3)' }}>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#9b59b6' }}>{churches.reduce((acc, c) => acc + (c.services?.length || 0), 0)}</div>
               <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '1px' }}>Cultos</div>
               <div style={{ fontSize: '0.58rem', color: 'rgba(155,89,182,0.7)', marginTop: '1px' }}>na rede toda</div>
@@ -364,8 +363,8 @@ export default function RedePage() {
 
       {/* ======================== TAB: VISÃO GERAL ======================== */}
       {activeTab === 'overview' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div className="glass" style={{ borderRadius: '16px', padding: '24px', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="rede-overview-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="glass rede-overview-card" style={{ borderRadius: '16px', border: '1px solid rgba(255,255,255,0.07)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 ⛪ Igrejas da Rede

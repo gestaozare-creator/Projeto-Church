@@ -760,6 +760,20 @@ a.sub-link {
   min-height: 0;
 }
 
+/* --- REDE DESKTOP LAYOUT --- */
+.rede-page-container {
+  padding: 32px;
+}
+.rede-header-inner {
+  padding: 32px 36px;
+}
+.rede-overview-card {
+  padding: 24px;
+}
+.rede-stat-box {
+  padding: 12px 18px;
+}
+
 .kanban-board {
   flex: 1;
   overflow: hidden;
@@ -852,6 +866,23 @@ a.sub-link {
     border-radius: 12px;
     border: 1px solid var(--card-border);
     margin-bottom: 15px;
+  }
+  .filters-container.mobile-visible {
+    display: flex !important;
+  }
+  
+  /* --- REDE MOBILE LAYOUT --- */
+  .rede-page-container {
+    padding: 12px !important;
+  }
+  .rede-header-inner {
+    padding: 16px !important;
+  }
+  .rede-overview-card {
+    padding: 16px !important;
+  }
+  .rede-stat-box {
+    padding: 10px !important;
   }
   .filters-container.mobile-visible {
     display: flex !important;
