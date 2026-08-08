@@ -99,6 +99,7 @@ export default function ContasReceber() {
 
   // View States
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [editingFullTransaction, setEditingFullTransaction] = useState<Transaction | null>(null);
   const [attachmentLink, setAttachmentLink] = useState<string | null>(null);
@@ -514,7 +515,7 @@ export default function ContasReceber() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '14px', paddingBottom: '20px' }}>
+    <div className="page-wrapper">
       
       {/* HEADER */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
@@ -522,29 +523,36 @@ export default function ContasReceber() {
           <h3 style={{ fontSize: '1.3rem', margin: 0 }}>💵 Contas a Receber</h3>
           <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Gestão de recebimentos</span>
         </div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '4px' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button className="mobile-only-btn glass-button" style={{ display: 'none', padding: '8px 12px', fontSize: '0.8rem', gap: '5px' }} onClick={() => setShowMobileFilters(!showMobileFilters)}>
+            🔍 {showMobileFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+          </button>
+          <div className="view-toggle" style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '4px', border: '1px solid var(--card-border)' }}>
             <button 
               onClick={() => setViewMode('kanban')}
-              style={{ padding: '4px 12px', background: viewMode === 'kanban' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}>
+              className={viewMode === 'kanban' ? 'active' : ''} style={{ padding: '6px 12px', background: viewMode === 'kanban' ? 'var(--primary-color)' : 'transparent', color: viewMode === 'kanban' ? '#fff' : 'var(--text-secondary)', border: 'none', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.3s' }}>
               🗂️ Kanban
             </button>
             <button 
               onClick={() => setViewMode('list')}
-              style={{ padding: '4px 12px', background: viewMode === 'list' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}>
+              className={viewMode === 'list' ? 'active' : ''} style={{ padding: '6px 12px', background: viewMode === 'list' ? 'var(--primary-color)' : 'transparent', color: viewMode === 'list' ? '#fff' : 'var(--text-secondary)', border: 'none', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.3s' }}>
               📄 Lista
             </button>
           </div>
-          {canSeeAllChurches ? (
-            <select value={church} onChange={e => setChurch(e.target.value)} className="search-input glass-input" style={{ padding: '6px 12px' }}>
-              <option value="ALL">Todas as Igrejas</option>
-              {churches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          ) : (
-            <div className="search-input glass-input" style={{ padding: '6px 12px', fontSize: '0.8rem', opacity: 0.8, pointerEvents: 'none' }}>
-              {churches.find(c => c.id === church)?.name || 'Igreja Local'}
-            </div>
-          )}
+        </div>
+      </div>
+
+      <div className={`filters-container ${showMobileFilters ? 'mobile-visible' : ''} glass`} style={{ padding: '12px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '8px' }}>
+        {canSeeAllChurches ? (
+          <select value={church} onChange={e => setChurch(e.target.value)} className="search-input glass-input" style={{ padding: '6px 12px' }}>
+            <option value="ALL">Todas as Igrejas</option>
+            {churches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        ) : (
+          <div className="search-input glass-input" style={{ padding: '6px 12px', fontSize: '0.8rem', opacity: 0.8, pointerEvents: 'none' }}>
+            {churches.find(c => c.id === church)?.name || 'Igreja Local'}
+          </div>
+        )}
           <select value={cultoFilter} onChange={e => setCultoFilter(e.target.value)} className="search-input glass-input" style={{ padding: '6px 12px' }}>
             <option value="ALL">Todos os Cultos</option>
             {availableCultos.map(name => <option key={name} value={name}>{name}</option>)}
@@ -571,14 +579,14 @@ export default function ContasReceber() {
 
       {/* CONTENT AREA */}
       {viewMode === 'kanban' ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px', flex: 1, overflow: 'hidden' }}>
+        <div className="responsive-grid-3 kanban-board">
 
         
         {/* COL 1: A RECEBER */}
         <div 
           onDragOver={handleDragOver} 
           onDrop={(e) => handleDrop(e, 'pendente')}
-          style={{ display: 'flex', flexDirection: 'column', gap: '10px', overflowY: 'auto', padding: '10px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}
+          className="glass kanban-col"
         >
           <div style={{ padding: '12px', borderRadius: '10px', background: 'rgba(241,196,15,0.15)', border: '1px solid rgba(241,196,15,0.3)', position: 'sticky', top: 0, zIndex: 10 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -625,13 +633,13 @@ export default function ContasReceber() {
               </div>
              );
           })}
-        </div>
-
-        {/* COL 2: RECEBIDAS */}
+              </div>
+        
+        {/* COL 2: CONFIRMADAS (Recebidas) */}
         <div 
           onDragOver={handleDragOver} 
           onDrop={(e) => handleDrop(e, 'confirmado')}
-          style={{ display: 'flex', flexDirection: 'column', gap: '10px', overflowY: 'auto', padding: '10px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}
+          className="glass kanban-col"
         >
           <div style={{ padding: '12px', borderRadius: '10px', background: 'rgba(46,204,113,0.15)', border: '1px solid rgba(46,204,113,0.3)', position: 'sticky', top: 0, zIndex: 10 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -665,13 +673,13 @@ export default function ContasReceber() {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* COL 3: NÃO RECEBIDAS */}
+          </div>
+        
+        {/* COL 3: VENCIDAS (Atrasadas) */}
         <div 
           onDragOver={handleDragOver} 
           onDrop={(e) => handleDrop(e, 'vencido')}
-          style={{ display: 'flex', flexDirection: 'column', gap: '10px', overflowY: 'auto', padding: '10px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}
+          className="glass kanban-col"
         >
           <div style={{ padding: '12px', borderRadius: '10px', background: 'rgba(231,76,60,0.15)', border: '1px solid rgba(231,76,60,0.3)', position: 'sticky', top: 0, zIndex: 10 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
