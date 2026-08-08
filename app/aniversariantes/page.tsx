@@ -168,15 +168,17 @@ export default function AniversariantesPage() {
               marginTop: '20px'
             }}>
               {todayBirthdays.map(m => (
-                <div key={m.id} style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(241, 196, 15, 0.3)',
-                  borderRadius: '12px',
-                  padding: '15px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '15px'
-                }}>
+                  <div key={m.id} style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(241, 196, 15, 0.3)',
+                    borderRadius: '12px',
+                    padding: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '15px',
+                    minWidth: 0,
+                    overflow: 'hidden'
+                  }}>
                   <div style={{
                     width: '50px', height: '50px', borderRadius: '50%', overflow: 'hidden',
                     background: '#2c3e50', flexShrink: 0
@@ -243,7 +245,9 @@ export default function AniversariantesPage() {
                     padding: '15px',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '15px'
+                    gap: '15px',
+                    minWidth: 0,
+                    overflow: 'hidden'
                   }}>
                     <div style={{
                       width: '45px', height: '45px', borderRadius: '8px', 
