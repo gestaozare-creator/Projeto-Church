@@ -163,7 +163,7 @@ export default function AniversariantesPage() {
           ) : (
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', 
               gap: '15px',
               marginTop: '20px'
             }}>
@@ -229,7 +229,7 @@ export default function AniversariantesPage() {
           ) : (
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', 
               gap: '15px',
               marginTop: '20px'
             }}>
@@ -237,10 +237,10 @@ export default function AniversariantesPage() {
                 const day = m.birthDate!.split('-')[2];
                 return (
                   <div key={m.id} style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.05)',
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(52, 152, 219, 0.3)',
                     borderRadius: '12px',
-                    padding: '12px',
+                    padding: '15px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '15px'
