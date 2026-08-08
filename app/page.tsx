@@ -417,11 +417,12 @@ export default function Home() {
     w.document.close();
   };
 
-  const statusBadge = (s: string) => {
-    if (s === 'ativo') return <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(46,204,113,0.15)', color: '#2ecc71', fontWeight: '700', border: '1px solid rgba(46,204,113,0.3)' }}>ATIVO</span>;
-    if (s === 'pendente') return <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(243,156,18,0.15)', color: '#f39c12', fontWeight: '700', border: '1px solid rgba(243,156,18,0.3)' }}>AGUARDANDO</span>;
-    if (s === 'inativo') return <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(149,165,166,0.15)', color: '#95a5a6', fontWeight: '700', border: '1px solid rgba(149,165,166,0.3)' }}>INATIVO</span>;
-    return <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-secondary)' }}>{s.toUpperCase()}</span>;
+  const statusBadge = (s?: string) => {
+    const val = s || 'pendente';
+    if (val === 'ativo') return <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(46,204,113,0.15)', color: '#2ecc71', fontWeight: '700', border: '1px solid rgba(46,204,113,0.3)' }}>ATIVO</span>;
+    if (val === 'pendente') return <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(243,156,18,0.15)', color: '#f39c12', fontWeight: '700', border: '1px solid rgba(243,156,18,0.3)' }}>AGUARDANDO</span>;
+    if (val === 'inativo') return <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(149,165,166,0.15)', color: '#95a5a6', fontWeight: '700', border: '1px solid rgba(149,165,166,0.3)' }}>INATIVO</span>;
+    return <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-secondary)' }}>{val.toUpperCase()}</span>;
   };
 
   const Row = ({ member, type }: { member: Member, type: 'ativo' | 'inativo' | 'visitante' | 'em_conversao' | 'pendente' }) => {
