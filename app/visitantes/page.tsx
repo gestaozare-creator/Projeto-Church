@@ -453,6 +453,14 @@ export default function Visitantes() {
         <button className="mobile-only-btn glass-button" style={{ display: 'none', padding: '8px 12px', fontSize: '0.8rem', gap: '5px' }} onClick={() => setShowMobileFilters(!showMobileFilters)}>
           🔍 {showMobileFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
         </button>
+        <div className="view-toggle" style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '4px', border: '1px solid var(--card-border)' }}>
+          <button onClick={() => setViewMode('kanban')} className={viewMode === 'kanban' ? 'active' : ''} style={{ padding: '6px 12px', background: viewMode === 'kanban' ? 'var(--primary-color)' : 'transparent', color: viewMode === 'kanban' ? '#fff' : 'var(--text-secondary)', border: 'none', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.3s' }}>
+            🗂️ Kanban
+          </button>
+          <button onClick={() => setViewMode('list')} className={viewMode === 'list' ? 'active' : ''} style={{ padding: '6px 12px', background: viewMode === 'list' ? 'var(--primary-color)' : 'transparent', color: viewMode === 'list' ? '#fff' : 'var(--text-secondary)', border: 'none', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.3s' }}>
+            📄 Lista
+          </button>
+        </div>
       </div>
 
       <div className={`filters-container ${showMobileFilters ? 'mobile-visible' : ''} glass`} style={{ padding: '12px 14px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -499,10 +507,6 @@ export default function Visitantes() {
         <div style={{ position: 'relative', flex: 1 }}>
           <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.75rem', opacity: 0.4 }}>🔍</span>
           <input type="text" placeholder="Buscar..." className="search-input glass-input" style={{ width: '100%', padding: '7px 7px 7px 28px', fontSize: '0.8rem' }} value={search} onChange={e => setSearch(e.target.value)} />
-        </div>
-        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '2px', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <button onClick={() => setViewMode('kanban')} style={{ padding: '6px 12px', fontSize: '0.8rem', borderRadius: '6px', border: 'none', background: viewMode === 'kanban' ? 'var(--primary-color)' : 'transparent', color: viewMode === 'kanban' ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', transition: 'all 0.2s', fontWeight: viewMode === 'kanban' ? '600' : '400' }}>Kanban</button>
-          <button onClick={() => setViewMode('list')} style={{ padding: '6px 12px', fontSize: '0.8rem', borderRadius: '6px', border: 'none', background: viewMode === 'list' ? 'var(--primary-color)' : 'transparent', color: viewMode === 'list' ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', transition: 'all 0.2s', fontWeight: viewMode === 'list' ? '600' : '400' }}>Lista</button>
         </div>
       </div>
     </div>

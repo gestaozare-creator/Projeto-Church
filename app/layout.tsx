@@ -316,16 +316,10 @@ function AppContent({ children }: { children: React.ReactNode }) {
             <span>👥</span>
             Membros
           </Link>
-          <Link href="/dashboard-secretaria" className={`bottom-nav-item ${pathname === '/dashboard-secretaria' ? 'active' : ''}`}>
-            <span>📊</span>
-            Painel
+          <Link href="/visitantes" className={`bottom-nav-item ${pathname === '/visitantes' ? 'active' : ''}`}>
+            <span>👋</span>
+            Visitantes
           </Link>
-          {(canSeeRelatorios || canManageSystem) && (
-            <Link href="/relatorios" className={`bottom-nav-item ${pathname === '/relatorios' ? 'active' : ''}`}>
-              <span>📈</span>
-              Stats
-            </Link>
-          )}
           <div className="bottom-nav-item" onClick={() => setIsMobileMenuOpen(true)}>
             <span>☰</span>
             Menu
