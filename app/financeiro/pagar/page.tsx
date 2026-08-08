@@ -564,7 +564,7 @@ export default function ContasPagar() {
           <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Gestão de pagamentos e fornecedores</span>
         </div>
         <div style={{ display:'flex', gap: '8px', alignItems:'center' }}>
-          <button className="mobile-only-btn glass-button" style={{ display: 'none', padding: '8px 12px', fontSize: '0.8rem', gap: '5px' }} onClick={() => setShowMobileFilters(!showMobileFilters)}>
+          <button className="mobile-only-btn glass-button" style={{ padding: '8px 12px', fontSize: '0.8rem', gap: '5px' }} onClick={() => setShowMobileFilters(!showMobileFilters)}>
             🔍 {showMobileFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
           </button>
           <div className="view-toggle" style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '4px', border: '1px solid var(--card-border)' }}>
@@ -771,7 +771,7 @@ export default function ContasPagar() {
       </div>
       ) : (
         <div className="glass" style={{ flex: 1, padding: '20px', borderRadius: '12px', overflowY: 'auto' }}>
-          <div className="table-wrapper">
+          <div className="table-wrapper" style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', minWidth: '700px' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)', textAlign: 'left' }}>

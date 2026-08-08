@@ -813,9 +813,11 @@ a.sub-link {
   }
   
   .main-content {
-    margin-left: 0;
-    width: 100%;
-    padding: 15px 15px 80px 15px; /* Margem extra no bottom para a nav */
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    flex: none !important;
+    padding: 15px 15px 80px 15px !important; /* Margem extra no bottom para a nav */
   }
   
   .header {
