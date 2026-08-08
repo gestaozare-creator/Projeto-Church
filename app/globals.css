@@ -752,11 +752,27 @@ a.sub-link {
 
 @media (max-width: 768px) {
   .mobile-menu-btn {
-    display: none; /* Escondendo hamburger, usaremos bottom nav */
+    display: none !important; /* Hamburger superior escondido, usaremos o Menu inferior */
   }
   
   .sidebar {
-    display: none; /* Sidebar nativa será substituída pela bottom nav em mobile */
+    display: flex !important;
+    transform: translateX(-100%);
+    z-index: 200;
+    width: 280px;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .sidebar-overlay {
+    z-index: 190;
   }
   
   .main-content {
