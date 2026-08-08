@@ -248,7 +248,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
       
-      <main className="main-content">
+      <main className="main-content" id="main-content-mobile-fix">
         <header className="header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(true)}>☰</button>
