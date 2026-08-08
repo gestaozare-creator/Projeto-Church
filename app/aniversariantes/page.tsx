@@ -116,15 +116,7 @@ export default function AniversariantesPage() {
     <div className="page-wrapper" style={{ paddingBottom: '20px' }}>
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <Link href="/dashboard-secretaria" style={{
-            display: 'flex', alignItems: 'center', gap: '8px', 
-            textDecoration: 'none', color: 'var(--text-secondary)',
-            padding: '8px 12px', background: 'rgba(255,255,255,0.05)',
-            borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)'
-          }}>
-            <ChevronLeft size={18} />
-            <span>Voltar</span>
-          </Link>
+
           <h1 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Cake size={28} color="#f1c40f" />
             Aniversariantes
