@@ -9,11 +9,13 @@ ALTER TABLE public.churches
   ADD COLUMN IF NOT EXISTS card_config TEXT,
   ADD COLUMN IF NOT EXISTS config TEXT;
 
--- 2. Adicionar campos de cadastro do membro
+-- 2. Adicionar campos de cadastro do membro (incluindo batismo)
 ALTER TABLE public.members 
   ADD COLUMN IF NOT EXISTS integration_date DATE,
   ADD COLUMN IF NOT EXISTS photo_url TEXT,
-  ADD COLUMN IF NOT EXISTS card_validity TEXT;
+  ADD COLUMN IF NOT EXISTS card_validity TEXT,
+  ADD COLUMN IF NOT EXISTS is_baptized TEXT,
+  ADD COLUMN IF NOT EXISTS baptism_date DATE;
 
 -- 3. Verificar resultado
 SELECT column_name, data_type 
