@@ -615,7 +615,6 @@ export default function ContasPagar() {
             + Nova Despesa
           </button>
         </div>
-      </div>
 
       {/* CONTENT AREA */}
       {viewMode === 'kanban' ? (

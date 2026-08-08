@@ -575,7 +575,6 @@ export default function ContasReceber() {
             + Nova Receita
           </button>
         </div>
-      </div>
 
       {/* CONTENT AREA */}
       {viewMode === 'kanban' ? (
