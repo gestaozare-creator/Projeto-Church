@@ -439,7 +439,7 @@ export default function Visitantes() {
           <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '4px' }}>Acompanhe visitantes por período e culto</p>
         </div>
         {/* KPIs */}
-        <div className="glass" style={{ display: 'flex', gap: '20px', padding: '12px 20px', alignItems: 'center' }}>
+        <div className="glass" style={{ display: 'flex', gap: '12px', padding: '12px 15px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-around', flex: 1, minWidth: 0 }}>
           <Kpi value={stats.total} label="Total" color="var(--primary-light)" />
           <Kpi value={stats.visitante} label="Visitantes" color="#3b82f6" />
           <Kpi value={stats.conversao} label="Em Conversão" color="#f39c12" />
