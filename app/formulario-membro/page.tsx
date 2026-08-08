@@ -137,27 +137,36 @@ export default function FormularioMembro() {
         photo_url = publicUrlData.publicUrl;
       }
 
-      const { error } = await supabase
+      const insertPayload: any = {
+        id: 'm_' + Date.now().toString(),
+        name: form.name,
+        phone: cleanPhone,
+        email: form.email || null,
+        address: form.address,
+        function: 'Membro',
+        ministry: '',
+        status: 'aguardando_aprovacao',
+        church_id: form.churchId,
+        integration_date: new Date().toISOString().split('T')[0],
+        photo_url: photo_url,
+        birth_date: form.birth_date || null,
+        marital_status: form.marital_status || null,
+        employment_status: form.employment_status || null,
+        profession: form.profession === 'Outra' ? customProfession : (form.profession || null),
+        is_baptized: form.is_baptized || null,
+        baptism_date: form.is_baptized === 'Sim' ? (form.baptism_date || null) : null
+      };
+
+      let { error } = await supabase
         .from('members')
-        .insert({
-          id: 'm_' + Date.now().toString(),
-          name: form.name,
-          phone: cleanPhone,
-          email: form.email || null,
-          address: form.address,
-          function: 'Membro',
-          ministry: '',
-          status: 'aguardando_aprovacao',
-          church_id: form.churchId,
-          integration_date: new Date().toISOString().split('T')[0],
-          photo_url: photo_url,
-          birth_date: form.birth_date || null,
-          marital_status: form.marital_status || null,
-          employment_status: form.employment_status || null,
-          profession: form.profession === 'Outra' ? customProfession : (form.profession || null),
-          is_baptized: form.is_baptized || null,
-          baptism_date: form.is_baptized === 'Sim' ? (form.baptism_date || null) : null
-        });
+        .insert(insertPayload);
+
+      if (error && (error.message?.includes('baptism_date') || error.message?.includes('is_baptized') || error.message?.includes('column'))) {
+        delete insertPayload.is_baptized;
+        delete insertPayload.baptism_date;
+        const retryRes = await supabase.from('members').insert(insertPayload);
+        error = retryRes.error;
+      }
 
       if (error) {
         throw error;

@@ -313,11 +313,24 @@ export default function Home() {
     };
 
     if (isCreating) {
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('members')
         .insert({ ...dbPayload, id: 'm_' + Date.now().toString() })
         .select()
         .single();
+
+      if (error && (error.message?.includes('baptism_date') || error.message?.includes('is_baptized') || error.message?.includes('column'))) {
+        const fallbackPayload = { ...dbPayload };
+        delete fallbackPayload.is_baptized;
+        delete fallbackPayload.baptism_date;
+        const retryRes = await supabase
+          .from('members')
+          .insert({ ...fallbackPayload, id: 'm_' + Date.now().toString() })
+          .select()
+          .single();
+        data = retryRes.data;
+        error = retryRes.error;
+      }
 
       if (error) {
         alert('Erro ao criar membro: ' + error.message);
@@ -338,16 +351,29 @@ export default function Home() {
           photoUrl: finalPhoto,
           integrationDate: data.integration_date || (data.created_at ? new Date(data.created_at).toISOString().split('T')[0] : ''),
           cardValidity: data.card_validity || '',
-          status: data.status as any
+          status: data.status as any,
+          isBaptized: editForm.isBaptized,
+          baptismDate: editForm.baptismDate
         };
         setMembers(p => [...p, newM]);
         setSel(newM);
       }
     } else {
-      const { error } = await supabase
+      let { error } = await supabase
         .from('members')
         .update(dbPayload)
         .eq('id', editForm.id);
+
+      if (error && (error.message?.includes('baptism_date') || error.message?.includes('is_baptized') || error.message?.includes('column'))) {
+        const fallbackPayload = { ...dbPayload };
+        delete fallbackPayload.is_baptized;
+        delete fallbackPayload.baptism_date;
+        const retryRes = await supabase
+          .from('members')
+          .update(fallbackPayload)
+          .eq('id', editForm.id);
+        error = retryRes.error;
+      }
 
       if (error) {
         alert('Erro ao atualizar membro: ' + error.message);
