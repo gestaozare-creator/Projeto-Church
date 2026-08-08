@@ -143,6 +143,7 @@ export default function Home() {
   const [isApproving, setIsApproving] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [editForm, setEditForm] = useState<any>({ name:'', function:'', ministry:'Louvor', phone:'', email:'', address:'', integrationDate:'', churchId:'1', photoUrl:'', status:'ativo' });
   const [customFunction, setCustomFunction] = useState(false);
   const [customMinistry, setCustomMinistry] = useState(false);
@@ -455,7 +456,14 @@ export default function Home() {
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'100%', gap:'12px', overflow:'hidden', minHeight:0 }}>
       {/* BARRA */}
-      <div style={{ display:'flex', alignItems:'center', gap:'10px', flexWrap:'wrap' }}>
+      <div style={{ display:'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <button className="mobile-only-btn glass-button" style={{ display: 'none', padding: '8px 12px', fontSize: '0.8rem', gap: '5px' }} onClick={() => setShowMobileFilters(!showMobileFilters)}>
+          🔍 {showMobileFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+        </button>
+        <button className="modal-btn mobile-only-btn" style={{ display: 'none', margin:0, padding:'8px 14px', fontSize:'0.8rem', backgroundColor:'#2ecc71' }} onClick={openCreate}>+ Novo</button>
+      </div>
+      
+      <div className={`filters-container ${showMobileFilters ? 'mobile-visible' : ''}`} style={{ display:'flex', alignItems:'center', gap:'10px', flexWrap:'wrap' }}>
         <div style={{ position:'relative', flex:1, minWidth:'180px', maxWidth:'260px' }}>
           <span style={{ position:'absolute', left:'10px', top:'50%', transform:'translateY(-50%)', fontSize:'0.8rem', opacity:0.4 }}>🔍</span>
           <input type="text" placeholder="Buscar..." className="search-input glass-input" style={{ width:'100%', padding:'8px 8px 8px 30px', fontSize:'0.82rem' }} value={search} onChange={e => setSearch(e.target.value)} />
@@ -484,7 +492,7 @@ export default function Home() {
           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Até:</span>
           <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="search-input glass-input" style={{ padding: '7px 8px', fontSize: '0.8rem', colorScheme: 'dark' }} />
         </div>
-        <button className="modal-btn" style={{ margin:0, padding:'8px 14px', fontSize:'0.8rem', backgroundColor:'#2ecc71' }} onClick={openCreate}>+ Novo</button>
+        <button className="modal-btn desktop-only-btn" style={{ margin:0, padding:'8px 14px', fontSize:'0.8rem', backgroundColor:'#2ecc71' }} onClick={openCreate}>+ Novo</button>
         <span style={{ fontSize:'0.75rem', color:'var(--text-secondary)', marginLeft:'auto' }}>Total: <strong style={{ color:'var(--primary-light)' }}>{members.length}</strong></span>
       </div>
 

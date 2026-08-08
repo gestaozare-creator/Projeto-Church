@@ -308,6 +308,31 @@ function AppContent({ children }: { children: React.ReactNode }) {
           </>
         )}
       </main>
+
+      {/* --- BOTTOM NAVIGATION BAR (MOBILE ONLY) --- */}
+      {currentUser && (
+        <nav className="bottom-nav">
+          <Link href="/" className={`bottom-nav-item ${pathname === '/' ? 'active' : ''}`}>
+            <span>👥</span>
+            Membros
+          </Link>
+          <Link href="/dashboard-secretaria" className={`bottom-nav-item ${pathname === '/dashboard-secretaria' ? 'active' : ''}`}>
+            <span>📊</span>
+            Painel
+          </Link>
+          {(canSeeRelatorios || canManageSystem) && (
+            <Link href="/relatorios" className={`bottom-nav-item ${pathname === '/relatorios' ? 'active' : ''}`}>
+              <span>📈</span>
+              Stats
+            </Link>
+          )}
+          <div className="bottom-nav-item" onClick={() => setIsMobileMenuOpen(true)}>
+            <span>☰</span>
+            Menu
+          </div>
+        </nav>
+      )}
+
     </div>
   );
 }
@@ -325,6 +350,9 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <title>Projeto Church — Gestão de Igrejas</title>
         <meta name="description" content="Plataforma SaaS de gestão multi-tenant para igrejas." />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#4A90E2" />
+        <link rel="apple-touch-icon" href="/favicon.ico" />
       </head>
       <body>
         <AuthProvider>

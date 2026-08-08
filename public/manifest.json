@@ -1,0 +1,16 @@
+{
+  "name": "Gestão Zaré",
+  "short_name": "Gestão Zaré",
+  "description": "Sistema de Gestão para Igrejas Zaré",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4A90E2",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}
