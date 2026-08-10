@@ -136,7 +136,7 @@ export default function RedePage() {
       let { data: churchesDb } = await churchQuery;
       
       if (churchesDb && currentUser?.role === 'pastor_regional') {
-        churchesDb = churchesDb.filter((c: any) => currentUser.regionalChurchIds?.includes(c.id));
+        churchesDb = churchesDb.filter((c: any) => currentUser.regionalChurches?.includes(c.id));
       }
 
       const validChurchIds = churchesDb ? churchesDb.map((c: any) => c.id) : [];
