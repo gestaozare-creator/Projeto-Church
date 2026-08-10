@@ -36,7 +36,7 @@ interface TransactionData {
 type ReportType = 'TODOS' | 'SECRETARIA' | 'FINANCEIRO' | 'RECEITAS' | 'DESPESAS' | 'CONTABILIDADE' | 'INTELIGENCIA';
 
 export default function RelatoriosPage() {
-  const { currentUser, activeChurchId, canSeeAllChurches, activeMinistryId } = useAuth();
+  const { currentUser, activeChurchId, canSeeAllChurches, activeMinistryId, isPastorRegional } = useAuth();
   const router = useRouter();
 
   const [year, setYear] = useState<number>(new Date().getFullYear());

@@ -16,13 +16,13 @@ export interface EventGuest {
 }
 
 export default function EventosPage() {
-  const { currentUser, canSeeAllChurches, activeMinistryId } = useAuth();
+  const { currentUser, canSeeAllChurches, activeMinistryId, isPastorRegional } = useAuth();
 
   const { events: dbEvents, loading: eventsLoading } = useEvents();
   const [events, setEvents] = useState<ChurchEvent[]>([]);
   const [guests, setGuests] = useState<EventGuest[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string>('');
-  const [selectedChurchId, setSelectedChurchId] = useState<string>(canSeeAllChurches ? 'all' : (currentUser?.churchId || '1'));
+  const [selectedChurchId, setSelectedChurchId] = useState<string>((canSeeAllChurches || isPastorRegional) ? 'all' : (currentUser?.churchId || '1'));
 
   const [dbChurches, setDbChurches] = useState<Church[]>([]);
   const [dbMembers, setDbMembers] = useState<any[]>([]);

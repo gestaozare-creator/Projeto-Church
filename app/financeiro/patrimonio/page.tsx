@@ -18,10 +18,10 @@ interface Asset {
 }
 
 export default function GestaoPatrimonio() {
-  const { currentUser, canSeeAllChurches } = useAuth();
+  const { currentUser, canSeeAllChurches, isPastorRegional } = useAuth();
   const { churches } = useGlobalData();
   
-  const [church, setChurch] = useState(canSeeAllChurches ? 'ALL' : (currentUser?.churchId || ''));
+  const [church, setChurch] = useState((canSeeAllChurches || isPastorRegional) ? 'ALL' : (currentUser?.churchId || ''));
   const [search, setSearch] = useState('');
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [dbAssets, setDbAssets] = useState<Asset[]>([]);

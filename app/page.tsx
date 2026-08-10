@@ -25,9 +25,9 @@ const getFunctionColor = (func?: string, cardConfig?: any) => {
 };
 
 export default function Home() {
-  const { currentUser, loading, canSeeAllChurches, activeChurchId, activeMinistryId } = useAuth();
+  const { currentUser, loading, canSeeAllChurches, isPastorRegional, activeChurchId, activeMinistryId } = useAuth();
   const [search, setSearch] = useState('');
-  const [church, setChurch] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches ? 'ALL' : currentUser?.churchId || ''));
+  const [church, setChurch] = useState(activeChurchId ? activeChurchId : ((canSeeAllChurches || isPastorRegional) ? 'ALL' : currentUser?.churchId || ''));
 
   // SEGURANÇA: useChurches filtra por ministryId no banco — nunca carrega igrejas de outras redes
   const { churches: dbChurches, loading: churchesLoading } = useChurches(activeMinistryId);
