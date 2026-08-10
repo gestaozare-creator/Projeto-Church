@@ -50,6 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [activeChurchId, setActiveChurchId] = useState<string | null>(null);
   const [activeChurchName, setActiveChurchName] = useState<string | null>(null);
   const [activeMinistryId, setActiveMinistryId] = useState<string | null>(null);
+  const [paymentWarning, setPaymentWarning] = useState<'none' | 'yellow' | 'red'>('none');
+  const [isNetworkBlocked, setIsNetworkBlocked] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -168,6 +170,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
       setCurrentUser(user);
 
+      // --- Payment & Blocking Logic ---
+      if (resolvedMinistryId && finalRole !== 'superadmin') {
+        const { data: ministryData } = await supabase
+          .from('ministries')
+          .select('last_paid_month, force_blocked')
+          .eq('id', resolvedMinistryId)
+          .single();
+        
+        if (ministryData) {
+           if (ministryData.force_blocked) {
+              setIsNetworkBlocked(true);
+           } else {
+              const now = new Date();
+              const currentMonth = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+              const day = now.getDate();
+              
+              if (ministryData.last_paid_month !== currentMonth) {
+                 if (day >= 1 && day <= 5) {
+                    setPaymentWarning('yellow');
+                 } else if (day >= 6 && day <= 10) {
+                    setPaymentWarning('red');
+                 } else if (day > 10) {
+                    setIsNetworkBlocked(true);
+                 }
+              }
+           }
+        }
+      }
+      // --------------------------------
+
       // Se não há church ativa no localStorage, inicializa o activeMinistryId da rede do usuário
       // (mas apenas se ainda não há um ministryId ativo salvo — para não sobrescrever a sessão do diretor)
       if (typeof window !== 'undefined') {
@@ -257,7 +289,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       enterChurch,
       exitChurch,
     }}>
-      {children}
+      {!loading && paymentWarning !== 'none' && !isNetworkBlocked && (
+        <div style={{
+          background: paymentWarning === 'red' ? '#e74c3c' : '#f39c12',
+          color: '#fff',
+          padding: '12px 20px',
+          textAlign: 'center',
+          fontWeight: 600,
+          fontSize: '0.9rem',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 99999,
+          boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
+        }}>
+          {paymentWarning === 'red' 
+            ? '⚠️ ATENÇÃO: O prazo máximo para pagamento do sistema encerra dia 10. Evite o bloqueio da rede!' 
+            : '⚠️ Lembrete: A fatura do sistema vence no dia 5. Regularize o pagamento para evitar o bloqueio.'}
+        </div>
+      )}
+
+      {isNetworkBlocked ? (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: '#0f172a',
+          zIndex: 999999,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#fff',
+          padding: '20px',
+          textAlign: 'center'
+        }}>
+          <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🔒</div>
+          <h1 style={{ fontSize: '2rem', marginBottom: '16px', fontWeight: 700 }}>Acesso Bloqueado</h1>
+          <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', maxWidth: '500px', lineHeight: 1.6, marginBottom: '30px' }}>
+            O acesso a esta rede foi suspenso temporariamente por pendências de pagamento.
+          </p>
+          <p style={{ fontSize: '0.95rem', background: 'rgba(255,255,255,0.05)', padding: '16px 24px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            Por favor, entre em contato com o administrador ou suporte técnico para regularizar a situação e restabelecer os serviços.
+          </p>
+          <button 
+            onClick={signOut}
+            style={{ marginTop: '40px', padding: '12px 24px', background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+          >
+            Sair do Sistema
+          </button>
+        </div>
+      ) : (
+        <div style={{ paddingTop: paymentWarning !== 'none' ? '44px' : '0' }}>
+          {children}
+        </div>
+      )}
     </AuthContext.Provider>
   );
 }
