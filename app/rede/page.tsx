@@ -69,6 +69,7 @@ export default function RedePage() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [reportYear, setReportYear] = useState<number>(new Date().getFullYear());
   const [reportMonth, setReportMonth] = useState<number>(new Date().getMonth());
+  const [reportState, setReportState] = useState('ALL');
   const [searchChurch, setSearchChurch] = useState('');
   const [filterState, setFilterState] = useState('ALL');
 
@@ -109,6 +110,25 @@ export default function RedePage() {
     });
     return counts;
   }, [churches, stateNameToUF]);
+
+  const relatoriosRestrictedIds = useMemo(() => {
+    if (currentUser?.role === 'pastor_regional') {
+      let ids = currentUser.regionalChurches || [];
+      if (reportState !== 'ALL') {
+        ids = ids.filter(id => {
+          const church = churches.find(c => c.id === id);
+          return church && normalizeState(church.state || '') === reportState;
+        });
+      }
+      return ids;
+    }
+    
+    if (reportState !== 'ALL') {
+      return churches.filter(c => normalizeState(c.state || '') === reportState).map(c => c.id);
+    }
+    
+    return undefined;
+  }, [currentUser, reportState, churches, normalizeState]);
 
   const mapMaxCount = useMemo(() => Math.max(...Object.values(mapStateCounts), 1), [mapStateCounts]);
   const mapSelectedChurches = useMemo(() =>
@@ -848,13 +868,28 @@ export default function RedePage() {
                 })}
               </select>
             </div>
+            {canSeeAllChurches && (
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Estado:</label>
+                <select 
+                  value={reportState} 
+                  onChange={e => setReportState(e.target.value)} 
+                  style={{ padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.85rem', cursor: 'pointer' }}
+                >
+                  <option value="ALL">Todos os Estados</option>
+                  {Object.keys(mapStateCounts).sort().map(uf => (
+                    <option key={uf} value={uf}>{BRAZIL_STATES[uf]?.name || uf}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
           
           <InteligenciaFinanceiraDashboard 
             year={reportYear} 
             month={reportMonth} 
             ministryId={ministry?.id}
-            regionalChurchIds={currentUser?.role === 'pastor_regional' ? currentUser?.regionalChurches : undefined}
+            regionalChurchIds={relatoriosRestrictedIds}
           />
         </div>
       )}
