@@ -134,17 +134,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       let resolvedChurchId = data?.church_id || null;
       let resolvedChurchName = 'Desconhecida';
       let resolvedMinistryId: string | null = null;
+      const regionalChurches = authUser.user_metadata?.regional_churches || [];
 
       if (!resolvedChurchId) {
-        const { data: firstChurch } = await supabase
-          .from('churches')
-          .select('id, name, ministry_id')
-          .limit(1)
-          .single();
-        resolvedChurchId = firstChurch?.id || null;
-        if (firstChurch) {
-          resolvedChurchName = firstChurch.name;
-          resolvedMinistryId = firstChurch.ministry_id || null;
+        if (regionalChurches.length > 0) {
+          const { data: regChurch } = await supabase
+            .from('churches')
+            .select('id, name, ministry_id')
+            .eq('id', regionalChurches[0])
+            .single();
+          resolvedChurchId = regChurch?.id || null;
+          if (regChurch) {
+            resolvedChurchName = regChurch.name;
+            resolvedMinistryId = regChurch.ministry_id || null;
+          }
+        } else {
+          const { data: firstChurch } = await supabase
+            .from('churches')
+            .select('id, name, ministry_id')
+            .limit(1)
+            .single();
+          resolvedChurchId = firstChurch?.id || null;
+          if (firstChurch) {
+            resolvedChurchName = firstChurch.name;
+            resolvedMinistryId = firstChurch.ministry_id || null;
+          }
         }
       } else {
         const { data: userChurch } = await supabase
