@@ -48,7 +48,7 @@ interface MemberStats {
   visitantes: number;
 }
 
-type TabType = 'overview' | 'mapa' | 'relatorios' | 'ranking';
+type TabType = 'overview' | 'mapa' | 'relatorios' | 'ranking' | 'admin';
 type ViewMode = 'list' | 'grid' | 'table';
 
 export default function RedePage() {
