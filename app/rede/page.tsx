@@ -103,7 +103,7 @@ export default function RedePage() {
 
   useEffect(() => {
     if (!loading && currentUser) {
-      if (currentUser.role !== 'pastor_diretor' && currentUser.role !== 'superadmin') {
+      if (currentUser.role !== 'pastor_diretor' && currentUser.role !== 'superadmin' && currentUser.role !== 'pastor_regional') {
         router.push('/dashboard-secretaria');
         return;
       }
@@ -133,7 +133,11 @@ export default function RedePage() {
       if (activeMin) {
         churchQuery = churchQuery.eq('ministry_id', activeMin.id);
       }
-      const { data: churchesDb } = await churchQuery;
+      let { data: churchesDb } = await churchQuery;
+      
+      if (churchesDb && currentUser?.role === 'pastor_regional') {
+        churchesDb = churchesDb.filter((c: any) => currentUser.regionalChurchIds?.includes(c.id));
+      }
 
       const validChurchIds = churchesDb ? churchesDb.map((c: any) => c.id) : [];
 
@@ -239,7 +243,7 @@ export default function RedePage() {
     );
   }
 
-  if (!currentUser || (currentUser.role !== 'pastor_diretor' && currentUser.role !== 'superadmin')) {
+  if (!currentUser || (currentUser.role !== 'pastor_diretor' && currentUser.role !== 'superadmin' && currentUser.role !== 'pastor_regional')) {
     return null;
   }
 
