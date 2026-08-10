@@ -52,7 +52,7 @@ type TabType = 'overview' | 'mapa' | 'relatorios' | 'ranking';
 type ViewMode = 'list' | 'grid' | 'table';
 
 export default function RedePage() {
-  const { currentUser, loading, canSeeAllChurches, enterChurch, exitChurch } = useAuth();
+  const { currentUser, loading, canSeeAllChurches, enterChurch, exitChurch, activeChurchId } = useAuth();
   const router = useRouter();
 
   const [ministry, setMinistry] = useState<Ministry | null>(null);
@@ -399,9 +399,7 @@ export default function RedePage() {
           <button style={tabStyle('overview')} onClick={() => setActiveTab('overview')}>📊 Visão Geral & Igrejas</button>
           <button style={tabStyle('mapa')} onClick={() => setActiveTab('mapa')}>🗺️ Mapa do Brasil</button>
           <button style={tabStyle('relatorios')} onClick={() => setActiveTab('relatorios')}>📋 Relatórios</button>
-          {currentUser?.role !== 'pastor_regional' && (
-            <button style={tabStyle('ranking')} onClick={() => setActiveTab('ranking')}>🏆 Ranking de Almas</button>
-          )}
+          <button style={tabStyle('ranking')} onClick={() => setActiveTab('ranking')}>🏆 Ranking de Almas</button>
         </div>
       </div>
 
@@ -894,6 +892,17 @@ export default function RedePage() {
             regionalChurchIds={relatoriosRestrictedIds}
           />
         </div>
+      )}
+
+      {/* ======================== TAB: RANKING ======================== */}
+      {activeTab === 'ranking' && (
+        <RankingAlmas 
+          ministryId={ministry?.id} 
+          editable={
+            currentUser?.role === 'superadmin' || 
+            (churches.find(c => c.id === activeChurchId)?.name.toLowerCase().includes('guadalupe') ?? false)
+          } 
+        />
       )}
     </div>
   );
