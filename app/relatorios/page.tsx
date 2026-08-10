@@ -277,7 +277,7 @@ export default function RelatoriosPage() {
         </div>
         
         <div className="relatorios-filters">
-          {canSeeAllChurches && churchList.length > 0 && (
+          {(canSeeAllChurches || isPastorRegional) && churchList.length > 0 && (
             <div className="filter-group">
               <label>Igreja:</label>
               <select 

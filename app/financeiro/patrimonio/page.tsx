@@ -190,7 +190,7 @@ export default function GestaoPatrimonio() {
               <th style={{ padding: '12px 8px' }}>Nome do Bem</th>
               <th style={{ padding: '12px 8px' }}>Categoria</th>
               <th style={{ padding: '12px 8px' }}>Localização</th>
-              {canSeeAllChurches && <th style={{ padding: '12px 8px' }}>Igreja</th>}
+              {(canSeeAllChurches || isPastorRegional) && <th style={{ padding: '12px 8px' }}>Igreja</th>}
               <th style={{ padding: '12px 8px' }}>Condição</th>
               <th style={{ padding: '12px 8px', textAlign: 'right' }}>Valor Aquisição</th>
             </tr>
@@ -215,7 +215,7 @@ export default function GestaoPatrimonio() {
                   <td style={{ padding: '12px 8px', fontWeight: 600 }}>{a.name}</td>
                   <td style={{ padding: '12px 8px' }}><span style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem' }}>{a.category}</span></td>
                   <td style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>{a.location}</td>
-                  {canSeeAllChurches && <td style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>{getChurchName(a.churchId)}</td>}
+                  {(canSeeAllChurches || isPastorRegional) && <td style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>{getChurchName(a.churchId)}</td>}
                   <td style={{ padding: '12px 8px' }}>
                     <span style={{ background: cond.bg, color: cond.text, padding: '4px 10px', borderRadius: '6px', fontWeight: 600, fontSize: '0.75rem' }}>
                       {a.condition}

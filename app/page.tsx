@@ -487,7 +487,7 @@ export default function Home() {
           <span style={{ position:'absolute', left:'10px', top:'50%', transform:'translateY(-50%)', fontSize:'0.8rem', opacity:0.4 }}>🔍</span>
           <input type="text" placeholder="Buscar..." className="search-input glass-input" style={{ width:'100%', padding:'8px 8px 8px 30px', fontSize:'0.82rem' }} value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        {canSeeAllChurches && !activeChurchId ? (
+        {(canSeeAllChurches || isPastorRegional) ? (
           <select className="filter-select" style={{ padding:'8px', fontSize:'0.8rem', minWidth:'140px' }} value={church} onChange={e => setChurch(e.target.value)}>
             <option value="ALL">⛪ Todas as Igrejas da Rede</option>
             {scopedChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -846,7 +846,7 @@ export default function Home() {
                         onChange={e => { if (e.target.value === '__new__') { setCustomChurch(true); } else { onChange(e); }}} 
                         className="search-input glass-input" 
                         style={{ width:'100%', padding:'8px' }}
-                        disabled={!canSeeAllChurches} // Trava o select para usuários locais
+                        disabled={!(canSeeAllChurches || isPastorRegional)}
                       >
                         {dbChurches.map((c: Church) => <option key={c.id} value={c.id}>{c.name}</option>)}
                         {customChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}

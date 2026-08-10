@@ -813,7 +813,7 @@ export default function DashboardSecretariaPage() {
           marginBottom: "12px",
         }}
       >
-        {canSeeAllChurches && (
+        {(canSeeAllChurches || isPastorRegional) && (
           <div style={{ flex: 1.5, minWidth: "150px" }}>
             <label
               className="input-label"

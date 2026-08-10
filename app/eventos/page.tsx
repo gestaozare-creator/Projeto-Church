@@ -564,7 +564,7 @@ export default function EventosPage() {
         </div>
 
         <div style={{ display: 'flex', gap: '10px' }}>
-          {canSeeAllChurches && (
+          {(canSeeAllChurches || isPastorRegional) && (
             <select 
               value={selectedChurchId}
               onChange={(e) => setSelectedChurchId(e.target.value)}
