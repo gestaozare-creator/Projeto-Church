@@ -892,6 +892,9 @@ export default function RedePage() {
             month={reportMonth} 
             ministryId={ministry?.id}
             regionalChurchIds={relatoriosRestrictedIds}
-  </div>
+          />
+        </div>
+      )}
+    </div>
   );
 }
