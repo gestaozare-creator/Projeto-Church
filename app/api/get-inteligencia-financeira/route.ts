@@ -39,6 +39,8 @@ export async function GET(req: Request) {
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     const ministryId = searchParams.get('ministryId');
+    const regionalChurchIdsStr = searchParams.get('regionalChurchIds');
+    const regionalChurchIds = regionalChurchIdsStr ? regionalChurchIdsStr.split(',') : null;
 
     // Fetch all churches (filtrado por ministério/rede se fornecido)
     let churchQuery = supabaseAdmin
@@ -50,7 +52,11 @@ export async function GET(req: Request) {
       churchQuery = churchQuery.eq('ministry_id', ministryId);
     }
 
-    const { data: churches } = await churchQuery;
+    let { data: churches } = await churchQuery;
+
+    if (churches && regionalChurchIds) {
+      churches = churches.filter(c => regionalChurchIds.includes(c.id));
+    }
 
     if (!churches || churches.length === 0) {
       return NextResponse.json({ success: true, churchesData: [], globalData: {}, historyData: [] });

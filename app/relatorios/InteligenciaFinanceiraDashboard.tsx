@@ -44,6 +44,7 @@ interface InteligenciaFinanceiraProps {
   year: number;
   month: number;
   ministryId?: string;
+  regionalChurchIds?: string[];
 }
 
 const formatCurrency = (val: number) => {
@@ -154,7 +155,7 @@ const ChurchRow = ({ c }: { c: ChurchData }) => {
   );
 };
 
-export default function InteligenciaFinanceiraDashboard({ year, month, ministryId }: InteligenciaFinanceiraProps) {
+export default function InteligenciaFinanceiraDashboard({ year, month, ministryId, regionalChurchIds }: InteligenciaFinanceiraProps) {
   const [churches, setChurches] = useState<ChurchData[]>([]);
   const [globalData, setGlobalData] = useState<GlobalData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -163,7 +164,7 @@ export default function InteligenciaFinanceiraDashboard({ year, month, ministryI
     const fetchData = async () => {
       setLoading(true);
       try {
-        const queryStr = `/api/get-inteligencia-financeira?year=${year}&month=${month}${ministryId ? `&ministryId=${ministryId}` : ''}`;
+        const queryStr = `/api/get-inteligencia-financeira?year=${year}&month=${month}${ministryId ? `&ministryId=${ministryId}` : ''}${regionalChurchIds ? `&regionalChurchIds=${regionalChurchIds.join(',')}` : ''}`;
         const res = await fetch(queryStr);
         const result = await res.json();
         if (result.success) {
@@ -179,7 +180,7 @@ export default function InteligenciaFinanceiraDashboard({ year, month, ministryI
     };
 
     fetchData();
-  }, [year, month, ministryId]);
+  }, [year, month, ministryId, regionalChurchIds]);
 
   const getRankingMedal = (index: number) => {
     if (index === 0) return '🥇';

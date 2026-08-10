@@ -361,7 +361,9 @@ export default function RedePage() {
           <button style={tabStyle('overview')} onClick={() => setActiveTab('overview')}>📊 Visão Geral & Igrejas</button>
           <button style={tabStyle('mapa')} onClick={() => setActiveTab('mapa')}>🗺️ Mapa do Brasil</button>
           <button style={tabStyle('relatorios')} onClick={() => setActiveTab('relatorios')}>📋 Relatórios</button>
-          <button style={tabStyle('ranking')} onClick={() => setActiveTab('ranking')}>🏆 Ranking de Almas</button>
+          {currentUser?.role !== 'pastor_regional' && (
+            <button style={tabStyle('ranking')} onClick={() => setActiveTab('ranking')}>🏆 Ranking de Almas</button>
+          )}
         </div>
       </div>
 
@@ -804,12 +806,13 @@ export default function RedePage() {
             year={reportYear} 
             month={reportMonth} 
             ministryId={ministry?.id}
+            regionalChurchIds={currentUser?.role === 'pastor_regional' ? currentUser?.regionalChurches : undefined}
           />
         </div>
       )}
 
       {/* ======================== TAB: RANKING ======================== */}
-      {activeTab === 'ranking' && (
+      {activeTab === 'ranking' && currentUser?.role !== 'pastor_regional' && (
         <RankingAlmas editable={true} ministryId={ministry?.id} />
       )}
   </div>
