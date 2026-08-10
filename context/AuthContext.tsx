@@ -110,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('user_roles')
-        .select('role, church_id, email, regional_churches')
+        .select('role, church_id, email')
         .eq('id', authUser.id)
         .single();
 
@@ -158,7 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         churchId: resolvedChurchId,
         churchName: resolvedChurchName,
         ministryId: resolvedMinistryId,
-        regionalChurches: data?.regional_churches || [],
+        regionalChurches: authUser.user_metadata?.regional_churches || [],
       };
       setCurrentUser(user);
 

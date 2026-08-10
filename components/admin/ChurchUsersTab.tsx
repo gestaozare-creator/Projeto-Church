@@ -48,7 +48,7 @@ export function ChurchUsersTab({ churchId }: { churchId: string }) {
     // Buscar usuários
     const { data: usersData, error: usersErr } = await supabase
       .from('user_roles')
-      .select('id, email, role, church_id, name, regional_churches')
+      .select('id, email, role, church_id, name')
       .eq('church_id', churchId);
 
     if (usersErr) {

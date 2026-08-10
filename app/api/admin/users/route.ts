@@ -32,7 +32,7 @@ export async function POST(request: Request) {
         email,
         password,
         email_confirm: true,
-        user_metadata: { name, role, church_id: churchId }
+        user_metadata: { name, role, church_id: churchId, regional_churches: regionalChurches || [] }
       });
 
       if (authError) {
@@ -56,8 +56,7 @@ export async function POST(request: Request) {
           email,
           name,
           role,
-          church_id: churchId,
-          regional_churches: regionalChurches || []
+          church_id: churchId
         });
 
       if (dbError) {
@@ -78,7 +77,7 @@ export async function POST(request: Request) {
       // 1. Atualiza dados na tabela user_roles
       const { error: dbError } = await supabaseAdmin
         .from('user_roles')
-        .update({ name, role, regional_churches: regionalChurches || [] })
+        .update({ name, role })
         .eq('id', userId);
 
       if (dbError) {
@@ -87,7 +86,7 @@ export async function POST(request: Request) {
 
       // 2. Atualiza a senha no Auth se foi enviada
       const updateData: any = {
-        user_metadata: { name, role }
+        user_metadata: { name, role, regional_churches: regionalChurches || [] }
       };
       if (password && password.length >= 6) {
         updateData.password = password;
