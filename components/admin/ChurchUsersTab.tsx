@@ -56,10 +56,22 @@ export function ChurchUsersTab({ churchId }: { churchId: string }) {
     } else {
       const mappedUsers = (usersData || []).map((u: any) => {
         const isReg = u.name?.endsWith(' [REG]');
+        const isDir = u.name?.endsWith(' [DIR]');
+        let trueName = u.name;
+        let trueRole = u.role;
+        
+        if (isReg) {
+          trueName = u.name.replace(' [REG]', '');
+          trueRole = 'pastor_regional';
+        } else if (isDir) {
+          trueName = u.name.replace(' [DIR]', '');
+          trueRole = 'pastor_diretor';
+        }
+        
         return {
           ...u,
-          name: isReg ? u.name.replace(' [REG]', '') : u.name,
-          role: isReg ? 'pastor_regional' : u.role
+          name: trueName,
+          role: trueRole
         };
       });
       setUsers(mappedUsers as ChurchUser[]);

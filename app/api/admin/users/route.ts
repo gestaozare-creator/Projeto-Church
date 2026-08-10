@@ -48,8 +48,10 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Não foi possível obter o ID do usuário criado.' }, { status: 500 });
       }
 
-      const dbRole = role === 'pastor_regional' ? 'admin' : role;
-      const dbName = role === 'pastor_regional' ? `${name} [REG]` : name;
+      const isRegional = role === 'pastor_regional';
+      const isDiretor = role === 'pastor_diretor';
+      const dbRole = (isRegional || isDiretor) ? 'admin' : role;
+      const dbName = isRegional ? `${name} [REG]` : (isDiretor ? `${name} [DIR]` : name);
       // 2. Insere na tabela user_roles
       const { error: dbError } = await supabaseAdmin
         .from('user_roles')
@@ -77,8 +79,10 @@ export async function POST(request: Request) {
       }
 
       // 1. Atualiza dados na tabela user_roles
-      const dbRole = role === 'pastor_regional' ? 'admin' : role;
-      const dbName = role === 'pastor_regional' ? `${name} [REG]` : name;
+      const isRegional = role === 'pastor_regional';
+      const isDiretor = role === 'pastor_diretor';
+      const dbRole = (isRegional || isDiretor) ? 'admin' : role;
+      const dbName = isRegional ? `${name} [REG]` : (isDiretor ? `${name} [DIR]` : name);
       const { error: dbError } = await supabaseAdmin
         .from('user_roles')
         .update({ name: dbName, role: dbRole })
