@@ -118,7 +118,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Error fetching user role:', error);
       }
 
-      let finalRole: UserRole = (authUser.user_metadata?.role as UserRole) || (data?.role as UserRole) || 'secretaria';
+      const rawName = authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário';
+      const isReg = rawName.endsWith(' [REG]');
+      const isDir = rawName.endsWith(' [DIR]');
+      
+      const trueName = isReg ? rawName.replace(' [REG]', '') : (isDir ? rawName.replace(' [DIR]', '') : rawName);
+      
+      let finalRole: UserRole = isReg ? 'pastor_regional' : (isDir ? 'pastor_diretor' : ((authUser.user_metadata?.role as UserRole) || (data?.role as UserRole) || 'secretaria'));
       if (authUser.email === 'gestaozare@gmail.com') {
         finalRole = 'superadmin';
       }
@@ -152,7 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const user: User = {
         id: authUser.id,
-        name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário',
+        name: trueName,
         email: authUser.email || '',
         role: finalRole,
         churchId: resolvedChurchId,

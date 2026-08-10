@@ -27,12 +27,17 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'E-mail, senha e nome são obrigatórios.' }, { status: 400 });
       }
 
+      const isRegional = role === 'pastor_regional';
+      const isDiretor = role === 'pastor_diretor';
+      const dbRole = (isRegional || isDiretor) ? 'admin' : role;
+      const dbName = isRegional ? `${name} [REG]` : (isDiretor ? `${name} [DIR]` : name);
+
       // 1. Cria o usuário no Auth (com e-mail confirmado automaticamente)
       const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email,
         password,
         email_confirm: true,
-        user_metadata: { name, role, church_id: churchId, regional_churches: regionalChurches || [] }
+        user_metadata: { name: dbName, role: dbRole, church_id: churchId, regional_churches: regionalChurches || [] }
       });
 
       if (authError) {
@@ -48,10 +53,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Não foi possível obter o ID do usuário criado.' }, { status: 500 });
       }
 
-      const isRegional = role === 'pastor_regional';
-      const isDiretor = role === 'pastor_diretor';
-      const dbRole = (isRegional || isDiretor) ? 'admin' : role;
-      const dbName = isRegional ? `${name} [REG]` : (isDiretor ? `${name} [DIR]` : name);
       // 2. Insere na tabela user_roles
       const { error: dbError } = await supabaseAdmin
         .from('user_roles')
@@ -94,7 +95,7 @@ export async function POST(request: Request) {
 
       // 2. Atualiza a senha no Auth se foi enviada
       const updateData: any = {
-        user_metadata: { name, role, regional_churches: regionalChurches || [] }
+        user_metadata: { name: dbName, role: dbRole, regional_churches: regionalChurches || [] }
       };
       if (password && password.length >= 6) {
         updateData.password = password;
