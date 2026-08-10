@@ -102,7 +102,7 @@ export function ChurchUsersTab({ churchId }: { churchId: string }) {
 
     try {
       const payload = {
-        action: mode,
+        action: mode === 'edit' ? 'update' : mode,
         email: formEmail,
         password: formPassword,
         name: formName,
