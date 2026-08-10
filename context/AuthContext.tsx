@@ -118,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Error fetching user role:', error);
       }
 
-      let finalRole: UserRole = (data?.role as UserRole) || 'secretaria';
+      let finalRole: UserRole = (authUser.user_metadata?.role as UserRole) || (data?.role as UserRole) || 'secretaria';
       if (authUser.email === 'gestaozare@gmail.com') {
         finalRole = 'superadmin';
       }

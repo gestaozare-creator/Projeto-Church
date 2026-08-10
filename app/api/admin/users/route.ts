@@ -48,14 +48,16 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Não foi possível obter o ID do usuário criado.' }, { status: 500 });
       }
 
-      // 2. Garante o registro na tabela user_roles
+      const dbRole = role === 'pastor_regional' ? 'admin' : role;
+      const dbName = role === 'pastor_regional' ? `${name} [REG]` : name;
+      // 2. Insere na tabela user_roles
       const { error: dbError } = await supabaseAdmin
         .from('user_roles')
         .upsert({
           id: uid,
           email,
-          name,
-          role,
+          name: dbName,
+          role: dbRole,
           church_id: churchId
         });
 
@@ -75,9 +77,11 @@ export async function POST(request: Request) {
       }
 
       // 1. Atualiza dados na tabela user_roles
+      const dbRole = role === 'pastor_regional' ? 'admin' : role;
+      const dbName = role === 'pastor_regional' ? `${name} [REG]` : name;
       const { error: dbError } = await supabaseAdmin
         .from('user_roles')
-        .update({ name, role })
+        .update({ name: dbName, role: dbRole })
         .eq('id', userId);
 
       if (dbError) {

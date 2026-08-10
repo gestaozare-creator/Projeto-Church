@@ -54,7 +54,15 @@ export function ChurchUsersTab({ churchId }: { churchId: string }) {
     if (usersErr) {
       console.error('Erro ao carregar usuários:', usersErr);
     } else {
-      setUsers((usersData || []) as ChurchUser[]);
+      const mappedUsers = (usersData || []).map((u: any) => {
+        const isReg = u.name?.endsWith(' [REG]');
+        return {
+          ...u,
+          name: isReg ? u.name.replace(' [REG]', '') : u.name,
+          role: isReg ? 'pastor_regional' : u.role
+        };
+      });
+      setUsers(mappedUsers as ChurchUser[]);
     }
 
     // Buscar ministryId da igreja atual
