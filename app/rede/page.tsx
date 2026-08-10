@@ -38,7 +38,7 @@ interface Ministry {
   name: string;
   logo_url?: string;
   director_pastor_name?: string;
-  last_paid_month?: string;
+  last_paid_month?: string | null;
   force_blocked?: boolean;
 }
 
