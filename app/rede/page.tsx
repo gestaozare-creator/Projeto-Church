@@ -48,7 +48,7 @@ interface MemberStats {
   visitantes: number;
 }
 
-type TabType = 'overview' | 'mapa' | 'relatorios' | 'ranking' | 'admin';
+type TabType = 'overview' | 'mapa' | 'relatorios' | 'ranking';
 type ViewMode = 'list' | 'grid' | 'table';
 
 export default function RedePage() {
@@ -148,35 +148,6 @@ export default function RedePage() {
       loadData();
     }
   }, [loading, currentUser, selectedMinistryId]);
-
-  const handleTogglePayment = async (m: Ministry) => {
-    const now = new Date();
-    const currentMonth = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
-    const newMonth = m.last_paid_month === currentMonth ? null : currentMonth;
-    
-    const { error } = await supabase.from('ministries').update({ last_paid_month: newMonth }).eq('id', m.id);
-    if (!error) {
-      setAllMinistries(allMinistries.map(x => x.id === m.id ? { ...x, last_paid_month: newMonth } : x));
-      if (ministry?.id === m.id) {
-         setMinistry({ ...ministry, last_paid_month: newMonth });
-      }
-    } else {
-      alert('Erro ao atualizar pagamento.');
-    }
-  };
-
-  const handleToggleBlock = async (m: Ministry) => {
-    const newBlock = !m.force_blocked;
-    const { error } = await supabase.from('ministries').update({ force_blocked: newBlock }).eq('id', m.id);
-    if (!error) {
-      setAllMinistries(allMinistries.map(x => x.id === m.id ? { ...x, force_blocked: newBlock } : x));
-      if (ministry?.id === m.id) {
-         setMinistry({ ...ministry, force_blocked: newBlock });
-      }
-    } else {
-      alert('Erro ao atualizar bloqueio.');
-    }
-  };
 
   const loadData = async () => {
     setPageLoading(true);
@@ -430,9 +401,6 @@ export default function RedePage() {
           <button style={tabStyle('relatorios')} onClick={() => setActiveTab('relatorios')}>📋 Relatórios</button>
           {currentUser?.role !== 'pastor_regional' && (
             <button style={tabStyle('ranking')} onClick={() => setActiveTab('ranking')}>🏆 Ranking de Almas</button>
-          )}
-          {currentUser?.role === 'superadmin' && (
-            <button style={tabStyle('admin')} onClick={() => setActiveTab('admin')}>⚙️ Administração</button>
           )}
         </div>
       </div>
@@ -924,86 +892,6 @@ export default function RedePage() {
             month={reportMonth} 
             ministryId={ministry?.id}
             regionalChurchIds={relatoriosRestrictedIds}
-          />
-        </div>
-      )}
-
-      {/* ======================== TAB: RANKING ======================== */}
-      {activeTab === 'ranking' && currentUser?.role !== 'pastor_regional' && (
-        <RankingAlmas editable={true} ministryId={ministry?.id} />
-      )}
-
-      {/* ======================== TAB: ADMINISTRAÇÃO ======================== */}
-      {activeTab === 'admin' && currentUser?.role === 'superadmin' && (
-        <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div className="glass" style={{ padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.07)' }}>
-            <h3 style={{ margin: '0 0 20px 0', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              ⚙️ Gestão de Redes e Pagamentos
-            </h3>
-            
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                    <th style={{ padding: '12px', textAlign: 'left', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Logo</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Nome da Rede</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Pr. Diretor</th>
-                    <th style={{ padding: '12px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Pagamento (Mês Atual)</th>
-                    <th style={{ padding: '12px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Bloqueio Manual</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {allMinistries.map(m => {
-                    const now = new Date();
-                    const currentMonth = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
-                    const isPaidThisMonth = m.last_paid_month === currentMonth;
-
-                    return (
-                      <tr key={m.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <td style={{ padding: '12px' }}>
-                          {m.logo_url ? (
-                            <img src={m.logo_url} alt={m.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
-                          ) : (
-                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem' }}>⛪</div>
-                          )}
-                        </td>
-                        <td style={{ padding: '12px', color: '#fff', fontWeight: 600 }}>{m.name}</td>
-                        <td style={{ padding: '12px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{m.director_pastor_name || '-'}</td>
-                        <td style={{ padding: '12px', textAlign: 'center' }}>
-                          <button
-                            onClick={() => handleTogglePayment(m)}
-                            style={{
-                              padding: '6px 12px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700,
-                              background: isPaidThisMonth ? 'rgba(46,204,113,0.2)' : 'rgba(241,196,15,0.2)',
-                              color: isPaidThisMonth ? '#2ecc71' : '#f1c40f',
-                              transition: 'all 0.2s'
-                            }}
-                          >
-                            {isPaidThisMonth ? '✅ Pago no Mês' : '⏳ Marcar como Pago'}
-                          </button>
-                        </td>
-                        <td style={{ padding: '12px', textAlign: 'center' }}>
-                          <button
-                            onClick={() => handleToggleBlock(m)}
-                            style={{
-                              padding: '6px 12px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700,
-                              background: m.force_blocked ? 'rgba(231,76,60,0.2)' : 'rgba(255,255,255,0.05)',
-                              color: m.force_blocked ? '#e74c3c' : 'var(--text-secondary)',
-                              transition: 'all 0.2s'
-                            }}
-                          >
-                            {m.force_blocked ? '🔒 Rede Bloqueada' : '🔓 Bloquear Rede'}
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
   </div>
   );
 }
