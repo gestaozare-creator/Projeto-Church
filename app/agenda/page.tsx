@@ -6,21 +6,21 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function AgendaPage() {
-  const { currentUser, canSeeAllChurches, activeMinistryId } = useAuth();
+  const { currentUser, canSeeAllChurches, isPastorRegional, activeMinistryId } = useAuth();
   
   const [events, setEvents] = useState<ChurchEvent[]>([]);
-  const [currentDate, setCurrentDate] = useState<Date>(new Date(2026, 5, 23)); 
-  const [selectedChurchId, setSelectedChurchId] = useState<string>(canSeeAllChurches ? 'all' : (currentUser?.churchId || '1'));
+  const [currentDate, setCurrentDate] = useState<Date>(new Date()); 
+  const [selectedChurchId, setSelectedChurchId] = useState<string>(canSeeAllChurches || isPastorRegional ? 'all' : (currentUser?.churchId || '1'));
   const [selectedType, setSelectedType] = useState<string>('all');
   const [dbChurches, setDbChurches] = useState<any[]>([]);
-  const [selectedDay, setSelectedDay] = useState<Date | null>(new Date(2026, 5, 23));
+  const [selectedDay, setSelectedDay] = useState<Date | null>(new Date());
   const [editingEvent, setEditingEvent] = useState<Partial<ChurchEvent> | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [waMsg, setWaMsg] = useState('');
   const [showWaModal, setShowWaModal] = useState<ChurchEvent | null>(null);
 
   const [formData, setFormData] = useState<Partial<ChurchEvent>>({
-    title: '', description: '', type: 'culto', date: '2026-06-23', startTime: '19:30', endTime: '21:00', location: 'Templo Principal', isGlobal: false, churchId: '1'
+    title: '', description: '', type: 'culto', date: new Date().toISOString().split('T')[0], startTime: '19:30', endTime: '21:00', location: 'Templo Principal', isGlobal: false, churchId: '1'
   });
 
   const eventTypes = [
@@ -59,19 +59,19 @@ export default function AgendaPage() {
       }
     }
     fetchData();
-  }, []);
+  }, [activeMinistryId]);
 
   const isGuadalupe = currentUser?.churchId === '1782771173659' || dbChurches.find(c => c.id === currentUser?.churchId)?.isHeadquarters;
   const canCreateGlobal = canSeeAllChurches || isGuadalupe;
 
   const filteredEvents = useMemo(() => {
     return events.filter(e => {
-      const matchesChurch = e.isGlobal || e.churchId === (canSeeAllChurches ? selectedChurchId : currentUser?.churchId);
+      const matchesChurch = e.isGlobal || e.churchId === (canSeeAllChurches || isPastorRegional ? selectedChurchId : currentUser?.churchId);
       if (selectedChurchId !== 'all' && !e.isGlobal && e.churchId !== selectedChurchId) return false;
       const matchesType = selectedType === 'all' || e.type === selectedType;
       return matchesChurch && matchesType;
     });
-  }, [events, selectedChurchId, selectedType, canSeeAllChurches, currentUser]);
+  }, [events, selectedChurchId, selectedType, canSeeAllChurches, isPastorRegional, currentUser]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -90,7 +90,7 @@ export default function AgendaPage() {
   const handleOpenNew = () => {
     setFormData({
       title: '', description: '', type: 'culto', date: selectedDay ? selectedDay.toISOString().split('T')[0] : `${year}-${String(month + 1).padStart(2, '0')}-23`,
-      startTime: '19:30', endTime: '', location: '', isGlobal: false, churchId: canSeeAllChurches && selectedChurchId !== 'all' ? selectedChurchId : (currentUser?.churchId || '1')
+      startTime: '19:30', endTime: '', location: '', isGlobal: false, churchId: (canSeeAllChurches || isPastorRegional) && selectedChurchId !== 'all' ? selectedChurchId : (currentUser?.churchId || '1')
     });
     setEditingEvent(null);
     setShowForm(true);
@@ -150,7 +150,7 @@ export default function AgendaPage() {
       </div>
 
       <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '16px', padding: '20px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-        {canSeeAllChurches && (
+        {(canSeeAllChurches || isPastorRegional) && (
           <div style={{ flex: '1 1 200px' }}>
             <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: 'bold' }}>VISUALIZAR AGENDA DE:</label>
             <select value={selectedChurchId} onChange={(e) => setSelectedChurchId(e.target.value)} className="input-field" style={{ width: '100%', padding: '10px', height: '42px' }}>
@@ -310,7 +310,7 @@ export default function AgendaPage() {
                                const msg = `📢 *AVISO IMPORTANTE* - ${ev.isGlobal ? 'Rede ChurchFlow' : 'Comunidade Local'}\n\n🗓️ *${ev.title}* (${typeConf?.label || 'Evento'})\n📅 Data: ${new Date(ev.date + 'T00:00:00').toLocaleDateString('pt-BR')}\n⏰ Horário: ${ev.startTime}${ev.endTime ? ` às ${ev.endTime}` : ''}\n📍 Local: ${ev.location || 'A definir'}\n\n_${ev.description || ''}_`;
                                window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
                             }} style={{ background: 'rgba(46,204,113,0.15)', border: 'none', color: '#2ecc71', width: '32px', height: '32px', borderRadius: '6px', cursor: 'pointer' }} title="Compartilhar no WhatsApp">W</button>
-                            {(canSeeAllChurches || ev.churchId === currentUser?.churchId) && (
+                            {(canSeeAllChurches || isPastorRegional || ev.churchId === currentUser?.churchId) && (
                               <>
                                 <button onClick={() => handleOpenEdit(ev)} style={{ background: 'rgba(52,152,219,0.15)', border: 'none', color: '#3498db', width: '32px', height: '32px', borderRadius: '6px', cursor: 'pointer' }}>✎</button>
                                 <button onClick={() => handleDelete(ev.id)} style={{ background: 'rgba(231,76,60,0.15)', border: 'none', color: '#e74c3c', width: '32px', height: '32px', borderRadius: '6px', cursor: 'pointer' }}>🗑</button>

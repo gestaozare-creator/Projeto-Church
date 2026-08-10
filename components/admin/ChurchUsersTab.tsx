@@ -9,10 +9,12 @@ interface ChurchUser {
   email: string;
   role: string;
   church_id: string;
+  regional_churches?: string[];
 }
 
 const ROLES: Record<string, { label: string; color: string }> = {
   pastor_diretor: { label: '👑 Pastor Diretor (Diretor da Rede)',  color: '#9b59b6' },
+  pastor_regional: { label: '🗺️ Pastor Regional (Múltiplas Igrejas)', color: '#8e44ad' },
   admin:       { label: '💼 Pastor Local (Acesso Total)',      color: '#3498db' },
   secretaria:  { label: '📄 Secretaria (Sem Financeiro)',       color: '#e67e22' },
   financeiro:  { label: '💰 Tesoureiro (Financeiro)',           color: '#2ecc71' },
@@ -23,6 +25,7 @@ type FormMode = 'hidden' | 'create' | 'edit';
 
 export function ChurchUsersTab({ churchId }: { churchId: string }) {
   const [users, setUsers]       = useState<ChurchUser[]>([]);
+  const [networkChurches, setNetworkChurches] = useState<{id: string; name: string}[]>([]);
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
   const [mode, setMode]         = useState<FormMode>('hidden');
@@ -34,35 +37,59 @@ export function ChurchUsersTab({ churchId }: { churchId: string }) {
   const [formEmail,    setFormEmail]    = useState('');
   const [formRole,     setFormRole]     = useState('admin');
   const [formPassword, setFormPassword] = useState('');
+  const [formRegionalChurches, setFormRegionalChurches] = useState<string[]>([]);
   const [showPass,     setShowPass]     = useState(false);
 
-  // Carrega usuários da tabela user_roles
-  const loadUsers = async () => {
+  // Carrega usuários e igrejas da rede (para pastor regional)
+  const loadUsersAndChurches = async () => {
     if (!churchId) { setLoading(false); return; }
     setLoading(true);
-    const { data, error: err } = await supabase
+    
+    // Buscar usuários
+    const { data: usersData, error: usersErr } = await supabase
       .from('user_roles')
-      .select('id, email, role, church_id, name')
+      .select('id, email, role, church_id, name, regional_churches')
       .eq('church_id', churchId);
 
-    if (err) {
-      console.error('Erro ao carregar usuários:', err);
+    if (usersErr) {
+      console.error('Erro ao carregar usuários:', usersErr);
     } else {
-      setUsers((data || []) as ChurchUser[]);
+      setUsers((usersData || []) as ChurchUser[]);
     }
+
+    // Buscar ministryId da igreja atual
+    const { data: currentChurch } = await supabase
+      .from('churches')
+      .select('ministry_id')
+      .eq('id', churchId)
+      .single();
+      
+    if (currentChurch?.ministry_id) {
+      // Buscar todas as igrejas da mesma rede
+      const { data: netChurches } = await supabase
+        .from('churches')
+        .select('id, name')
+        .eq('ministry_id', currentChurch.ministry_id)
+        .order('name');
+        
+      if (netChurches) {
+        setNetworkChurches(netChurches);
+      }
+    }
+
     setLoading(false);
   };
 
-  useEffect(() => { loadUsers(); }, [churchId]);
+  useEffect(() => { loadUsersAndChurches(); }, [churchId]);
 
   const openCreate = () => {
-    setFormName(''); setFormEmail(''); setFormRole('admin'); setFormPassword('');
+    setFormName(''); setFormEmail(''); setFormRole('admin'); setFormPassword(''); setFormRegionalChurches([]);
     setEditingId(null); setError(null); setSuccess(null); setMode('create');
   };
 
   const openEdit = (u: ChurchUser) => {
     setFormName(u.name || ''); setFormEmail(u.email);
-    setFormRole(u.role); setFormPassword('');
+    setFormRole(u.role); setFormPassword(''); setFormRegionalChurches(u.regional_churches || []);
     setEditingId(u.id); setError(null); setSuccess(null); setMode('edit');
   };
 
@@ -81,6 +108,7 @@ export function ChurchUsersTab({ churchId }: { churchId: string }) {
         name: formName,
         role: formRole,
         churchId,
+        regionalChurches: formRole === 'pastor_regional' ? formRegionalChurches : [],
         userId: editingId
       };
 
@@ -103,7 +131,7 @@ export function ChurchUsersTab({ churchId }: { churchId: string }) {
         : `✅ Usuário "${formName}" atualizado com sucesso!`
       );
       
-      await loadUsers();
+      await loadUsersAndChurches();
       setMode('hidden');
     } catch (err: any) {
       setError('Erro inesperado: ' + err.message);
@@ -224,6 +252,40 @@ export function ChurchUsersTab({ churchId }: { churchId: string }) {
               </div>
             </div>
           </div>
+
+          {formRole === 'pastor_regional' && networkChurches.length > 0 && (
+            <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <label className="input-label" style={{ marginBottom: '10px', display: 'block' }}>Igrejas Gerenciadas *</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px' }}>
+                {networkChurches.map(netC => (
+                  <label key={netC.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox"
+                      checked={formRegionalChurches.includes(netC.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormRegionalChurches(prev => [...prev, netC.id]);
+                        } else {
+                          setFormRegionalChurches(prev => prev.filter(id => id !== netC.id));
+                        }
+                      }}
+                      style={{ accentColor: '#3498db', width: '16px', height: '16px' }}
+                    />
+                    {netC.name}
+                  </label>
+                ))}
+              </div>
+              {formRegionalChurches.length === 0 && (
+                <div style={{ color: '#e74c3c', fontSize: '0.75rem', marginTop: '8px' }}>
+                  Selecione pelo menos uma igreja.
+                </div>
+              )}
+              <div style={{ marginTop: '8px', padding: '10px 12px', background: 'rgba(142,68,173,0.1)', border: '1px solid rgba(142,68,173,0.3)', borderRadius: '8px', fontSize: '0.75rem', color: 'rgba(142,68,173,0.9)' }}>
+                  🗺️ <strong>Pastor Regional</strong> tem acesso de gestor completo, mas <strong>apenas</strong> nas igrejas selecionadas acima.
+              </div>
+            </div>
+          )}
+
 
           <button type="submit" disabled={saving}
             style={{ background: saving ? 'rgba(46,204,113,0.5)' : '#2ecc71', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontWeight: 'bold', fontSize: '0.95rem', transition: 'all 0.2s' }}>

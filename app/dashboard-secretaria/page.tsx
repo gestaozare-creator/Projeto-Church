@@ -286,10 +286,10 @@ function DonutChart({
 }
 
 export default function DashboardSecretariaPage() {
-  const { currentUser, canSeeAllChurches, activeChurchId, activeChurchName, exitChurch, activeMinistryId } = useAuth();
+  const { currentUser, canSeeAllChurches, isPastorRegional, regionalChurchIds, activeChurchId, activeChurchName, exitChurch, activeMinistryId } = useAuth();
 
   const [church, setChurch] = useState(
-    activeChurchId ? activeChurchId : (canSeeAllChurches ? "ALL" : currentUser?.churchId || ""),
+    activeChurchId ? activeChurchId : (canSeeAllChurches || isPastorRegional ? "ALL" : currentUser?.churchId || ""),
   );
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -301,10 +301,10 @@ export default function DashboardSecretariaPage() {
   useEffect(() => {
     if (activeChurchId) {
       setChurch(activeChurchId);
-    } else if (canSeeAllChurches) {
+    } else if (canSeeAllChurches || isPastorRegional) {
       setChurch("ALL");
     }
-  }, [activeChurchId, canSeeAllChurches]);
+  }, [activeChurchId, canSeeAllChurches, isPastorRegional]);
 
   const availableHorarios = useMemo(() => {
     let svcs: any[] = [];
@@ -358,10 +358,10 @@ export default function DashboardSecretariaPage() {
     if (activeChurchId) {
       // Diretor/Master entrou em uma igreja específica via Painel da Rede
       setChurch(activeChurchId);
-    } else if (!canSeeAllChurches && currentUser?.churchId) {
+    } else if (!canSeeAllChurches && !isPastorRegional && currentUser?.churchId) {
       setChurch(currentUser.churchId);
     }
-  }, [activeChurchId, canSeeAllChurches, currentUser]);
+  }, [activeChurchId, canSeeAllChurches, isPastorRegional, currentUser]);
 
   const [members, setMembers] = useState<any[]>([]);
   const [visitors, setVisitors] = useState<DBVisitor[]>([]);
@@ -372,6 +372,9 @@ export default function DashboardSecretariaPage() {
       let churchQuery = supabase.from("churches").select("*");
       if (activeMinistryId) {
         churchQuery = churchQuery.eq("ministry_id", activeMinistryId);
+      }
+      if (isPastorRegional && regionalChurchIds && regionalChurchIds.length > 0) {
+        churchQuery = churchQuery.in("id", regionalChurchIds);
       }
       const { data: churchesDb } = await churchQuery;
       const { data: servicesDb } = await supabase

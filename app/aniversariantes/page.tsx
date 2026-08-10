@@ -8,8 +8,8 @@ import { useChurches } from '@/hooks/useChurches';
 import { ChevronLeft, Cake, CalendarHeart, Gift } from 'lucide-react';
 
 export default function AniversariantesPage() {
-  const { currentUser, canSeeAllChurches, activeChurchId, activeMinistryId } = useAuth();
-  const [churchF, setChurchF] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches ? 'ALL' : currentUser?.churchId || ''));
+  const { currentUser, canSeeAllChurches, isPastorRegional, activeChurchId, activeMinistryId } = useAuth();
+  const [churchF, setChurchF] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches || isPastorRegional ? 'ALL' : currentUser?.churchId || ''));
 
   const [showWhatsappModal, setShowWhatsappModal] = useState(false);
   const [whatsappMessage, setWhatsappMessage] = useState('');
@@ -45,10 +45,10 @@ export default function AniversariantesPage() {
   useEffect(() => {
     if (activeChurchId) {
       setChurchF(activeChurchId);
-    } else if (!canSeeAllChurches && currentUser?.churchId) {
+    } else if (!canSeeAllChurches && !isPastorRegional && currentUser?.churchId) {
       setChurchF(currentUser.churchId);
     }
-  }, [activeChurchId, canSeeAllChurches, currentUser]);
+  }, [activeChurchId, canSeeAllChurches, isPastorRegional, currentUser]);
   
   const { churches: dbChurches } = useChurches(activeMinistryId);
   const scopedChurchIds = useMemo(() => dbChurches.map(c => c.id), [dbChurches]);
@@ -123,7 +123,7 @@ export default function AniversariantesPage() {
           </h1>
         </div>
 
-        {canSeeAllChurches && (
+        {(canSeeAllChurches || isPastorRegional) && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Filtro de Igreja:</span>
             <select
@@ -190,7 +190,7 @@ export default function AniversariantesPage() {
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                       {m.function || m.status}
                     </div>
-                    {canSeeAllChurches && (
+                    {(canSeeAllChurches || isPastorRegional) && (
                       <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '4px', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', display: 'inline-block' }}>
                         {getChurchName(m.church_id)}
                       </div>
@@ -272,7 +272,7 @@ export default function AniversariantesPage() {
                       <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
                         {m.function || m.status}
                       </div>
-                      {canSeeAllChurches && (
+                      {(canSeeAllChurches || isPastorRegional) && (
                         <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
                           {getChurchName(m.church_id)}
                         </div>

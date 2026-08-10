@@ -26,7 +26,7 @@ interface Visitor {
 }
 
 export default function Visitantes() {
-  const { currentUser, canSeeAllChurches, activeChurchId, activeMinistryId } = useAuth();
+  const { currentUser, canSeeAllChurches, isPastorRegional, activeChurchId, activeMinistryId } = useAuth();
 
   // SEGURANÇA: igrejas filtradas no banco pelo ministryId da rede ativa
   const { churches: dbChurches } = useChurches(activeMinistryId);
@@ -64,15 +64,15 @@ export default function Visitantes() {
     setShowWaModal(false);
   };
 
-  const [churchF, setChurchF] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches ? 'all' : currentUser?.churchId || ''));
+  const [churchF, setChurchF] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches || isPastorRegional ? 'all' : currentUser?.churchId || ''));
 
   useEffect(() => {
     if (activeChurchId) {
       setChurchF(activeChurchId);
-    } else if (canSeeAllChurches) {
-      setChurchF("all");
+    } else if (canSeeAllChurches || isPastorRegional) {
+      setChurchF('all');
     }
-  }, [activeChurchId, canSeeAllChurches]);
+  }, [activeChurchId, canSeeAllChurches, isPastorRegional]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [cultoFilter, setCultoFilter] = useState('ALL');
@@ -465,7 +465,7 @@ export default function Visitantes() {
 
       <div className={`filters-container ${showMobileFilters ? 'mobile-visible' : ''} glass`} style={{ padding: '12px 14px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
         {/* Igreja */}
-        {canSeeAllChurches ? (
+        {(canSeeAllChurches || isPastorRegional) ? (
           <select className="filter-select" style={{ padding:'7px 8px', fontSize:'0.8rem', minWidth:'140px' }} value={churchF} onChange={e => setChurchF(e.target.value)}>
             <option value="all">⛪ Todas as Igrejas</option>
             {dbChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -901,7 +901,7 @@ export default function Visitantes() {
             </h3>
             
             {/* Seletor de Igreja para Superadmin sob filtro global */}
-            {canSeeAllChurches && (churchF === 'all' || churchF === 'ALL') ? (
+            {(canSeeAllChurches || isPastorRegional) && (churchF === 'all' || churchF === 'ALL') ? (
               <div>
                 <label className="input-label">Congregação / Igreja *</label>
                 <select 

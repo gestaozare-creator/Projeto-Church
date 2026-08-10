@@ -15,7 +15,7 @@ const supabaseAdmin = createClient(
 
 export async function POST(request: Request) {
   try {
-    const { action, email, password, name, role, churchId, userId } = await request.json();
+    const { action, email, password, name, role, churchId, regionalChurches, userId } = await request.json();
 
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
       return NextResponse.json({ error: 'Chave SUPABASE_SERVICE_ROLE_KEY não configurada no servidor.' }, { status: 500 });
@@ -56,7 +56,8 @@ export async function POST(request: Request) {
           email,
           name,
           role,
-          church_id: churchId
+          church_id: churchId,
+          regional_churches: regionalChurches || []
         });
 
       if (dbError) {
@@ -77,7 +78,7 @@ export async function POST(request: Request) {
       // 1. Atualiza dados na tabela user_roles
       const { error: dbError } = await supabaseAdmin
         .from('user_roles')
-        .update({ name, role })
+        .update({ name, role, regional_churches: regionalChurches || [] })
         .eq('id', userId);
 
       if (dbError) {

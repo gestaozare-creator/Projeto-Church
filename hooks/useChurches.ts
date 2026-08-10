@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Church } from '@/types/database';
+import { useAuth } from '@/context/AuthContext';
 
 /**
  * Hook para carregar igrejas FILTRADAS POR MINISTÉRIO/REDE.
@@ -11,6 +12,7 @@ export function useChurches(ministryId?: string | null) {
   const [churches, setChurches] = useState<Church[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const { isPastorRegional, regionalChurchIds } = useAuth();
 
   useEffect(() => {
     async function loadChurches() {
@@ -23,6 +25,9 @@ export function useChurches(ministryId?: string | null) {
         let churchQuery = supabase.from('churches').select('*');
         if (ministryId) {
           churchQuery = churchQuery.eq('ministry_id', ministryId);
+        }
+        if (isPastorRegional && regionalChurchIds && regionalChurchIds.length > 0) {
+          churchQuery = churchQuery.in('id', regionalChurchIds);
         }
 
         const { data: churchesDb, error: churchesError } = await churchQuery;
@@ -91,7 +96,7 @@ export function useChurches(ministryId?: string | null) {
     if (ministryId !== undefined) {
       loadChurches();
     }
-  }, [ministryId]);
+  }, [ministryId, isPastorRegional, regionalChurchIds]);
 
   return { churches, loading, error };
 }

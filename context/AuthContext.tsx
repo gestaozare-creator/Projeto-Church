@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter, usePathname } from 'next/navigation';
 
-export type UserRole = 'superadmin' | 'pastor_diretor' | 'admin' | 'financeiro' | 'secretaria' | 'kids_leader';
+export type UserRole = 'superadmin' | 'pastor_diretor' | 'pastor_regional' | 'admin' | 'financeiro' | 'secretaria' | 'kids_leader';
 
 export interface User {
   id: string;
@@ -14,6 +14,7 @@ export interface User {
   churchId: string | null;
   churchName?: string;
   ministryId?: string | null;  // ministry_id da igreja do usuário (sua rede nativa)
+  regionalChurches?: string[]; // Para Pastor Regional: array de IDs das igrejas
 }
 
 // Chaves usadas no localStorage para persistir a igreja ativa ao navegar
@@ -25,15 +26,18 @@ interface AuthContextType {
   currentUser: User | null;
   loading: boolean;
   canSeeAllChurches: boolean;
+  isPastorRegional: boolean;
   canSeeRelatorios: boolean;
   canSeeFinanceiro: boolean;
   canManageSystem: boolean;
   signOut: () => Promise<void>;
-  // Igreja Ativa (contexto de visão do diretor/master)
+  // Igreja Ativa (contexto de visão do diretor/master/regional)
   activeChurchId: string | null;
   activeChurchName: string | null;
   // Ministério/Rede ativa — SEMPRE isolada
   activeMinistryId: string | null;
+  // Para Regional
+  regionalChurchIds: string[];
   enterChurch: (churchId: string, churchName: string, ministryId?: string) => void;
   exitChurch: () => void;
 }
@@ -106,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('user_roles')
-        .select('role, church_id, email')
+        .select('role, church_id, email, regional_churches')
         .eq('id', authUser.id)
         .single();
 
@@ -154,6 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         churchId: resolvedChurchId,
         churchName: resolvedChurchName,
         ministryId: resolvedMinistryId,
+        regionalChurches: data?.regional_churches || [],
       };
       setCurrentUser(user);
 
@@ -214,6 +219,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Derivações de permissão centralizadas
   const canSeeAllChurches = currentUser?.role === 'superadmin' || currentUser?.role === 'pastor_diretor';
+  const isPastorRegional = currentUser?.role === 'pastor_regional';
+  const regionalChurchIds = currentUser?.regionalChurches || [];
   const canSeeRelatorios = currentUser?.role !== 'kids_leader';
   const canSeeFinanceiro = currentUser?.role !== 'secretaria' && currentUser?.role !== 'kids_leader';
   const canManageSystem = currentUser?.role === 'superadmin';
@@ -232,6 +239,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       currentUser,
       loading,
       canSeeAllChurches,
+      isPastorRegional,
       canSeeRelatorios,
       canSeeFinanceiro,
       canManageSystem,
@@ -239,6 +247,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       activeChurchId,
       activeChurchName,
       activeMinistryId,
+      regionalChurchIds,
       enterChurch,
       exitChurch,
     }}>

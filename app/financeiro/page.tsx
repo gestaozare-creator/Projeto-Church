@@ -178,7 +178,7 @@ const getMonthBounds = () => {
 const { firstDayStr, lastDayStr } = getMonthBounds();
 
 export default function FinanceiroDashboardPage() {
-  const { currentUser, canSeeAllChurches, activeChurchId } = useAuth();
+  const { currentUser, canSeeAllChurches, isPastorRegional, regionalChurchIds, activeChurchId, activeMinistryId } = useAuth();
   const { churches, churchServices, members } = useGlobalData();
   const [dbTransactions, setDbTransactions] = useState<FinancialTransaction[]>([]);
 
@@ -227,7 +227,7 @@ export default function FinanceiroDashboardPage() {
     }
   }, [churches]);
 
-  const [church, setChurch] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches ? 'ALL' : (currentUser?.churchId || 'ALL')));
+  const [church, setChurch] = useState(activeChurchId ? activeChurchId : (canSeeAllChurches || isPastorRegional ? 'ALL' : (currentUser?.churchId || 'ALL')));
   const [startDate, setStartDate] = useState(firstDayStr);
   const [endDate, setEndDate] = useState(lastDayStr);
   const [selectedDia, setSelectedDia] = useState<string | null>(null);
@@ -257,12 +257,10 @@ export default function FinanceiroDashboardPage() {
   useEffect(() => {
     if (activeChurchId) {
       setChurch(activeChurchId);
-    } else if (!canSeeAllChurches) {
+    } else if (!canSeeAllChurches && !isPastorRegional) {
       setChurch(currentUser?.churchId || 'ALL');
-    } else {
-      setChurch('ALL');
     }
-  }, [activeChurchId, currentUser, canSeeAllChurches]);
+  }, [activeChurchId, currentUser, canSeeAllChurches, isPastorRegional]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -861,7 +859,7 @@ export default function FinanceiroDashboardPage() {
           <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Análise detalhada do financeiro</span>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {canSeeAllChurches ? (
+          {(canSeeAllChurches || isPastorRegional) ? (
             <select value={church} onChange={e => setChurch(e.target.value)} className="search-input glass-input" style={{ padding: '6px 12px' }}>
               <option value="ALL">Todas as Igrejas</option>
               {churches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -885,10 +883,10 @@ export default function FinanceiroDashboardPage() {
             <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Até:</span>
             <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="search-input glass-input" style={{ padding: '5px 10px', fontSize: '0.8rem', colorScheme: 'dark' }} />
           </div>
-          {(church !== (canSeeAllChurches ? 'ALL' : (currentUser?.churchId || 'ALL')) || cultoFilter !== 'ALL' || horarioFilter !== 'ALL' || startDate !== firstDayStr || endDate !== lastDayStr) && (
+          {(church !== (canSeeAllChurches || isPastorRegional ? 'ALL' : (currentUser?.churchId || 'ALL')) || cultoFilter !== 'ALL' || horarioFilter !== 'ALL' || startDate !== firstDayStr || endDate !== lastDayStr) && (
             <button 
               onClick={() => {
-                if (canSeeAllChurches) setChurch('ALL');
+                if (canSeeAllChurches || isPastorRegional) setChurch('ALL');
                 setCultoFilter('ALL');
                 setHorarioFilter('ALL');
                 setStartDate(firstDayStr);
