@@ -87,10 +87,23 @@ export function ChurchUsersTab({ churchId }: { churchId: string }) {
     setEditingId(null); setError(null); setSuccess(null); setMode('create');
   };
 
-  const openEdit = (u: ChurchUser) => {
+  const openEdit = async (u: ChurchUser) => {
     setFormName(u.name || ''); setFormEmail(u.email);
-    setFormRole(u.role); setFormPassword(''); setFormRegionalChurches(u.regional_churches || []);
+    setFormRole(u.role); setFormPassword(''); 
+    setFormRegionalChurches([]);
     setEditingId(u.id); setError(null); setSuccess(null); setMode('edit');
+
+    if (u.role === 'pastor_regional') {
+      try {
+        const res = await fetch(`/api/admin/users/metadata?userId=${u.id}`);
+        const data = await res.json();
+        if (res.ok && data.success && data.metadata?.regional_churches) {
+          setFormRegionalChurches(data.metadata.regional_churches);
+        }
+      } catch (err) {
+        console.error('Erro ao buscar metadados do usuário:', err);
+      }
+    }
   };
 
   const closeForm = () => { setMode('hidden'); setError(null); setSuccess(null); };
