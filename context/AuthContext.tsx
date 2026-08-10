@@ -185,16 +185,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setCurrentUser(user);
 
       // --- Payment & Blocking Logic ---
-      if (resolvedMinistryId && finalRole !== 'superadmin') {
-        const { data: ministryData } = await supabase
+      if (resolvedMinistryId) {
+        const { data: ministryData, error: ministryError } = await supabase
           .from('ministries')
           .select('last_paid_month, force_blocked')
           .eq('id', resolvedMinistryId)
           .single();
         
+        if (ministryError) {
+          console.error('Error fetching ministry for payment check:', ministryError);
+        }
+        
         if (ministryData) {
            if (ministryData.force_blocked) {
-              setIsNetworkBlocked(true);
+              if (finalRole !== 'superadmin') {
+                 setIsNetworkBlocked(true);
+              } else {
+                 setPaymentWarning('red'); // Superadmin vê que está bloqueado via tarja
+              }
            } else {
               const now = new Date();
               const currentMonth = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
@@ -206,7 +214,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                  } else if (day >= 6 && day <= 10) {
                     setPaymentWarning('red');
                  } else if (day > 10) {
-                    setIsNetworkBlocked(true);
+                    setPaymentWarning('red');
+                    if (finalRole !== 'superadmin') {
+                       setIsNetworkBlocked(true);
+                    }
                  }
               }
            }
