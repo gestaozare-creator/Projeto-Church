@@ -69,6 +69,8 @@ export default function RedePage() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [reportYear, setReportYear] = useState<number>(new Date().getFullYear());
   const [reportMonth, setReportMonth] = useState<number>(new Date().getMonth());
+  const [searchChurch, setSearchChurch] = useState('');
+  const [filterState, setFilterState] = useState('ALL');
 
   // Normaliza nome de estado para sigla UF (suporta banco com nome completo ou sigla)
   const stateNameToUF = useMemo(() => {
@@ -81,6 +83,20 @@ export default function RedePage() {
   }, []);
 
   const normalizeState = (s: string) => stateNameToUF[s] || stateNameToUF[s?.toLowerCase()] || s?.toUpperCase();
+
+  const filteredOverviewChurches = useMemo(() => {
+    let result = churches;
+    if (canSeeAllChurches) {
+      if (searchChurch.trim() !== '') {
+        const lowerSearch = searchChurch.toLowerCase();
+        result = result.filter(c => c.name.toLowerCase().includes(lowerSearch) || (c.city && c.city.toLowerCase().includes(lowerSearch)));
+      }
+      if (filterState !== 'ALL') {
+        result = result.filter(c => normalizeState(c.state || '') === filterState);
+      }
+    }
+    return result;
+  }, [churches, searchChurch, filterState, canSeeAllChurches, normalizeState]);
 
   // Contagem de igrejas por estado (UF) para o mapa da rede
   const mapStateCounts = useMemo(() => {
@@ -371,33 +387,65 @@ export default function RedePage() {
       {activeTab === 'overview' && (
         <div className="rede-overview-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <div className="glass rede-overview-card" style={{ borderRadius: '16px', border: '1px solid rgba(255,255,255,0.07)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                ⛪ Igrejas da Rede
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>— clique para entrar</span>
-              </h3>
-              <div style={{ display: 'flex', gap: '8px', background: 'rgba(0,0,0,0.2)', padding: '4px', borderRadius: '10px' }}>
-                <button onClick={() => setViewMode('list')} style={{
-                  padding: '6px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600,
-                  background: viewMode === 'list' ? 'var(--primary)' : 'transparent',
-                  color: viewMode === 'list' ? '#fff' : 'var(--text-secondary)'
-                }}>📝 Lista</button>
-                <button onClick={() => setViewMode('grid')} style={{
-                  padding: '6px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600,
-                  background: viewMode === 'grid' ? 'var(--primary)' : 'transparent',
-                  color: viewMode === 'grid' ? '#fff' : 'var(--text-secondary)'
-                }}>🗂️ Cards</button>
-                <button onClick={() => setViewMode('table')} style={{
-                  padding: '6px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600,
-                  background: viewMode === 'table' ? 'var(--primary)' : 'transparent',
-                  color: viewMode === 'table' ? '#fff' : 'var(--text-secondary)'
-                }}>👥 Membros</button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  ⛪ Igrejas da Rede
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>— clique para entrar</span>
+                </h3>
+                <div style={{ display: 'flex', gap: '8px', background: 'rgba(0,0,0,0.2)', padding: '4px', borderRadius: '10px' }}>
+                  <button onClick={() => setViewMode('list')} style={{
+                    padding: '6px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600,
+                    background: viewMode === 'list' ? 'var(--primary)' : 'transparent',
+                    color: viewMode === 'list' ? '#fff' : 'var(--text-secondary)'
+                  }}>📝 Lista</button>
+                  <button onClick={() => setViewMode('grid')} style={{
+                    padding: '6px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600,
+                    background: viewMode === 'grid' ? 'var(--primary)' : 'transparent',
+                    color: viewMode === 'grid' ? '#fff' : 'var(--text-secondary)'
+                  }}>🗂️ Cards</button>
+                  <button onClick={() => setViewMode('table')} style={{
+                    padding: '6px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600,
+                    background: viewMode === 'table' ? 'var(--primary)' : 'transparent',
+                    color: viewMode === 'table' ? '#fff' : 'var(--text-secondary)'
+                  }}>👥 Membros</button>
+                </div>
               </div>
+
+              {canSeeAllChurches && (
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <input
+                    type="text"
+                    placeholder="🔍 Buscar igreja por nome ou cidade..."
+                    value={searchChurch}
+                    onChange={(e) => setSearchChurch(e.target.value)}
+                    style={{
+                      flex: 1, minWidth: '200px', padding: '10px 14px', borderRadius: '8px',
+                      background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)',
+                      color: '#fff', fontSize: '0.85rem'
+                    }}
+                  />
+                  <select
+                    value={filterState}
+                    onChange={(e) => setFilterState(e.target.value)}
+                    style={{
+                      padding: '10px 14px', borderRadius: '8px',
+                      background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)',
+                      color: '#fff', fontSize: '0.85rem', cursor: 'pointer'
+                    }}
+                  >
+                    <option value="ALL">📍 Todos os Estados</option>
+                    {Object.keys(mapStateCounts).sort().map(uf => (
+                      <option key={uf} value={uf}>{BRAZIL_STATES[uf]?.name || uf} ({mapStateCounts[uf]})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             {viewMode === 'list' ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {churches.map(church => (
+                {filteredOverviewChurches.map(church => (
                   <div
                     key={church.id}
                     onClick={() => handleEnterChurch(church)}
@@ -472,7 +520,7 @@ export default function RedePage() {
               </div>
             ) : viewMode === 'grid' ? (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-                {churches.map(church => (
+                {filteredOverviewChurches.map(church => (
                   <div key={church.id} className="glass" style={{
                     borderRadius: '16px', overflow: 'hidden',
                     border: '1px solid rgba(255,255,255,0.1)',
@@ -573,7 +621,7 @@ export default function RedePage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {churches.map((church, i) => {
+                    {filteredOverviewChurches.map((church, i) => {
                       const stats = memberStats[church.id] || { total: 0, ativos: 0, visitantes: 0 };
                       const taxa = stats.total > 0 ? Math.round((stats.ativos / stats.total) * 100) : 0;
                       return (
