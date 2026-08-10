@@ -7,24 +7,24 @@ import './globals.css';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 
 function AppContent({ children }: { children: React.ReactNode }) {
-  const { currentUser, loading, signOut, canSeeFinanceiro, canManageSystem, canSeeAllChurches, activeChurchId, activeChurchName, exitChurch } = useAuth();
+  const { currentUser, loading, signOut, canSeeFinanceiro, canManageSystem, canSeeAllChurches, isPastorRegional, activeChurchId, activeChurchName, exitChurch } = useAuth();
   const [theme, setTheme] = useState('light');
   const [activeMenu, setActiveMenu] = useState('secretaria');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
-  const showLocalMenus = !canSeeAllChurches || !!activeChurchId;
+  const showLocalMenus = !(canSeeAllChurches || isPastorRegional) || !!activeChurchId;
   const canSeeRelatorios = currentUser && ['superadmin', 'pastor_diretor', 'admin', 'financeiro'].includes(currentUser.role);
 
   useEffect(() => {
     if (activeChurchId) {
       setActiveMenu('secretaria');
-    } else if (canSeeAllChurches) {
+    } else if (canSeeAllChurches || isPastorRegional) {
       setActiveMenu('rede');
     } else {
       setActiveMenu('secretaria');
     }
-  }, [activeChurchId, canSeeAllChurches]);
+  }, [activeChurchId, canSeeAllChurches, isPastorRegional]);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -175,8 +175,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
                 </div>
                 )}
 
-                {/* MINHA REDE — EXCLUSIVO DO PASTOR DIRETOR E MASTER */}
-                {canSeeAllChurches && (
+                {/* MINHA REDE — EXCLUSIVO DO PASTOR DIRETOR E MASTER E REGIONAL */}
+                {(canSeeAllChurches || isPastorRegional) && (
                   <div className="nav-item">
                     <div 
                       className={`nav-link ${activeMenu === 'rede' ? 'active' : ''}`} 
@@ -277,7 +277,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
         ) : (
           <>
             {/* BANNER DE IGREJA ATIVA — aparece quando Diretor/Master entra em uma igreja */}
-            {activeChurchId && activeChurchName && canSeeAllChurches && (
+            {activeChurchId && activeChurchName && (canSeeAllChurches || isPastorRegional) && (
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '10px 24px', flexWrap: 'wrap', gap: '8px',
