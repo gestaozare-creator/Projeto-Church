@@ -778,13 +778,49 @@ a.sub-link {
   flex: 1;
   overflow: hidden;
   min-height: 0;
+  height: 100%;
+  grid-template-rows: minmax(0, 1fr);
 }
 
 .kanban-col {
   display: flex;
   flex-direction: column;
   padding: 14px;
-  overflow: hidden;
+  overflow-y: auto;
+  min-height: 0;
+  height: 100%;
+  gap: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+
+.kanban-col::-webkit-scrollbar,
+.scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.kanban-col::-webkit-scrollbar-track,
+.scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.kanban-col::-webkit-scrollbar-thumb,
+.scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 4px;
+}
+
+.kanban-col::-webkit-scrollbar-thumb:hover,
+.scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.65);
+}
+
+.scroll-container {
+  overflow-y: auto;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
 }
 
 @media (max-width: 768px) {

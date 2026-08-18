@@ -174,7 +174,8 @@ export default function IgrejasPage() {
     if (!error) {
       setMinistryGroups(ministryGroups.map(x => x.id === m.id ? { ...x, last_paid_month: newMonth } : x));
     } else {
-      alert('Erro ao atualizar pagamento.');
+      console.error(error);
+      alert('Erro ao atualizar pagamento: ' + error.message);
     }
   };
 

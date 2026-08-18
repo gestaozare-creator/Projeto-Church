@@ -587,7 +587,7 @@ export default function ContasReceber() {
           onDrop={(e) => handleDrop(e, 'pendente')}
           className="glass kanban-col"
         >
-          <div style={{ padding: '12px', borderRadius: '10px', background: 'rgba(241,196,15,0.15)', border: '1px solid rgba(241,196,15,0.3)', position: 'sticky', top: 0, zIndex: 10 }}>
+          <div style={{ padding: '12px', borderRadius: '10px', background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(241,196,15,0.4)', position: 'sticky', top: 0, zIndex: 10, marginBottom: '4px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontWeight: 700, color: '#f1c40f' }}>🟡 A RECEBER</span>
               <span style={{ fontSize: '0.75rem', background: 'rgba(241,196,15,0.2)', padding: '2px 8px', borderRadius: '12px' }}>{pendentes.length}</span>
@@ -640,7 +640,7 @@ export default function ContasReceber() {
           onDrop={(e) => handleDrop(e, 'confirmado')}
           className="glass kanban-col"
         >
-          <div style={{ padding: '12px', borderRadius: '10px', background: 'rgba(46,204,113,0.15)', border: '1px solid rgba(46,204,113,0.3)', position: 'sticky', top: 0, zIndex: 10 }}>
+          <div style={{ padding: '12px', borderRadius: '10px', background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(46,204,113,0.4)', position: 'sticky', top: 0, zIndex: 10, marginBottom: '4px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontWeight: 700, color: '#2ecc71' }}>✅ RECEBIDAS</span>
               <span style={{ fontSize: '0.75rem', background: 'rgba(46,204,113,0.2)', padding: '2px 8px', borderRadius: '12px' }}>{confirmadas.length}</span>
@@ -680,7 +680,7 @@ export default function ContasReceber() {
           onDrop={(e) => handleDrop(e, 'vencido')}
           className="glass kanban-col"
         >
-          <div style={{ padding: '12px', borderRadius: '10px', background: 'rgba(231,76,60,0.15)', border: '1px solid rgba(231,76,60,0.3)', position: 'sticky', top: 0, zIndex: 10 }}>
+          <div style={{ padding: '12px', borderRadius: '10px', background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(231,76,60,0.4)', position: 'sticky', top: 0, zIndex: 10, marginBottom: '4px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontWeight: 700, color: '#e74c3c' }}>❌ NÃO RECEBIDAS</span>
               <span style={{ fontSize: '0.75rem', background: 'rgba(231,76,60,0.2)', padding: '2px 8px', borderRadius: '12px' }}>{vencidas.length}</span>

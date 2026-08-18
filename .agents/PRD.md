@@ -36,6 +36,11 @@ Plataforma SaaS multi-tenant unificada para gestão de igrejas, redes ministeria
 - O painel de infraestrutura SaaS detecta automaticamente o uso do Supabase.
 - Quando o projeto atinge >10 administradores ou >500MB, a interface expande a projeção para os limites do **Plano Pro (8 GB / Conexões Ilimitadas)**, ajustando dinamicamente as barras de progresso de uso.
 
+### 5. Rolagem Fluida e Contenção de Altura nos Quadros Kanban (`/financeiro/pagar`, `/financeiro/receber`, `/visitantes`)
+- **Correção de Rolagem:** Implementada contenção de altura nas colunas (`grid-template-rows: minmax(0, 1fr)`, `min-height: 0` e `height: 100%`), permitindo a visualização de centenas de cartões (ex: +200 contas pagas) sem quebrar o layout da página.
+- **Barra de Rolagem Customizada:** Adicionada barra de rolagem independente, sutil e translúcida (`::-webkit-scrollbar`), compatível com rolagem por mouse (scroll wheel) e toque.
+- **Cabeçalhos Fixos (Sticky com Backdrop Blur):** Cabeçalhos das colunas mantêm-se fixos no topo com efeito de vidro fosco (`backdrop-filter: blur(16px)`), garantindo legibilidade perfeita enquanto os cartões deslizam por baixo.
+
 ---
 
 ## 🔒 Diretrizes de Arquitetura & Boas Práticas
