@@ -365,7 +365,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           </button>
         </div>
       ) : (
-        <div style={{ paddingTop: paymentWarning !== 'none' ? '44px' : '0' }}>
+        <div style={{ paddingTop: paymentWarning !== 'none' ? '44px' : '0', width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', flex: 1 }}>
           {children}
         </div>
       )}

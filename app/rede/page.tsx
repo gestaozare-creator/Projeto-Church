@@ -365,26 +365,26 @@ export default function RedePage() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', flex: 1, justifyContent: 'center' }}>
-            <div className="glass rede-stat-box" style={{ borderRadius: '12px', textAlign: 'center', flex: '1 1 45%', minWidth: '100px', border: '1px solid rgba(52,152,219,0.3)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px', flex: '1 1 520px', minWidth: '280px' }}>
+            <div className="glass rede-stat-box" style={{ borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(52,152,219,0.3)' }}>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#3498db' }}>{churches.length}</div>
-              <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '1px' }}>Igrejas</div>
-              <div style={{ fontSize: '0.58rem', color: 'rgba(52,152,219,0.7)', marginTop: '1px' }}>{churches.filter(c => c.isHeadquarters).length} sede · {churches.filter(c => !c.isHeadquarters).length} filial</div>
+              <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '2px', fontWeight: 600 }}>Igrejas</div>
+              <div style={{ fontSize: '0.62rem', color: 'rgba(52,152,219,0.8)', marginTop: '2px' }}>{churches.filter(c => c.isHeadquarters).length} sede · {churches.filter(c => !c.isHeadquarters).length} filial</div>
             </div>
-            <div className="glass rede-stat-box" style={{ borderRadius: '12px', textAlign: 'center', flex: '1 1 45%', minWidth: '100px', border: '1px solid rgba(46,204,113,0.3)' }}>
+            <div className="glass rede-stat-box" style={{ borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(46,204,113,0.3)' }}>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#2ecc71' }}>{totalMembros}</div>
-              <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '1px' }}>Membros</div>
-              <div style={{ fontSize: '0.58rem', color: 'rgba(46,204,113,0.7)', marginTop: '1px' }}>{totalAtivos} ativos</div>
+              <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '2px', fontWeight: 600 }}>Membros</div>
+              <div style={{ fontSize: '0.62rem', color: 'rgba(46,204,113,0.8)', marginTop: '2px' }}>{totalAtivos} ativos</div>
             </div>
-            <div className="glass rede-stat-box" style={{ borderRadius: '12px', textAlign: 'center', flex: '1 1 45%', minWidth: '100px', border: '1px solid rgba(241,196,15,0.3)' }}>
+            <div className="glass rede-stat-box" style={{ borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(241,196,15,0.3)' }}>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f1c40f' }}>{totalVisitantes}</div>
-              <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '1px' }}>Visitantes</div>
-              <div style={{ fontSize: '0.58rem', color: 'rgba(241,196,15,0.7)', marginTop: '1px' }}>em conversão</div>
+              <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '2px', fontWeight: 600 }}>Visitantes</div>
+              <div style={{ fontSize: '0.62rem', color: 'rgba(241,196,15,0.8)', marginTop: '2px' }}>em conversão</div>
             </div>
-            <div className="glass rede-stat-box" style={{ borderRadius: '12px', textAlign: 'center', flex: '1 1 45%', minWidth: '100px', border: '1px solid rgba(155,89,182,0.3)' }}>
+            <div className="glass rede-stat-box" style={{ borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(155,89,182,0.3)' }}>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#9b59b6' }}>{churches.reduce((acc, c) => acc + (c.services?.length || 0), 0)}</div>
-              <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '1px' }}>Cultos</div>
-              <div style={{ fontSize: '0.58rem', color: 'rgba(155,89,182,0.7)', marginTop: '1px' }}>na rede toda</div>
+              <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '2px', fontWeight: 600 }}>Cultos</div>
+              <div style={{ fontSize: '0.62rem', color: 'rgba(155,89,182,0.8)', marginTop: '2px' }}>na rede toda</div>
             </div>
           </div>
 
@@ -471,9 +471,9 @@ export default function RedePage() {
                     onClick={() => handleEnterChurch(church)}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '14px 18px', borderRadius: '12px', cursor: 'pointer',
+                      padding: '16px 20px', borderRadius: '14px', cursor: 'pointer',
                       background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)',
-                      transition: 'all 0.2s', flexWrap: 'wrap', gap: '12px'
+                      transition: 'all 0.2s', flexWrap: 'wrap', gap: '16px', width: '100%'
                     }}
                     onMouseEnter={e => {
                       (e.currentTarget as HTMLElement).style.background = 'rgba(52,152,219,0.1)';
@@ -486,50 +486,52 @@ export default function RedePage() {
                       (e.currentTarget as HTMLElement).style.transform = 'translateX(0)';
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: '1 1 280px', minWidth: '220px' }}>
                       {church.logoUrl ? (
-                        <img src={church.logoUrl} alt={church.name} style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
+                        <img src={church.logoUrl} alt={church.name} style={{ width: '44px', height: '44px', borderRadius: '10px', objectFit: 'cover' }} />
                       ) : (
                         <div style={{
-                          width: '40px', height: '40px', borderRadius: '8px',
+                          width: '44px', height: '44px', borderRadius: '10px',
                           background: `linear-gradient(135deg, ${church.primaryColor || '#3498db'}, ${church.secondaryColor || '#2c3e50'})`,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: '1.2rem', fontWeight: 'bold', color: '#fff'
                         }}>{church.name.substring(0, 2).toUpperCase()}</div>
                       )}
                       <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{church.name}</span>
                           {church.isHeadquarters && (
-                            <span style={{ background: '#3498db', color: '#fff', fontSize: '0.6rem', padding: '1px 6px', borderRadius: '4px', fontWeight: 'bold' }}>SEDE</span>
+                            <span style={{ background: '#3498db', color: '#fff', fontSize: '0.62rem', padding: '2px 7px', borderRadius: '4px', fontWeight: 'bold' }}>SEDE</span>
                           )}
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
                           📍 {church.city}{church.state ? ` (${church.state})` : ''} • 🙏 {church.pastorName || 'Pastor não informado'}
                         </div>
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f1c40f' }}>{memberStats[church.id]?.visitantes || 0}</div>
-                        <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>Visitantes</div>
-                      </div>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#2ecc71' }}>{memberStats[church.id]?.total || 0}</div>
-                        <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>Membros</div>
-                      </div>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f1c40f' }}>{memberStats[church.id]?.ativos || 0}</div>
-                        <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>Ativos</div>
-                      </div>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#9b59b6' }}>{church.services?.length || 0}</div>
-                        <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>Cultos</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+                        <div style={{ textAlign: 'center', minWidth: '55px' }}>
+                          <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#f1c40f' }}>{memberStats[church.id]?.visitantes || 0}</div>
+                          <div style={{ fontSize: '0.62rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Visitantes</div>
+                        </div>
+                        <div style={{ textAlign: 'center', minWidth: '55px' }}>
+                          <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#2ecc71' }}>{memberStats[church.id]?.total || 0}</div>
+                          <div style={{ fontSize: '0.62rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Membros</div>
+                        </div>
+                        <div style={{ textAlign: 'center', minWidth: '55px' }}>
+                          <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#4ade80' }}>{memberStats[church.id]?.ativos || 0}</div>
+                          <div style={{ fontSize: '0.62rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Ativos</div>
+                        </div>
+                        <div style={{ textAlign: 'center', minWidth: '55px' }}>
+                          <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#9b59b6' }}>{church.services?.length || 0}</div>
+                          <div style={{ fontSize: '0.62rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Cultos</div>
+                        </div>
                       </div>
                       <div style={{
                         background: 'rgba(52,152,219,0.15)', color: '#3498db', border: '1px solid rgba(52,152,219,0.3)',
-                        padding: '6px 14px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600,
+                        padding: '8px 16px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600,
                         whiteSpace: 'nowrap'
                       }}>
                         🚪 Entrar →
