@@ -124,11 +124,11 @@ export default function RedePage() {
       }
       return ids;
     }
-    
+
     if (reportState !== 'ALL') {
       return churches.filter(c => normalizeState(c.state || '') === reportState).map(c => c.id);
     }
-    
+
     return undefined;
   }, [currentUser, reportState, churches, normalizeState]);
 
@@ -172,14 +172,14 @@ export default function RedePage() {
         churchQuery = churchQuery.eq('ministry_id', activeMin.id);
       }
       let { data: churchesDb } = await churchQuery;
-      
+
       if (churchesDb && currentUser?.role === 'pastor_regional') {
         churchesDb = churchesDb.filter((c: any) => currentUser.regionalChurches?.includes(c.id));
       }
 
       const validChurchIds = churchesDb ? churchesDb.map((c: any) => c.id) : [];
 
-      const { data: servicesDb } = validChurchIds.length > 0 
+      const { data: servicesDb } = validChurchIds.length > 0
         ? await supabase.from('church_services').select('*').in('church_id', validChurchIds)
         : { data: [] };
 
@@ -769,76 +769,76 @@ export default function RedePage() {
           {isRightPanelOpen && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', animation: 'fadeIn 0.3s ease', overflowY: 'auto', paddingRight: '4px' }}>
 
-            <div className="glass" style={{ borderRadius: '14px', padding: '16px', border: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Presença Nacional</div>
-              {[
-                { label: 'Estados com igrejas', value: Object.keys(mapStateCounts).length, color: '#3498db' },
-                { label: 'Total de igrejas', value: churches.length, color: '#2ecc71' },
-                { label: 'Sedes', value: churches.filter(c => c.isHeadquarters).length, color: '#9b59b6' },
-                { label: 'Filiais', value: churches.filter(c => !c.isHeadquarters).length, color: '#f39c12' },
-              ].map(s => (
-                <div key={s.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>{s.label}</span>
-                  <span style={{ fontSize: '1rem', fontWeight: 800, color: s.color }}>{s.value}</span>
-                </div>
-              ))}
-            </div>
-
-            {mapSelected ? (
-              <div className="glass" style={{ borderRadius: '14px', padding: '16px', border: '1px solid rgba(241, 196, 15, 0.25)', flex: 1 }}>
-                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#f1c40f', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
-                  📍 {BRAZIL_STATES[mapSelected]?.name || mapSelected} — {mapSelectedChurches.length} igreja(s)
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {mapSelectedChurches.map(church => (
-                    <div key={church.id} style={{ padding: '10px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        {church.logoUrl ? (
-                          <img src={church.logoUrl} style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover' }} />
-                        ) : (
-                          <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: church.primaryColor || '#3498db', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem' }}>⛪</div>
-                        )}
-                        <div>
-                          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#fff' }}>{church.name}</div>
-                          {church.isHeadquarters && <span style={{ fontSize: '0.62rem', color: '#9b59b6', fontWeight: 600 }}>SEDE</span>}
-                        </div>
-                      </div>
-                      {church.city && <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>📍 {church.neighborhood ? `${church.neighborhood}, ` : ''}{church.city}</div>}
-                      {church.pastorName && <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '2px' }}>🙏 {church.pastorName}</div>}
-                      <button onClick={() => handleEnterChurch(church)} style={{
-                        marginTop: '8px', width: '100%', padding: '6px', borderRadius: '7px',
-                        background: 'rgba(52,152,219,0.15)', border: '1px solid rgba(52,152,219,0.3)',
-                        color: '#3498db', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer'
-                      }}>🚪 Entrar na Igreja</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="glass" style={{ borderRadius: '14px', padding: '16px', border: '1px solid rgba(255,255,255,0.07)' }}>
-                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Ranking por Estado</div>
-                {Object.entries(mapStateCounts).sort((a, b) => b[1] - a[1]).map(([uf, count], i) => (
-                  <div key={uf} onClick={() => setMapSelected(uf)} style={{
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer'
-                  }}>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', minWidth: '18px' }}>#{i + 1}</span>
-                    <span style={{ flex: 1, fontSize: '0.78rem', color: '#fff' }}>{BRAZIL_STATES[uf]?.name || uf}</span>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#3498db' }}>{count}</span>
-                    <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>igreja{count !== 1 ? 's' : ''}</span>
+              <div className="glass" style={{ borderRadius: '14px', padding: '16px', border: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Presença Nacional</div>
+                {[
+                  { label: 'Estados com igrejas', value: Object.keys(mapStateCounts).length, color: '#3498db' },
+                  { label: 'Total de igrejas', value: churches.length, color: '#2ecc71' },
+                  { label: 'Sedes', value: churches.filter(c => c.isHeadquarters).length, color: '#9b59b6' },
+                  { label: 'Filiais', value: churches.filter(c => !c.isHeadquarters).length, color: '#f39c12' },
+                ].map(s => (
+                  <div key={s.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>{s.label}</span>
+                    <span style={{ fontSize: '1rem', fontWeight: 800, color: s.color }}>{s.value}</span>
                   </div>
                 ))}
-                {Object.keys(mapStateCounts).length === 0 && (
-                  <div style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.78rem', padding: '20px 0' }}>
-                    Nenhuma igreja com estado cadastrado
-                  </div>
-                )}
               </div>
-            )}
-          </div>
-        )}
-      </div>
-    )}
+
+              {mapSelected ? (
+                <div className="glass" style={{ borderRadius: '14px', padding: '16px', border: '1px solid rgba(241, 196, 15, 0.25)', flex: 1 }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#f1c40f', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
+                    📍 {BRAZIL_STATES[mapSelected]?.name || mapSelected} — {mapSelectedChurches.length} igreja(s)
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {mapSelectedChurches.map(church => (
+                      <div key={church.id} style={{ padding: '10px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                          {church.logoUrl ? (
+                            <img src={church.logoUrl} style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: church.primaryColor || '#3498db', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem' }}>⛪</div>
+                          )}
+                          <div>
+                            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#fff' }}>{church.name}</div>
+                            {church.isHeadquarters && <span style={{ fontSize: '0.62rem', color: '#9b59b6', fontWeight: 600 }}>SEDE</span>}
+                          </div>
+                        </div>
+                        {church.city && <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>📍 {church.neighborhood ? `${church.neighborhood}, ` : ''}{church.city}</div>}
+                        {church.pastorName && <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '2px' }}>🙏 {church.pastorName}</div>}
+                        <button onClick={() => handleEnterChurch(church)} style={{
+                          marginTop: '8px', width: '100%', padding: '6px', borderRadius: '7px',
+                          background: 'rgba(52,152,219,0.15)', border: '1px solid rgba(52,152,219,0.3)',
+                          color: '#3498db', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer'
+                        }}>🚪 Entrar na Igreja</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="glass" style={{ borderRadius: '14px', padding: '16px', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Ranking por Estado</div>
+                  {Object.entries(mapStateCounts).sort((a, b) => b[1] - a[1]).map(([uf, count], i) => (
+                    <div key={uf} onClick={() => setMapSelected(uf)} style={{
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer'
+                    }}>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', minWidth: '18px' }}>#{i + 1}</span>
+                      <span style={{ flex: 1, fontSize: '0.78rem', color: '#fff' }}>{BRAZIL_STATES[uf]?.name || uf}</span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#3498db' }}>{count}</span>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>igreja{count !== 1 ? 's' : ''}</span>
+                    </div>
+                  ))}
+                  {Object.keys(mapStateCounts).length === 0 && (
+                    <div style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.78rem', padding: '20px 0' }}>
+                      Nenhuma igreja com estado cadastrado
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ======================== TAB: RELATÓRIOS ======================== */}
       {activeTab === 'relatorios' && (
@@ -847,9 +847,9 @@ export default function RedePage() {
             <h3 style={{ margin: 0, color: '#fff', fontSize: '1.05rem' }}>Filtros</h3>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Mês:</label>
-              <select 
-                value={reportMonth} 
-                onChange={e => setReportMonth(Number(e.target.value))} 
+              <select
+                value={reportMonth}
+                onChange={e => setReportMonth(Number(e.target.value))}
                 style={{ padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.85rem' }}
               >
                 {monthNames.map((m, i) => (
@@ -859,9 +859,9 @@ export default function RedePage() {
             </div>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Ano:</label>
-              <select 
-                value={reportYear} 
-                onChange={e => setReportYear(Number(e.target.value))} 
+              <select
+                value={reportYear}
+                onChange={e => setReportYear(Number(e.target.value))}
                 style={{ padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.85rem' }}
               >
                 {[...Array(5)].map((_, i) => {
@@ -873,9 +873,9 @@ export default function RedePage() {
             {canSeeAllChurches && (
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Estado:</label>
-                <select 
-                  value={reportState} 
-                  onChange={e => setReportState(e.target.value)} 
+                <select
+                  value={reportState}
+                  onChange={e => setReportState(e.target.value)}
                   style={{ padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.85rem', cursor: 'pointer' }}
                 >
                   <option value="ALL">Todos os Estados</option>
@@ -886,10 +886,10 @@ export default function RedePage() {
               </div>
             )}
           </div>
-          
-          <InteligenciaFinanceiraDashboard 
-            year={reportYear} 
-            month={reportMonth} 
+
+          <InteligenciaFinanceiraDashboard
+            year={reportYear}
+            month={reportMonth}
             ministryId={ministry?.id}
             regionalChurchIds={relatoriosRestrictedIds}
           />
@@ -898,12 +898,12 @@ export default function RedePage() {
 
       {/* ======================== TAB: RANKING ======================== */}
       {activeTab === 'ranking' && (
-        <RankingAlmas 
-          ministryId={ministry?.id} 
+        <RankingAlmas
+          ministryId={ministry?.id}
           editable={
-            currentUser?.role === 'superadmin' || 
+            currentUser?.role === 'superadmin' ||
             (churches.find(c => c.id === activeChurchId)?.name.toLowerCase().includes('guadalupe') ?? false)
-          } 
+          }
         />
       )}
     </div>
