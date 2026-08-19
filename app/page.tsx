@@ -9,18 +9,18 @@ import VendasPage from './vendas/page';
 
 const getFunctionColor = (func?: string, cardConfig?: any) => {
   const f = (func || '').toLowerCase();
-  
+
   // Regra padrão de cores solicitada:
   if (f.includes('presb')) return '#f4d03f'; // Dourado clarinho
   if (f.includes('diác') || f.includes('diac')) return '#f5b041'; // Laranja claro
   if (f.includes('obreiro')) return '#5dade2'; // Azul claro
   if (f.includes('membro')) return '#58d68d'; // Verde limão/claro
-  
+
   // Outras funções (mantendo um padrão bonito)
   if (f.includes('pastor')) return '#8e44ad';
   if (f.includes('evangelista')) return '#d35400';
   if (f.includes('lider') || f.includes('líder')) return '#f39c12';
-  
+
   return cardConfig?.primaryColor || '#cda136';
 };
 
@@ -99,7 +99,7 @@ export default function Home() {
     return Array.from(names).sort();
   }, [church, dbChurches]);
 
-  
+
   // Auto-open integrate modal if redirect from visitantes
   useEffect(() => {
     if (typeof window !== 'undefined' && members.length > 0) {
@@ -108,11 +108,11 @@ export default function Home() {
       if (integrateId) {
         const m = members.find(x => x.id === integrateId);
         if (m) {
-          setEditForm({ 
-            ...m, 
-            status: 'ativo', 
-            function: m.function && m.function !== 'Visitante' && m.function !== 'Visitante (Kids)' && m.function !== 'Ainda não definida' ? m.function : 'Membro', 
-            integrationDate: new Date().toISOString().split('T')[0] 
+          setEditForm({
+            ...m,
+            status: 'ativo',
+            function: m.function && m.function !== 'Visitante' && m.function !== 'Visitante (Kids)' && m.function !== 'Ainda não definida' ? m.function : 'Membro',
+            integrationDate: new Date().toISOString().split('T')[0]
           });
           setPhotoPreview(m.photoUrl || null);
           setIsCreating(true);
@@ -144,8 +144,8 @@ export default function Home() {
   const [showCard, setShowCard] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<'kanban'|'list'>('kanban');
-  const [editForm, setEditForm] = useState<any>({ name:'', function:'', ministry:'Louvor', phone:'', email:'', address:'', integrationDate:'', churchId:'1', photoUrl:'', status:'ativo' });
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  const [editForm, setEditForm] = useState<any>({ name: '', function: '', ministry: 'Louvor', phone: '', email: '', address: '', integrationDate: '', churchId: '1', photoUrl: '', status: 'ativo' });
   const [customFunction, setCustomFunction] = useState(false);
   const [customMinistry, setCustomMinistry] = useState(false);
   const [customFunctions, setCustomFunctions] = useState<string[]>([]);
@@ -154,7 +154,7 @@ export default function Home() {
   const [customProfessions, setCustomProfessions] = useState<string[]>([]);
   const [customChurch, setCustomChurch] = useState(false);
   const [newChurchName, setNewChurchName] = useState('');
-  const [customChurches, setCustomChurches] = useState<{id:string, name:string}[]>([]);
+  const [customChurches, setCustomChurches] = useState<{ id: string, name: string }[]>([]);
   const cardRef = useRef<HTMLDivElement>(null);
 
   // WhatsApp Modal
@@ -185,7 +185,7 @@ export default function Home() {
     const s = (m.name?.toLowerCase().includes(search.toLowerCase()) || false) || (m.function?.toLowerCase().includes(search.toLowerCase()) || false);
     const c = church === 'ALL' || church === 'all' || m.church_id === church;
     const isMember = m.status === 'ativo' || m.status === 'inativo' || m.status === 'aguardando_aprovacao';
-    
+
     // Filtro por Culto selecionado
     if (cultoFilter !== 'ALL' && m.culto !== cultoFilter) return false;
     // Filtro por Horário selecionado
@@ -195,7 +195,7 @@ export default function Home() {
     const mDate = (m.integrationDate || '').split('T')[0] || '2026-01-01';
     if (startDate && mDate < startDate) d = false;
     if (endDate && mDate > endDate) d = false;
-    
+
     return s && c && isMember && d;
   }), [members, search, church, startDate, endDate, cultoFilter, horarioFilter]);
 
@@ -233,10 +233,10 @@ export default function Home() {
   };
 
   const fmt = (d?: string) => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
-  const isExp = (d?: string) => { if (!d) return false; const e = new Date(d); e.setFullYear(e.getFullYear()+2); return e < new Date(); };
-  const calcExp = (d?: string) => { if (!d) return '—'; const e = new Date(d); e.setFullYear(e.getFullYear()+2); return e.toLocaleDateString('pt-BR'); };
+  const isExp = (d?: string) => { if (!d) return false; const e = new Date(d); e.setFullYear(e.getFullYear() + 2); return e < new Date(); };
+  const calcExp = (d?: string) => { if (!d) return '—'; const e = new Date(d); e.setFullYear(e.getFullYear() + 2); return e.toLocaleDateString('pt-BR'); };
 
-  const openEdit = (m: Member) => { 
+  const openEdit = (m: Member) => {
     setEditForm({
       ...m,
       churchId: m.church_id || (church && church !== 'ALL' ? church : currentUser?.churchId || ''),
@@ -246,24 +246,24 @@ export default function Home() {
       profession: m.profession || '',
       isBaptized: m.isBaptized || '',
       baptismDate: m.baptismDate || ''
-    }); 
-    setPhotoPreview(m.photoUrl||null); setIsCreating(false); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomProfession(false); setCustomChurch(false); setIsEditing(true); 
+    });
+    setPhotoPreview(m.photoUrl || null); setIsCreating(false); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomProfession(false); setCustomChurch(false); setIsEditing(true);
   };
-  const openCreate = () => { 
+  const openCreate = () => {
     const today = new Date();
     const defaultIntegration = today.toISOString().split('T')[0];
     const defaultValidity = `${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear() + 1}`;
-    
-    setEditForm({ id:'', name:'', function:'Membro', ministry:'Louvor', phone:'', email:'', address:'', integrationDate: defaultIntegration, cardValidity: defaultValidity, churchId: (church && church !== 'ALL') ? church : (currentUser?.churchId || dbChurches[0]?.id || ''), photoUrl:'', status:'ativo', birthDate:'', maritalStatus:'', employmentStatus:'', profession:'', isBaptized:'', baptismDate:'' }); 
-    setPhotoPreview(null); setIsCreating(true); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomProfession(false); setCustomChurch(false); setIsEditing(true); 
+
+    setEditForm({ id: '', name: '', function: 'Membro', ministry: 'Louvor', phone: '', email: '', address: '', integrationDate: defaultIntegration, cardValidity: defaultValidity, churchId: (church && church !== 'ALL') ? church : (currentUser?.churchId || dbChurches[0]?.id || ''), photoUrl: '', status: 'ativo', birthDate: '', maritalStatus: '', employmentStatus: '', profession: '', isBaptized: '', baptismDate: '' });
+    setPhotoPreview(null); setIsCreating(true); setIsApproving(false); setCustomFunction(false); setCustomMinistry(false); setCustomProfession(false); setCustomChurch(false); setIsEditing(true);
   };
 
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
-    if (f) { const r = new FileReader(); r.onloadend = () => { const res = r.result as string; setPhotoPreview(res); setEditForm((p:any) => ({...p, photoUrl: res})); }; r.readAsDataURL(f); }
+    if (f) { const r = new FileReader(); r.onloadend = () => { const res = r.result as string; setPhotoPreview(res); setEditForm((p: any) => ({ ...p, photoUrl: res })); }; r.readAsDataURL(f); }
   };
 
-    const handleSave = async (e: React.FormEvent | React.MouseEvent, overrideStatus?: string) => {
+  const handleSave = async (e: React.FormEvent | React.MouseEvent, overrideStatus?: string) => {
     e.preventDefault();
 
     if (!editForm.birthDate || !editForm.maritalStatus || !editForm.isBaptized) {
@@ -275,8 +275,8 @@ export default function Home() {
       return;
     }
 
-    const finalPhoto = editForm.photoUrl || `https://i.pravatar.cc/150?u=${editForm.name.replace(/\s/g,'')}`;
-    
+    const finalPhoto = editForm.photoUrl || `https://i.pravatar.cc/150?u=${editForm.name.replace(/\s/g, '')}`;
+
     const cleanPhone = editForm.phone ? editForm.phone.replace(/\D/g, '') : '';
 
     if (isCreating && cleanPhone) {
@@ -287,7 +287,7 @@ export default function Home() {
         .eq('phone', cleanPhone)
         .in('church_id', validChurchIds)
         .limit(1);
-        
+
       if (existing && existing.length > 0) {
         alert('Este número de WhatsApp já está cadastrado no sistema.');
         return;
@@ -391,14 +391,14 @@ export default function Home() {
       setMembers(p => p.map(m => m.id === editForm.id ? updatedM : m));
       setSel(updatedM);
     }
-    
+
     setIsEditing(false); setIsCreating(false); setIsApproving(false);
   };
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement>) => {
+  const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setEditForm((p:any) => {
-      const next = {...p, [name]: value};
+    setEditForm((p: any) => {
+      const next = { ...p, [name]: value };
       if (name === 'integrationDate' && value) {
         const [yyyy, mm] = value.split('-');
         if (yyyy && mm) {
@@ -462,34 +462,34 @@ export default function Home() {
     const isSel = sel?.id === member.id;
     const exp = isExp(member.integrationDate);
     return (
-      <div className={`glass member-card ${isSel?'card-selected':''}`} style={{ padding:'14px 16px', flexDirection:'row', alignItems:'center', gap:'14px', marginBottom:'8px', cursor:'pointer' }} onClick={() => setSel(member)}>
-        <img src={member.photoUrl} alt={member.name} className="member-photo-small" style={{ width:'55px', height:'55px', borderRadius:'50%', border:'2px solid rgba(255,255,255,0.1)' }} />
-        <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
-            <span style={{ fontWeight:'600', fontSize:'1.05rem', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{member.name}</span>
+      <div className={`glass member-card ${isSel ? 'card-selected' : ''}`} style={{ padding: '14px 16px', flexDirection: 'row', alignItems: 'center', gap: '14px', marginBottom: '8px', cursor: 'pointer' }} onClick={() => setSel(member)}>
+        <img src={member.photoUrl} alt={member.name} className="member-photo-small" style={{ width: '55px', height: '55px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.1)' }} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontWeight: '600', fontSize: '1.05rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{member.name}</span>
             {type === 'ativo' && (exp ? <span className="badge-expired">VENCIDA</span> : <span className="badge-valid">ATIVA</span>)}
           </div>
-          <div style={{ fontSize:'0.8rem', color:'var(--text-secondary)', marginTop:'2px' }}>{member.function !== 'Ainda não definida' ? member.function : member.phone}</div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '2px' }}>{member.function !== 'Ainda não definida' ? member.function : member.phone}</div>
         </div>
-        <button 
-          onClick={e => { e.stopPropagation(); openWhatsApp(member.name, member.phone || ''); }}  
-          style={{ width:'30px', height:'30px', borderRadius:'50%', border:'1.5px solid #25d366', background:'transparent', color:'#25d366', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all 0.2s' }}
+        <button
+          onClick={e => { e.stopPropagation(); openWhatsApp(member.name, member.phone || ''); }}
+          style={{ width: '30px', height: '30px', borderRadius: '50%', border: '1.5px solid #25d366', background: 'transparent', color: '#25d366', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}
           onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.background = '#25d366'; (e.currentTarget.querySelector('svg') as SVGElement).style.fill = '#fff'; }}
           onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'transparent'; (e.currentTarget.querySelector('svg') as SVGElement).style.fill = '#25d366'; }}
           title="Abrir WhatsApp"
         >
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
         </button>
       </div>
     );
   };
 
-  const ColHead = ({ color, title, count }: { color:string, title:string, count:number }) => (
-    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'12px' }}>
-      <h4 style={{ fontSize:'0.85rem', display:'flex', alignItems:'center', gap:'6px' }}>
-        <span style={{ width:'9px', height:'9px', borderRadius:'50%', background:color, display:'inline-block' }} />{title}
+  const ColHead = ({ color, title, count }: { color: string, title: string, count: number }) => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+      <h4 style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: color, display: 'inline-block' }} />{title}
       </h4>
-      <span className="badge" style={{ background:color, padding:'2px 7px', fontSize:'0.65rem', margin:0 }}>{count}</span>
+      <span className="badge" style={{ background: color, padding: '2px 7px', fontSize: '0.65rem', margin: 0 }}>{count}</span>
     </div>
   );
 
@@ -498,7 +498,7 @@ export default function Home() {
   return (
     <div className="page-wrapper">
       {/* BARRA */}
-      <div style={{ display:'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
         <button className="mobile-only-btn glass-button" style={{ display: 'none', padding: '8px 12px', fontSize: '0.8rem', gap: '5px' }} onClick={() => setShowMobileFilters(!showMobileFilters)}>
           🔍 {showMobileFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
         </button>
@@ -511,22 +511,22 @@ export default function Home() {
               📄 Lista
             </button>
           </div>
-          <button className="modal-btn mobile-only-btn" style={{ display: 'none', margin:0, padding:'8px 14px', fontSize:'0.8rem', backgroundColor:'#2ecc71' }} onClick={openCreate}>+ Novo</button>
+          <button className="modal-btn mobile-only-btn" style={{ display: 'none', margin: 0, padding: '8px 14px', fontSize: '0.8rem', backgroundColor: '#2ecc71' }} onClick={openCreate}>+ Novo</button>
         </div>
       </div>
-      
-      <div className={`filters-container ${showMobileFilters ? 'mobile-visible' : ''}`} style={{ display:'flex', alignItems:'center', gap:'10px', flexWrap:'wrap' }}>
-        <div style={{ position:'relative', flex:1, minWidth:'180px', maxWidth:'260px' }}>
-          <span style={{ position:'absolute', left:'10px', top:'50%', transform:'translateY(-50%)', fontSize:'0.8rem', opacity:0.4 }}>🔍</span>
-          <input type="text" placeholder="Buscar..." className="search-input glass-input" style={{ width:'100%', padding:'8px 8px 8px 30px', fontSize:'0.82rem' }} value={search} onChange={e => setSearch(e.target.value)} />
+
+      <div className={`filters-container ${showMobileFilters ? 'mobile-visible' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: '180px', maxWidth: '260px' }}>
+          <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.8rem', opacity: 0.4 }}>🔍</span>
+          <input type="text" placeholder="Buscar..." className="search-input glass-input" style={{ width: '100%', padding: '8px 8px 8px 30px', fontSize: '0.82rem' }} value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         {(canSeeAllChurches || isPastorRegional) ? (
-          <select className="filter-select" style={{ padding:'8px', fontSize:'0.8rem', minWidth:'140px' }} value={church} onChange={e => setChurch(e.target.value)}>
+          <select className="filter-select" style={{ padding: '8px', fontSize: '0.8rem', minWidth: '140px' }} value={church} onChange={e => setChurch(e.target.value)}>
             <option value="ALL">⛪ Todas as Igrejas da Rede</option>
             {scopedChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         ) : (
-          <div className="filter-select" style={{ padding:'8px', fontSize:'0.8rem', minWidth:'140px', opacity: 0.8, pointerEvents: 'none', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+          <div className="filter-select" style={{ padding: '8px', fontSize: '0.8rem', minWidth: '140px', opacity: 0.8, pointerEvents: 'none', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
             {scopedChurches.find(c => c.id === (activeChurchId || church))?.name || 'Igreja Local'}
           </div>
         )}
@@ -544,8 +544,8 @@ export default function Home() {
           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Até:</span>
           <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="search-input glass-input" style={{ padding: '7px 8px', fontSize: '0.8rem', colorScheme: 'dark' }} />
         </div>
-        <button className="modal-btn desktop-only-btn" style={{ margin:0, padding:'8px 14px', fontSize:'0.8rem', backgroundColor:'#2ecc71' }} onClick={openCreate}>+ Novo</button>
-        <span style={{ fontSize:'0.75rem', color:'var(--text-secondary)', marginLeft:'auto' }}>Total: <strong style={{ color:'var(--primary-light)' }}>{members.length}</strong></span>
+        <button className="modal-btn desktop-only-btn" style={{ margin: 0, padding: '8px 14px', fontSize: '0.8rem', backgroundColor: '#2ecc71' }} onClick={openCreate}>+ Novo</button>
+        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: 'auto' }}>Total: <strong style={{ color: 'var(--primary-light)' }}>{members.length}</strong></span>
       </div>
 
       {/* 3 COLUNAS KANBAN OU LISTA */}
@@ -579,8 +579,8 @@ export default function Home() {
                     </td>
                     <td data-label="Contato" style={{ padding: '12px 8px', verticalAlign: 'middle' }}>
                       {m.phone ? (
-                        <button onClick={e => { e.stopPropagation(); openWhatsApp(m.name, m.phone || ''); }} style={{ background:'transparent', cursor:'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', border: '1px solid #25d366' }}>
-                          <svg viewBox="0 0 24 24" width="18" height="18" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        <button onClick={e => { e.stopPropagation(); openWhatsApp(m.name, m.phone || ''); }} style={{ background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', border: '1px solid #25d366' }}>
+                          <svg viewBox="0 0 24 24" width="18" height="18" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
                         </button>
                       ) : <span style={{ color: 'var(--text-secondary)' }}>-</span>}
                     </td>
@@ -595,38 +595,38 @@ export default function Home() {
           </div>
         </div>
       ) : (
-      <div className="responsive-grid-3 kanban-board">
-        {/* PENDENTES */}
-        <div className="glass kanban-col">
-          <ColHead color="#f39c12" title="Aguardando" count={pendentes.length} />
-          <div className="scroll-container" style={{ flex:1, paddingRight:'4px' }}>
-            {pendentes.length > 0 ? pendentes.map(m => <Row key={m.id} member={m} type="pendente" />) : (
-              <div style={{ textAlign:'center', padding:'25px 8px', color:'var(--text-secondary)', fontSize:'0.8rem' }}><div style={{ fontSize:'1.3rem', marginBottom:'6px', opacity:0.4 }}>✅</div>Nenhum pendente</div>
-            )}
+        <div className="responsive-grid-3 kanban-board">
+          {/* PENDENTES */}
+          <div className="glass kanban-col">
+            <ColHead color="#f39c12" title="Aguardando" count={pendentes.length} />
+            <div className="scroll-container" style={{ flex: 1, paddingRight: '4px' }}>
+              {pendentes.length > 0 ? pendentes.map(m => <Row key={m.id} member={m} type="pendente" />) : (
+                <div style={{ textAlign: 'center', padding: '25px 8px', color: 'var(--text-secondary)', fontSize: '0.8rem' }}><div style={{ fontSize: '1.3rem', marginBottom: '6px', opacity: 0.4 }}>✅</div>Nenhum pendente</div>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* ATIVOS */}
-        <div className="glass kanban-col">
-          <ColHead color="#2ecc71" title="Ativos" count={ativos.length} />
-          <div className="scroll-container" style={{ flex:1, paddingRight:'4px' }}>
-            {ativos.length > 0 ? ativos.map(m => <Row key={m.id} member={m} type="ativo" />) : (
-              <div style={{ textAlign:'center', padding:'25px 8px', color:'var(--text-secondary)', fontSize:'0.8rem' }}><div style={{ fontSize:'1.3rem', marginBottom:'6px', opacity:0.4 }}>👥</div>Nenhum ativo</div>
-            )}
+          {/* ATIVOS */}
+          <div className="glass kanban-col">
+            <ColHead color="#2ecc71" title="Ativos" count={ativos.length} />
+            <div className="scroll-container" style={{ flex: 1, paddingRight: '4px' }}>
+              {ativos.length > 0 ? ativos.map(m => <Row key={m.id} member={m} type="ativo" />) : (
+                <div style={{ textAlign: 'center', padding: '25px 8px', color: 'var(--text-secondary)', fontSize: '0.8rem' }}><div style={{ fontSize: '1.3rem', marginBottom: '6px', opacity: 0.4 }}>👥</div>Nenhum ativo</div>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* INATIVOS */}
-        <div className="glass kanban-col">
-          <ColHead color="#95a5a6" title="Inativos" count={inativos.length} />
-          <div className="scroll-container" style={{ flex:1, paddingRight:'4px' }}>
-            {inativos.length > 0 ? inativos.map(m => <Row key={m.id} member={m} type="inativo" />) : (
-              <div style={{ textAlign:'center', padding:'25px 8px', color:'var(--text-secondary)', fontSize:'0.8rem' }}><div style={{ fontSize:'1.3rem', marginBottom:'6px', opacity:0.4 }}>😴</div>Nenhum inativo</div>
-            )}
+          {/* INATIVOS */}
+          <div className="glass kanban-col">
+            <ColHead color="#95a5a6" title="Inativos" count={inativos.length} />
+            <div className="scroll-container" style={{ flex: 1, paddingRight: '4px' }}>
+              {inativos.length > 0 ? inativos.map(m => <Row key={m.id} member={m} type="inativo" />) : (
+                <div style={{ textAlign: 'center', padding: '25px 8px', color: 'var(--text-secondary)', fontSize: '0.8rem' }}><div style={{ fontSize: '1.3rem', marginBottom: '6px', opacity: 0.4 }}>😴</div>Nenhum inativo</div>
+              )}
+            </div>
           </div>
-        </div>
 
-      </div>
+        </div>
       )}
 
       {/* MODAL DETALHES DO MEMBRO */}
@@ -634,38 +634,38 @@ export default function Home() {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="glass" style={{ padding: '24px', borderRadius: '16px', width: '100%', maxWidth: '400px', margin: '15px', position: 'relative' }}>
             <button onClick={() => setSel(null)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
-            <div style={{ display:'flex', flexDirection:'column', animation:'fadeIn 0.3s ease' }}>
-              <div style={{ textAlign:'center', marginBottom:'14px', flexShrink:0 }}>
-                <img src={sel.photoUrl} alt={sel.name} className="modal-photo" style={{ width:'85px', height:'85px', border:'3px solid var(--primary-light)', display:'block', margin:'0 auto 12px' }} />
-                <h3 style={{ fontSize:'1.2rem', marginBottom:'4px' }}>{sel.name}</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', animation: 'fadeIn 0.3s ease' }}>
+              <div style={{ textAlign: 'center', marginBottom: '14px', flexShrink: 0 }}>
+                <img src={sel.photoUrl} alt={sel.name} className="modal-photo" style={{ width: '85px', height: '85px', border: '3px solid var(--primary-light)', display: 'block', margin: '0 auto 12px' }} />
+                <h3 style={{ fontSize: '1.2rem', marginBottom: '4px' }}>{sel.name}</h3>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                  <span className="badge" style={{ padding:'3px 8px', fontSize:'0.6rem', margin:0 }}>{dbChurches.find((c: Church) => c.id === sel.church_id)?.name || 'Igreja'}</span>
-                  {sel.status === 'aguardando_aprovacao' && <span className="badge" style={{ background:'#f39c12', padding:'3px 8px', fontSize:'0.6rem', margin:0, color:'#fff' }}>PENDENTE</span>}
-                  {sel.status === 'ativo' && (isExp(sel.integrationDate) ? <span className="badge-expired" style={{ padding:'3px 8px' }}>VENCIDA</span> : <span className="badge-valid" style={{ padding:'3px 8px' }}>ATIVA</span>)}
-                  {sel.status === 'inativo' && <span className="badge" style={{ background:'#95a5a6', padding:'3px 8px', fontSize:'0.6rem', margin:0, color:'#fff' }}>INATIVO</span>}
+                  <span className="badge" style={{ padding: '3px 8px', fontSize: '0.6rem', margin: 0 }}>{dbChurches.find((c: Church) => c.id === sel.church_id)?.name || 'Igreja'}</span>
+                  {sel.status === 'aguardando_aprovacao' && <span className="badge" style={{ background: '#f39c12', padding: '3px 8px', fontSize: '0.6rem', margin: 0, color: '#fff' }}>PENDENTE</span>}
+                  {sel.status === 'ativo' && (isExp(sel.integrationDate) ? <span className="badge-expired" style={{ padding: '3px 8px' }}>VENCIDA</span> : <span className="badge-valid" style={{ padding: '3px 8px' }}>ATIVA</span>)}
+                  {sel.status === 'inativo' && <span className="badge" style={{ background: '#95a5a6', padding: '3px 8px', fontSize: '0.6rem', margin: 0, color: '#fff' }}>INATIVO</span>}
                 </div>
               </div>
-              <div className="scroll-container" style={{ fontSize:'0.8rem', color:'var(--text-secondary)', display:'flex', flexDirection:'column', gap:'8px', maxHeight: '350px', overflowY:'auto', paddingRight:'4px' }}>
+              <div className="scroll-container" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '350px', overflowY: 'auto', paddingRight: '4px' }}>
                 <InfoCard label="Função" value={sel.function || ''} />
                 {sel.ministry && <InfoCard label="Ministério" value={sel.ministry} />}
-                <InfoCard label="Contato" value={`📞 ${sel.phone}${sel.email ? '\n✉️ '+sel.email : ''}`} />
+                <InfoCard label="Contato" value={`📞 ${sel.phone}${sel.email ? '\n✉️ ' + sel.email : ''}`} />
                 <InfoCard label="Endereço" value={`📍 ${sel.address}`} />
                 {(sel.maritalStatus || sel.isBaptized) && (
                   <InfoCard label="Dados Pessoais & Batismo" value={`${sel.maritalStatus ? '💍 Estado Civil: ' + sel.maritalStatus + '\n' : ''}${sel.isBaptized ? '🌊 Batizado: ' + sel.isBaptized + (sel.isBaptized === 'Sim' && sel.baptismDate ? ' (' + fmt(sel.baptismDate) + ')' : '') : ''}`} />
                 )}
                 {sel.integrationDate && (
-                  <div className="glass" style={{ padding:'10px 12px', borderRadius:'8px' }}>
-                    <div style={{ fontSize:'0.65rem', color:'var(--text-secondary)', fontWeight:'600', marginBottom:'3px', textTransform:'uppercase', letterSpacing:'0.5px' }}>Carteirinha</div>
-                    <div style={{ color:'var(--text-primary)', fontWeight:'500', fontSize:'0.8rem' }}>🗓️ {fmt(sel.integrationDate)}</div>
-                    <div style={{ color: isExp(sel.integrationDate) ? '#e74c3c' : '#27ae60', fontWeight:'500', fontSize:'0.8rem' }}>
+                  <div className="glass" style={{ padding: '10px 12px', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: '600', marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Carteirinha</div>
+                    <div style={{ color: 'var(--text-primary)', fontWeight: '500', fontSize: '0.8rem' }}>🗓️ {fmt(sel.integrationDate)}</div>
+                    <div style={{ color: isExp(sel.integrationDate) ? '#e74c3c' : '#27ae60', fontWeight: '500', fontSize: '0.8rem' }}>
                       {isExp(sel.integrationDate) ? '⚠️ Expirou: ' : '✅ Expira: '}{calcExp(sel.integrationDate)}
                     </div>
                   </div>
                 )}
               </div>
-              <div style={{ display:'flex', gap:'8px', marginTop:'16px', flexShrink:0 }}>
-                <button style={{ flex:1, padding:'10px', border:'1px solid var(--primary-light)', background:'transparent', color:'var(--primary-light)', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'0.8rem' }} onClick={() => { openEdit(sel); setSel(null); }}>📝 Editar Dados / Status</button>
-                {sel.status === 'ativo' && <button className="modal-btn" style={{ flex:1, margin:0, padding:'10px', fontSize:'0.8rem' }} onClick={() => setShowCard(true)}>🪪 Carteirinha</button>}
+              <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexShrink: 0 }}>
+                <button style={{ flex: 1, padding: '10px', border: '1px solid var(--primary-light)', background: 'transparent', color: 'var(--primary-light)', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' }} onClick={() => { openEdit(sel); setSel(null); }}>📝 Editar Dados / Status</button>
+                {sel.status === 'ativo' && <button className="modal-btn" style={{ flex: 1, margin: 0, padding: '10px', fontSize: '0.8rem' }} onClick={() => setShowCard(true)}>🪪 Carteirinha</button>}
               </div>
             </div>
           </div>
@@ -675,21 +675,21 @@ export default function Home() {
       {/* MODAL CARTEIRINHA */}
       {showCard && sel && (
         <div className="modal-overlay" onClick={() => setShowCard(false)}>
-          <div style={{ animation:'slideUp 0.3s ease' }} onClick={e => e.stopPropagation()}>
+          <div style={{ animation: 'slideUp 0.3s ease' }} onClick={e => e.stopPropagation()}>
             {/* Carteirinha visual */}
             <div ref={cardRef} style={{
               width: '420px', height: '265px', borderRadius: '12px', overflow: 'hidden',
-              background: selectedChurchObj?.cardConfig?.backgroundUrl 
-                ? `url(${selectedChurchObj.cardConfig.backgroundUrl}) center/cover no-repeat` 
+              background: selectedChurchObj?.cardConfig?.backgroundUrl
+                ? `url(${selectedChurchObj.cardConfig.backgroundUrl}) center/cover no-repeat`
                 : `linear-gradient(135deg, ${selectedChurchObj?.cardConfig?.primaryColor || '#0f172a'}, #2c3e50)`,
               color: '#fff', fontFamily: "'Inter', sans-serif", position: 'relative',
               boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
             }}>
-              
+
               {/* Photo */}
-              <div style={{ 
-                position: 'absolute', top: '40px', left: '40px', width: '120px', height: '175px', 
-                borderRadius: '12px', background: 'rgba(255,255,255,0.2)', 
+              <div style={{
+                position: 'absolute', top: '40px', left: '40px', width: '120px', height: '175px',
+                borderRadius: '12px', background: 'rgba(255,255,255,0.2)',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.3)', border: '2px solid rgba(255,255,255,0.1)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
               }}>
@@ -697,12 +697,12 @@ export default function Home() {
               </div>
 
               {/* Function Band */}
-              <div style={{ 
+              <div style={{
                 position: 'absolute', top: '110px', left: '175px', right: '15px', height: '40px',
-                background: getFunctionColor(sel.function, selectedChurchObj?.cardConfig), 
+                background: getFunctionColor(sel.function, selectedChurchObj?.cardConfig),
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontWeight: 800, letterSpacing: '1.5px', fontSize: '1.1rem',
-                boxShadow: '0 4px 10px rgba(0,0,0,0.2)', color: '#fff', 
+                boxShadow: '0 4px 10px rgba(0,0,0,0.2)', color: '#fff',
                 borderRadius: '4px', zIndex: 1
               }}>
                 {(sel.function || 'MEMBRO').toUpperCase()}
@@ -719,9 +719,9 @@ export default function Home() {
             </div>
 
             {/* Botões abaixo da carteirinha */}
-            <div style={{ display:'flex', gap:'10px', marginTop:'15px', justifyContent:'center' }}>
-              <button onClick={handlePrint} className="modal-btn" style={{ margin:0, padding:'10px 25px', fontSize:'0.9rem' }}>🖨️ Imprimir</button>
-              <button onClick={() => setShowCard(false)} style={{ padding:'10px 25px', border:'1px solid rgba(255,255,255,0.3)', background:'transparent', color:'#fff', borderRadius:'8px', cursor:'pointer', fontSize:'0.9rem' }}>✕ Fechar</button>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '15px', justifyContent: 'center' }}>
+              <button onClick={handlePrint} className="modal-btn" style={{ margin: 0, padding: '10px 25px', fontSize: '0.9rem' }}>🖨️ Imprimir</button>
+              <button onClick={() => setShowCard(false)} style={{ padding: '10px 25px', border: '1px solid rgba(255,255,255,0.3)', background: 'transparent', color: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem' }}>✕ Fechar</button>
             </div>
           </div>
         </div>
@@ -730,35 +730,35 @@ export default function Home() {
       {/* MODAL EDIÇÃO */}
       {isEditing && (
         <div className="modal-overlay" onClick={() => { setIsEditing(false); setIsCreating(false); setIsApproving(false); }}>
-          <div className="modal-content" style={{ maxWidth:'520px', animation:'slideUp 0.3s ease' }} onClick={e => e.stopPropagation()}>
+          <div className="modal-content" style={{ maxWidth: '520px', animation: 'slideUp 0.3s ease' }} onClick={e => e.stopPropagation()}>
             <button className="modal-close" onClick={() => { setIsEditing(false); setIsCreating(false); setIsApproving(false); }}>&times;</button>
             <form onSubmit={handleSave} className="modal-body">
-              <h3 style={{ borderBottom:'1px solid var(--table-border)', paddingBottom:'10px', marginBottom:'10px', color:'var(--text-primary)' }}>
+              <h3 style={{ borderBottom: '1px solid var(--table-border)', paddingBottom: '10px', marginBottom: '10px', color: 'var(--text-primary)' }}>
                 {isApproving ? '✅ Aprovar Membro' : isCreating ? '➕ Novo Membro' : '📝 Editar'}
               </h3>
-              {isApproving && <p style={{ fontSize:'0.82rem', color:'#2ecc71', marginBottom:'10px', padding:'8px', background:'rgba(46,204,113,0.08)', borderRadius:'8px', border:'1px solid rgba(46,204,113,0.2)' }}>Defina a foto, função e data de integração.</p>}
-              <div style={{ display:'flex', justifyContent:'center', marginBottom:'10px' }}>
-                <label htmlFor="photo-upload" style={{ cursor:'pointer', position:'relative' }}>
-                  <div style={{ width:'85px', height:'85px', borderRadius:'50%', border:'3px dashed var(--primary-light)', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden', backgroundColor:'rgba(59,130,246,0.05)' }}>
-                    {photoPreview ? <img src={photoPreview} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <span style={{ fontSize:'1.6rem', opacity:0.4 }}>📷</span>}
+              {isApproving && <p style={{ fontSize: '0.82rem', color: '#2ecc71', marginBottom: '10px', padding: '8px', background: 'rgba(46,204,113,0.08)', borderRadius: '8px', border: '1px solid rgba(46,204,113,0.2)' }}>Defina a foto, função e data de integração.</p>}
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+                <label htmlFor="photo-upload" style={{ cursor: 'pointer', position: 'relative' }}>
+                  <div style={{ width: '85px', height: '85px', borderRadius: '50%', border: '3px dashed var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', backgroundColor: 'rgba(59,130,246,0.05)' }}>
+                    {photoPreview ? <img src={photoPreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '1.6rem', opacity: 0.4 }}>📷</span>}
                   </div>
-                  <div style={{ position:'absolute', bottom:0, right:0, width:'22px', height:'22px', borderRadius:'50%', backgroundColor:'var(--primary-light)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.65rem', color:'#fff' }}>✏️</div>
-                  <input id="photo-upload" type="file" accept="image/*" onChange={handlePhoto} style={{ display:'none' }} />
+                  <div style={{ position: 'absolute', bottom: 0, right: 0, width: '22px', height: '22px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', color: '#fff' }}>✏️</div>
+                  <input id="photo-upload" type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
                 </label>
               </div>
-              <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
-                <div><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Nome</label><input type="text" name="name" value={editForm.name} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required /></div>
-                <div style={{ display:'flex', gap:'10px' }}>
-                  <div style={{ flex:1 }}>
-                    <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Função / Habilidade</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Nome</label><input type="text" name="name" value={editForm.name} onChange={onChange} className="search-input glass-input" style={{ width: '100%', padding: '8px' }} required /></div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Função / Habilidade</label>
                     {customFunction ? (
-                      <div style={{ display:'flex', gap:'4px' }}>
-                        <input type="text" placeholder="Nome da nova função..." value={editForm.function} onChange={e => setEditForm((p:any) => ({...p, function: e.target.value}))} className="search-input glass-input" style={{ flex:1, padding:'8px' }} autoFocus required />
-                        <button type="button" onClick={() => { if (editForm.function && !customFunctions.includes(editForm.function)) setCustomFunctions(p => [...p, editForm.function]); setCustomFunction(false); }} style={{ padding:'6px 10px', borderRadius:'6px', border:'none', background:'#2ecc71', color:'#fff', cursor:'pointer', fontSize:'0.7rem', fontWeight:'600' }}>✓</button>
-                        <button type="button" onClick={() => { setCustomFunction(false); setEditForm((p:any) => ({...p, function: ''})); }} style={{ padding:'6px 8px', borderRadius:'6px', border:'none', background:'#e74c3c', color:'#fff', cursor:'pointer', fontSize:'0.7rem' }}>✕</button>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <input type="text" placeholder="Nome da nova função..." value={editForm.function} onChange={e => setEditForm((p: any) => ({ ...p, function: e.target.value }))} className="search-input glass-input" style={{ flex: 1, padding: '8px' }} autoFocus required />
+                        <button type="button" onClick={() => { if (editForm.function && !customFunctions.includes(editForm.function)) setCustomFunctions(p => [...p, editForm.function]); setCustomFunction(false); }} style={{ padding: '6px 10px', borderRadius: '6px', border: 'none', background: '#2ecc71', color: '#fff', cursor: 'pointer', fontSize: '0.7rem', fontWeight: '600' }}>✓</button>
+                        <button type="button" onClick={() => { setCustomFunction(false); setEditForm((p: any) => ({ ...p, function: '' })); }} style={{ padding: '6px 8px', borderRadius: '6px', border: 'none', background: '#e74c3c', color: '#fff', cursor: 'pointer', fontSize: '0.7rem' }}>✕</button>
                       </div>
                     ) : (
-                      <select name="function" value={editForm.function} onChange={e => { if (e.target.value === '__new__') { setCustomFunction(true); setEditForm((p:any) => ({...p, function: ''})); } else { onChange(e); }}} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required>
+                      <select name="function" value={editForm.function} onChange={e => { if (e.target.value === '__new__') { setCustomFunction(true); setEditForm((p: any) => ({ ...p, function: '' })); } else { onChange(e); } }} className="search-input glass-input" style={{ width: '100%', padding: '8px' }} required>
                         <option value="">Selecione...</option>
                         {(selectedChurchObj?.config?.funcoes || ['Membro', 'Obreiro(a)', 'Diácono(a)', 'Presbítero', 'Pastor']).map((f: string) => (
                           <option key={f} value={f}>{f}</option>
@@ -768,16 +768,16 @@ export default function Home() {
                       </select>
                     )}
                   </div>
-                  <div style={{ flex:1 }}>
-                    <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Ministério</label>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Ministério</label>
                     {customMinistry ? (
-                      <div style={{ display:'flex', gap:'4px' }}>
-                        <input type="text" placeholder="Nome do novo ministério..." value={editForm.ministry} onChange={e => setEditForm((p:any) => ({...p, ministry: e.target.value}))} className="search-input glass-input" style={{ flex:1, padding:'8px' }} autoFocus />
-                        <button type="button" onClick={() => { if (editForm.ministry && !customMinistries.includes(editForm.ministry)) setCustomMinistries(p => [...p, editForm.ministry]); setCustomMinistry(false); }} style={{ padding:'6px 10px', borderRadius:'6px', border:'none', background:'#2ecc71', color:'#fff', cursor:'pointer', fontSize:'0.7rem', fontWeight:'600' }}>✓</button>
-                        <button type="button" onClick={() => { setCustomMinistry(false); setEditForm((p:any) => ({...p, ministry: ''})); }} style={{ padding:'6px 8px', borderRadius:'6px', border:'none', background:'#e74c3c', color:'#fff', cursor:'pointer', fontSize:'0.7rem' }}>✕</button>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <input type="text" placeholder="Nome do novo ministério..." value={editForm.ministry} onChange={e => setEditForm((p: any) => ({ ...p, ministry: e.target.value }))} className="search-input glass-input" style={{ flex: 1, padding: '8px' }} autoFocus />
+                        <button type="button" onClick={() => { if (editForm.ministry && !customMinistries.includes(editForm.ministry)) setCustomMinistries(p => [...p, editForm.ministry]); setCustomMinistry(false); }} style={{ padding: '6px 10px', borderRadius: '6px', border: 'none', background: '#2ecc71', color: '#fff', cursor: 'pointer', fontSize: '0.7rem', fontWeight: '600' }}>✓</button>
+                        <button type="button" onClick={() => { setCustomMinistry(false); setEditForm((p: any) => ({ ...p, ministry: '' })); }} style={{ padding: '6px 8px', borderRadius: '6px', border: 'none', background: '#e74c3c', color: '#fff', cursor: 'pointer', fontSize: '0.7rem' }}>✕</button>
                       </div>
                     ) : (
-                      <select name="ministry" value={editForm.ministry} onChange={e => { if (e.target.value === '__new__') { setCustomMinistry(true); setEditForm((p:any) => ({...p, ministry: ''})); } else { onChange(e); }}} className="search-input glass-input" style={{ width:'100%', padding:'8px' }}>
+                      <select name="ministry" value={editForm.ministry} onChange={e => { if (e.target.value === '__new__') { setCustomMinistry(true); setEditForm((p: any) => ({ ...p, ministry: '' })); } else { onChange(e); } }} className="search-input glass-input" style={{ width: '100%', padding: '8px' }}>
                         <option value="">Selecione...</option>
                         {(dbChurches.find(c => c.id === editForm.churchId)?.departments || ['Louvor', 'Obreiros', 'Infantil', 'Mídia', 'Pastoral', 'Intercessão', 'Evangelismo', 'Diaconia']).map((d: string) => (
                           <option key={d} value={d}>{d}</option>
@@ -788,10 +788,10 @@ export default function Home() {
                     )}
                   </div>
                 </div>
-                <div style={{ display:'flex', gap:'10px', marginBottom:'10px' }}>
-                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Data de Nascimento *</label><input type="date" name="birthDate" value={editForm.birthDate || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required /></div>
-                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Estado Civil *</label>
-                    <select name="maritalStatus" value={editForm.maritalStatus || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                  <div style={{ flex: 1 }}><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Data de Nascimento *</label><input type="date" name="birthDate" value={editForm.birthDate || ''} onChange={onChange} className="search-input glass-input" style={{ width: '100%', padding: '8px' }} required /></div>
+                  <div style={{ flex: 1 }}><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Estado Civil *</label>
+                    <select name="maritalStatus" value={editForm.maritalStatus || ''} onChange={onChange} className="search-input glass-input" style={{ width: '100%', padding: '8px' }} required>
                       <option value="">Selecione...</option>
                       <option value="Casado(a)">Casado(a)</option>
                       <option value="Solteiro(a)">Solteiro(a)</option>
@@ -801,25 +801,25 @@ export default function Home() {
                     </select>
                   </div>
                 </div>
-                <div style={{ display:'flex', gap:'10px', marginBottom:'10px' }}>
-                  <div style={{ flex:1 }}>
-                    <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Já é Batizado(a)? *</label>
-                    <select name="isBaptized" value={editForm.isBaptized || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Já é Batizado(a)? *</label>
+                    <select name="isBaptized" value={editForm.isBaptized || ''} onChange={onChange} className="search-input glass-input" style={{ width: '100%', padding: '8px' }} required>
                       <option value="">Selecione...</option>
                       <option value="Sim">Sim</option>
                       <option value="Não">Não</option>
                     </select>
                   </div>
                   {editForm.isBaptized === 'Sim' && (
-                    <div style={{ flex:1 }}>
-                      <label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Data do Batismo *</label>
-                      <input type="date" name="baptismDate" value={editForm.baptismDate || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required />
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Data do Batismo *</label>
+                      <input type="date" name="baptismDate" value={editForm.baptismDate || ''} onChange={onChange} className="search-input glass-input" style={{ width: '100%', padding: '8px' }} required />
                     </div>
                   )}
                 </div>
-                <div style={{ display:'flex', gap:'10px', marginBottom:'10px' }}>
-                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Situação Profissional</label>
-                    <select name="employmentStatus" value={editForm.employmentStatus || ''} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }}>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                  <div style={{ flex: 1 }}><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Situação Profissional</label>
+                    <select name="employmentStatus" value={editForm.employmentStatus || ''} onChange={onChange} className="search-input glass-input" style={{ width: '100%', padding: '8px' }}>
                       <option value="">Selecione...</option>
                       <option value="CLT">Assalariado (CLT)</option>
                       <option value="Autônomo">Autônomo</option>
@@ -829,15 +829,15 @@ export default function Home() {
                       <option value="Aposentado">Aposentado(a)</option>
                     </select>
                   </div>
-                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Profissão</label>
+                  <div style={{ flex: 1 }}><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Profissão</label>
                     {customProfession ? (
-                      <div style={{ display:'flex', gap:'4px' }}>
-                        <input type="text" placeholder="Qual a profissão?" value={editForm.profession || ''} onChange={e => setEditForm((p:any) => ({...p, profession: e.target.value}))} className="search-input glass-input" style={{ flex:1, padding:'8px' }} autoFocus />
-                        <button type="button" onClick={() => { if (editForm.profession && !customProfessions.includes(editForm.profession)) setCustomProfessions(p => [...p, editForm.profession]); setCustomProfession(false); }} style={{ padding:'6px 10px', borderRadius:'6px', border:'none', background:'#2ecc71', color:'#fff', cursor:'pointer', fontSize:'0.7rem', fontWeight:'600' }}>OK</button>
-                        <button type="button" onClick={() => { setCustomProfession(false); setEditForm((p:any) => ({...p, profession: ''})); }} style={{ padding:'6px 8px', borderRadius:'6px', border:'none', background:'#e74c3c', color:'#fff', cursor:'pointer', fontSize:'0.7rem' }}>X</button>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <input type="text" placeholder="Qual a profissão?" value={editForm.profession || ''} onChange={e => setEditForm((p: any) => ({ ...p, profession: e.target.value }))} className="search-input glass-input" style={{ flex: 1, padding: '8px' }} autoFocus />
+                        <button type="button" onClick={() => { if (editForm.profession && !customProfessions.includes(editForm.profession)) setCustomProfessions(p => [...p, editForm.profession]); setCustomProfession(false); }} style={{ padding: '6px 10px', borderRadius: '6px', border: 'none', background: '#2ecc71', color: '#fff', cursor: 'pointer', fontSize: '0.7rem', fontWeight: '600' }}>OK</button>
+                        <button type="button" onClick={() => { setCustomProfession(false); setEditForm((p: any) => ({ ...p, profession: '' })); }} style={{ padding: '6px 8px', borderRadius: '6px', border: 'none', background: '#e74c3c', color: '#fff', cursor: 'pointer', fontSize: '0.7rem' }}>X</button>
                       </div>
                     ) : (
-                      <select name="profession" value={editForm.profession || ''} onChange={e => { if (e.target.value === '__new__') { setCustomProfession(true); setEditForm((p:any) => ({...p, profession: ''})); } else { onChange(e); }}} className="search-input glass-input" style={{ width:'100%', padding:'8px' }}>
+                      <select name="profession" value={editForm.profession || ''} onChange={e => { if (e.target.value === '__new__') { setCustomProfession(true); setEditForm((p: any) => ({ ...p, profession: '' })); } else { onChange(e); } }} className="search-input glass-input" style={{ width: '100%', padding: '8px' }}>
                         <option value="">Selecione...</option>
                         <option value="Administrador(a)">Administrador(a)</option>
                         <option value="Advogado(a)">Advogado(a)</option>
@@ -863,22 +863,22 @@ export default function Home() {
                     )}
                   </div>
                 </div>
-                <div style={{ display:'flex', gap:'10px' }}>
-                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Telefone</label><input type="text" name="phone" value={editForm.phone} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required /></div>
-                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Igreja</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <div style={{ flex: 1 }}><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Telefone</label><input type="text" name="phone" value={editForm.phone} onChange={onChange} className="search-input glass-input" style={{ width: '100%', padding: '8px' }} required /></div>
+                  <div style={{ flex: 1 }}><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Igreja</label>
                     {customChurch ? (
-                      <div style={{ display:'flex', gap:'4px' }}>
-                        <input type="text" placeholder="Nome da nova igreja..." value={newChurchName} onChange={e => setNewChurchName(e.target.value)} className="search-input glass-input" style={{ flex:1, padding:'8px' }} autoFocus />
-                        <button type="button" onClick={() => { if (newChurchName) { const id = 'c_'+Date.now(); setCustomChurches(p => [...p, {id, name:newChurchName}]); setEditForm((p:any) => ({...p, churchId: id})); } setCustomChurch(false); setNewChurchName(''); }} style={{ padding:'6px 10px', borderRadius:'6px', border:'none', background:'#2ecc71', color:'#fff', cursor:'pointer', fontSize:'0.7rem', fontWeight:'600' }}>✓</button>
-                        <button type="button" onClick={() => { setCustomChurch(false); setNewChurchName(''); }} style={{ padding:'6px 8px', borderRadius:'6px', border:'none', background:'#e74c3c', color:'#fff', cursor:'pointer', fontSize:'0.7rem' }}>✕</button>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <input type="text" placeholder="Nome da nova igreja..." value={newChurchName} onChange={e => setNewChurchName(e.target.value)} className="search-input glass-input" style={{ flex: 1, padding: '8px' }} autoFocus />
+                        <button type="button" onClick={() => { if (newChurchName) { const id = 'c_' + Date.now(); setCustomChurches(p => [...p, { id, name: newChurchName }]); setEditForm((p: any) => ({ ...p, churchId: id })); } setCustomChurch(false); setNewChurchName(''); }} style={{ padding: '6px 10px', borderRadius: '6px', border: 'none', background: '#2ecc71', color: '#fff', cursor: 'pointer', fontSize: '0.7rem', fontWeight: '600' }}>✓</button>
+                        <button type="button" onClick={() => { setCustomChurch(false); setNewChurchName(''); }} style={{ padding: '6px 8px', borderRadius: '6px', border: 'none', background: '#e74c3c', color: '#fff', cursor: 'pointer', fontSize: '0.7rem' }}>✕</button>
                       </div>
                     ) : (
-                      <select 
-                        name="churchId" 
-                        value={editForm.churchId} 
-                        onChange={e => { if (e.target.value === '__new__') { setCustomChurch(true); } else { onChange(e); }}} 
-                        className="search-input glass-input" 
-                        style={{ width:'100%', padding:'8px' }}
+                      <select
+                        name="churchId"
+                        value={editForm.churchId}
+                        onChange={e => { if (e.target.value === '__new__') { setCustomChurch(true); } else { onChange(e); } }}
+                        className="search-input glass-input"
+                        style={{ width: '100%', padding: '8px' }}
                         disabled={!(canSeeAllChurches || isPastorRegional)}
                       >
                         {dbChurches.map((c: Church) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -890,36 +890,36 @@ export default function Home() {
                     )}
                   </div>
                 </div>
-                <div><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Endereço</label><input type="text" name="address" value={editForm.address} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} required /></div>
-                <div style={{ display:'flex', gap:'10px' }}>
-                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Data de Integração</label><input type="date" name="integrationDate" value={editForm.integrationDate} onChange={onChange} className="search-input glass-input" style={{ width:'100%', padding:'8px' }} /></div>
-                  <div style={{ flex:1 }}><label style={{ fontSize:'0.78rem', fontWeight:'bold', display:'block', marginBottom:'3px' }}>Validade da Carteirinha</label><input type="text" name="cardValidity" value={editForm.cardValidity || ''} onChange={onChange} placeholder="Ex: 12/2026" className="search-input glass-input" style={{ width:'100%', padding:'8px' }} /></div>
+                <div><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Endereço</label><input type="text" name="address" value={editForm.address} onChange={onChange} className="search-input glass-input" style={{ width: '100%', padding: '8px' }} required /></div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <div style={{ flex: 1 }}><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Data de Integração</label><input type="date" name="integrationDate" value={editForm.integrationDate} onChange={onChange} className="search-input glass-input" style={{ width: '100%', padding: '8px' }} /></div>
+                  <div style={{ flex: 1 }}><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Validade da Carteirinha</label><input type="text" name="cardValidity" value={editForm.cardValidity || ''} onChange={onChange} placeholder="Ex: 12/2026" className="search-input glass-input" style={{ width: '100%', padding: '8px' }} /></div>
                 </div>
               </div>
-              <div style={{ display:'flex', gap:'10px', marginTop:'16px', flexWrap:'wrap' }}>
-                <button type="button" className="modal-btn" style={{ flex:1, backgroundColor:'#7f8c8d', minWidth:'110px' }} onClick={() => { setIsEditing(false); setIsCreating(false); setIsApproving(false); }}>Cancelar</button>
-                
+              <div style={{ display: 'flex', gap: '10px', marginTop: '16px', flexWrap: 'wrap' }}>
+                <button type="button" className="modal-btn" style={{ flex: 1, backgroundColor: '#7f8c8d', minWidth: '110px' }} onClick={() => { setIsEditing(false); setIsCreating(false); setIsApproving(false); }}>Cancelar</button>
+
                 {isCreating ? (
-                  <button type="submit" className="modal-btn" style={{ flex:2, backgroundColor:'#2ecc71', minWidth:'110px' }}>Cadastrar</button>
+                  <button type="submit" className="modal-btn" style={{ flex: 2, backgroundColor: '#2ecc71', minWidth: '110px' }}>Cadastrar</button>
                 ) : (
                   <>
                     {editForm.status === 'aguardando_aprovacao' && (
                       <>
-                        <button type="submit" className="modal-btn" style={{ flex:1, backgroundColor:'#3498db', minWidth:'110px' }}>💾 Salvar Modificações</button>
-                        <button type="button" className="modal-btn" style={{ flex:1, backgroundColor:'#2ecc71', minWidth:'110px' }} onClick={(e) => handleSave(e, 'ativo')}>✅ Aprovar e Ativar</button>
-                        <button type="button" className="modal-btn" style={{ flex:1, backgroundColor:'#e74c3c', minWidth:'110px' }} onClick={(e) => handleSave(e, 'inativo')}>❌ Inativar</button>
+                        <button type="submit" className="modal-btn" style={{ flex: 1, backgroundColor: '#3498db', minWidth: '110px' }}>💾 Salvar Modificações</button>
+                        <button type="button" className="modal-btn" style={{ flex: 1, backgroundColor: '#2ecc71', minWidth: '110px' }} onClick={(e) => handleSave(e, 'ativo')}>✅ Aprovar e Ativar</button>
+                        <button type="button" className="modal-btn" style={{ flex: 1, backgroundColor: '#e74c3c', minWidth: '110px' }} onClick={(e) => handleSave(e, 'inativo')}>❌ Inativar</button>
                       </>
                     )}
                     {editForm.status === 'ativo' && (
                       <>
-                        <button type="submit" className="modal-btn" style={{ flex:2, backgroundColor:'#2ecc71', minWidth:'110px' }}>Salvar Alterações</button>
-                        <button type="button" className="modal-btn" style={{ flex:1, backgroundColor:'rgba(231,76,60,0.2)', color:'#e74c3c', minWidth:'110px' }} onClick={(e) => { if(confirm('Inativar membro?')) handleSave(e, 'inativo'); }}>❌ Inativar</button>
+                        <button type="submit" className="modal-btn" style={{ flex: 2, backgroundColor: '#2ecc71', minWidth: '110px' }}>Salvar Alterações</button>
+                        <button type="button" className="modal-btn" style={{ flex: 1, backgroundColor: 'rgba(231,76,60,0.2)', color: '#e74c3c', minWidth: '110px' }} onClick={(e) => { if (confirm('Inativar membro?')) handleSave(e, 'inativo'); }}>❌ Inativar</button>
                       </>
                     )}
                     {editForm.status === 'inativo' && (
                       <>
-                        <button type="submit" className="modal-btn" style={{ flex:2, backgroundColor:'#3498db', minWidth:'110px' }}>Salvar Alterações</button>
-                        <button type="button" className="modal-btn" style={{ flex:1, backgroundColor:'#2ecc71', minWidth:'110px' }} onClick={(e) => handleSave(e, 'ativo')}>✅ Reativar</button>
+                        <button type="submit" className="modal-btn" style={{ flex: 2, backgroundColor: '#3498db', minWidth: '110px' }}>Salvar Alterações</button>
+                        <button type="button" className="modal-btn" style={{ flex: 1, backgroundColor: '#2ecc71', minWidth: '110px' }} onClick={(e) => handleSave(e, 'ativo')}>✅ Reativar</button>
                       </>
                     )}
                   </>
@@ -934,18 +934,18 @@ export default function Home() {
       {showWaModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="glass" style={{ padding: '24px', borderRadius: '16px', width: '100%', maxWidth: '420px', margin: '15px' }}>
-            <h3 style={{ marginTop: 0, color: '#25d366', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem' }}><svg viewBox="0 0 24 24" width="20" height="20" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Mensagem WhatsApp</h3>
+            <h3 style={{ marginTop: 0, color: '#25d366', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem' }}><svg viewBox="0 0 24 24" width="20" height="20" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg> Mensagem WhatsApp</h3>
             <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>Edite a mensagem abaixo antes de enviar:</p>
-            <textarea 
-              value={waMsg} 
-              onChange={e => setWaMsg(e.target.value)} 
-              className="search-input glass-input" 
-              style={{ padding: '12px', width: '100%', boxSizing: 'border-box', minHeight: '100px', resize: 'vertical', fontSize: '0.9rem', lineHeight: '1.5' }} 
+            <textarea
+              value={waMsg}
+              onChange={e => setWaMsg(e.target.value)}
+              className="search-input glass-input"
+              style={{ padding: '12px', width: '100%', boxSizing: 'border-box', minHeight: '100px', resize: 'vertical', fontSize: '0.9rem', lineHeight: '1.5' }}
             />
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>
               <button type="button" onClick={() => setShowWaModal(false)} style={{ background: 'transparent', border: '1px solid var(--text-secondary)', color: 'var(--text-secondary)', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Cancelar</button>
               <button type="button" onClick={sendWhatsApp} style={{ background: '#25d366', border: 'none', color: '#fff', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Enviar
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg> Enviar
               </button>
             </div>
           </div>
@@ -957,9 +957,9 @@ export default function Home() {
 
 function InfoCard({ label, value }: { label: string, value: string }) {
   return (
-    <div className="glass" style={{ padding:'8px 10px', borderRadius:'8px' }}>
-      <div style={{ fontSize:'0.62rem', color:'var(--text-secondary)', fontWeight:'600', marginBottom:'3px', textTransform:'uppercase', letterSpacing:'0.5px' }}>{label}</div>
-      <div style={{ color:'var(--text-primary)', fontWeight:'500', fontSize:'0.75rem', whiteSpace:'pre-line' }}>{value}</div>
+    <div className="glass" style={{ padding: '8px 10px', borderRadius: '8px' }}>
+      <div style={{ fontSize: '0.62rem', color: 'var(--text-secondary)', fontWeight: '600', marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</div>
+      <div style={{ color: 'var(--text-primary)', fontWeight: '500', fontSize: '0.75rem', whiteSpace: 'pre-line' }}>{value}</div>
     </div>
   );
 }
