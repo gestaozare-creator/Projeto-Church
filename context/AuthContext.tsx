@@ -123,9 +123,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const rawName = authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário';
       const isReg = rawName.endsWith(' [REG]');
       const isDir = rawName.endsWith(' [DIR]');
-      
+
       const trueName = isReg ? rawName.replace(' [REG]', '') : (isDir ? rawName.replace(' [DIR]', '') : rawName);
-      
+
       let finalRole: UserRole = isReg ? 'pastor_regional' : (isDir ? 'pastor_diretor' : ((authUser.user_metadata?.role as UserRole) || (data?.role as UserRole) || 'secretaria'));
       if (authUser.email === 'gestaozare@gmail.com') {
         finalRole = 'superadmin';
@@ -191,36 +191,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .select('last_paid_month, force_blocked')
           .eq('id', resolvedMinistryId)
           .single();
-        
+
         if (ministryError) {
           console.error('Error fetching ministry for payment check:', ministryError);
         }
-        
+
         if (ministryData) {
-           if (ministryData.force_blocked) {
-              if (finalRole !== 'superadmin') {
-                 setIsNetworkBlocked(true);
-              } else {
-                 setPaymentWarning('red'); // Superadmin vê que está bloqueado via tarja
+          if (ministryData.force_blocked) {
+            if (finalRole !== 'superadmin') {
+              setIsNetworkBlocked(true);
+            } else {
+              setPaymentWarning('red'); // Superadmin vê que está bloqueado via tarja
+            }
+          } else {
+            const now = new Date();
+            const currentMonth = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+            const day = now.getDate();
+
+            if (ministryData.last_paid_month !== currentMonth) {
+              if (day >= 1 && day <= 5) {
+                setPaymentWarning('yellow');
+              } else if (day >= 6 && day <= 10) {
+                setPaymentWarning('red');
+              } else if (day > 10) {
+                setPaymentWarning('red');
+                if (finalRole !== 'superadmin') {
+                  setIsNetworkBlocked(true);
+                }
               }
-           } else {
-              const now = new Date();
-              const currentMonth = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
-              const day = now.getDate();
-              
-              if (ministryData.last_paid_month !== currentMonth) {
-                 if (day >= 1 && day <= 5) {
-                    setPaymentWarning('yellow');
-                 } else if (day >= 6 && day <= 10) {
-                    setPaymentWarning('red');
-                 } else if (day > 10) {
-                    setPaymentWarning('red');
-                    if (finalRole !== 'superadmin') {
-                       setIsNetworkBlocked(true);
-                    }
-                 }
-              }
-           }
+            }
+          }
         }
       }
       // --------------------------------
@@ -329,8 +329,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           zIndex: 99999,
           boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
         }}>
-          {paymentWarning === 'red' 
-            ? '⚠️ ATENÇÃO: O prazo máximo para pagamento do sistema encerra dia 10. Evite o bloqueio da rede!' 
+          {paymentWarning === 'red'
+            ? '⚠️ ATENÇÃO: O prazo máximo para pagamento do sistema encerra dia 10. Evite o bloqueio da rede!'
             : '⚠️ Lembrete: A fatura do sistema vence no dia 5. Regularize o pagamento para evitar o bloqueio.'}
         </div>
       )}
@@ -357,7 +357,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           <p style={{ fontSize: '0.95rem', background: 'rgba(255,255,255,0.05)', padding: '16px 24px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
             Por favor, entre em contato com o administrador ou suporte técnico para regularizar a situação e restabelecer os serviços.
           </p>
-          <button 
+          <button
             onClick={signOut}
             style={{ marginTop: '40px', padding: '12px 24px', background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
           >

@@ -411,9 +411,42 @@ export default function Home() {
 
   const handlePrint = () => {
     if (!cardRef.current) return;
-    const w = window.open('', '_blank', 'width=500,height=350');
+    const w = window.open('', '_blank', 'width=520,height=380');
     if (!w) return;
-    w.document.write(`<html><head><title>Carteirinha</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f0f0f0;font-family:'Inter',sans-serif}@media print{body{background:#fff}}</style></head><body>${cardRef.current.outerHTML}<script>setTimeout(()=>window.print(),300)</script></body></html>`);
+
+    // Captura o HTML da carteirinha e garante que o background-image seja preservado
+    const cardHtml = cardRef.current.outerHTML;
+
+    // CSS com print-color-adjust para forçar impressão de backgrounds e imagens
+    const printStyles = `
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+      body {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: #f0f0f0;
+        font-family: 'Inter', sans-serif;
+      }
+      @media print {
+        body {
+          background: #fff !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        @page {
+          size: 420px 265px;
+          margin: 0;
+        }
+      }
+    `;
+
+    w.document.write(`<!DOCTYPE html><html><head><title>Carteirinha</title><style>${printStyles}</style></head><body>${cardHtml}<script>window.onload = function(){ setTimeout(function(){ window.print(); }, 500); };<\/script></body></html>`);
     w.document.close();
   };
 
