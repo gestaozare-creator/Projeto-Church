@@ -437,8 +437,15 @@ export default function ContasPagar() {
     return localTransactions.filter(t => {
       if (t.type !== 'despesa') return false;
       if (church !== 'ALL' && t.churchId !== church) return false;
-      if (startDate && t.date < startDate) return false;
-      if (endDate && t.date > endDate) return false;
+      let refDate = t.date;
+      if (t.status === 'confirmado' && t.paidDate) {
+        refDate = t.paidDate;
+      } else if (t.dueDate) {
+        refDate = t.dueDate;
+      }
+
+      if (startDate && refDate < startDate) return false;
+      if (endDate && refDate > endDate) return false;
       
       if (cultoFilter !== 'ALL') {
         const desc = t.description.toLowerCase();
@@ -790,7 +797,15 @@ export default function ContasPagar() {
                   const isConfirmed = t.status === 'confirmado';
                   const isLate = t.status === 'vencido' || (t.dueDate && getDaysDiff(t.dueDate) < 0 && !isConfirmed);
                   const statusKey = isConfirmed ? 'confirmado' : isLate ? 'atrasado' : 'pendente';
-                  const [y, m, d] = t.date.split('-');
+                  
+                  let refDate = t.date;
+                  if (t.status === 'confirmado' && t.paidDate) {
+                    refDate = t.paidDate;
+                  } else if (t.dueDate) {
+                    refDate = t.dueDate;
+                  }
+
+                  const [y, m, d] = refDate.split('-');
                   if (!acc[statusKey]) acc[statusKey] = {};
                   if (!acc[statusKey][y]) acc[statusKey][y] = {};
                   if (!acc[statusKey][y][m]) acc[statusKey][y][m] = {};
