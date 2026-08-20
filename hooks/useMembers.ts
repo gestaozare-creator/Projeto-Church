@@ -25,26 +25,50 @@ export function useMembers(churchId?: string, churchIds?: string[]) {
         }
 
         let allData: any[] = [];
-        let page = 0;
         const pageSize = 1000;
 
-        while (true) {
-          let query = supabase.from('members').select('*');
+        // 1. Descobrir o total de registros (Count query)
+        let countQuery = supabase.from('members').select('id', { count: 'exact', head: true });
+        
+        if (churchId) {
+          countQuery = countQuery.eq('church_id', churchId);
+        } else if (churchIds && churchIds.length > 0) {
+          countQuery = countQuery.in('church_id', churchIds);
+        }
 
-          if (churchId) {
-            // Escopo de uma única igreja
-            query = query.eq('church_id', churchId);
-          } else if (churchIds && churchIds.length > 0) {
-            // Escopo de múltiplas igrejas da mesma rede
-            query = query.in('church_id', churchIds);
+        const { count, error: countError } = await countQuery;
+        if (countError) throw countError;
+
+        if (count && count > 0) {
+          // 2. Calcular total de páginas
+          const totalPages = Math.ceil(count / pageSize);
+          const pagePromises = [];
+
+          // Colunas exatas para economizar payload da rede
+          const selectFields = 'id, church_id, name, phone, email, address, state, function, ministry, status, integration_date, created_at, birth_date, photo_url, culto, horario, marital_status, employment_status, profession, is_baptized, baptism_date, card_validity';
+
+          // 3. Disparar requests paralelos
+          for (let page = 0; page < totalPages; page++) {
+            let query = supabase.from('members').select(selectFields);
+
+            if (churchId) {
+              query = query.eq('church_id', churchId);
+            } else if (churchIds && churchIds.length > 0) {
+              query = query.in('church_id', churchIds);
+            }
+
+            pagePromises.push(query.range(page * pageSize, (page + 1) * pageSize - 1));
           }
 
-          const { data, error: membersError } = await query.range(page * pageSize, (page + 1) * pageSize - 1);
-          if (membersError) throw membersError;
-          if (!data || data.length === 0) break;
-          allData = [...allData, ...data];
-          if (data.length < pageSize) break;
-          page++;
+          // 4. Esperar todos os requests terminarem de uma vez
+          const results = await Promise.all(pagePromises);
+          
+          for (const res of results) {
+            if (res.error) throw res.error;
+            if (res.data) {
+              allData = allData.concat(res.data);
+            }
+          }
         }
 
         if (allData.length > 0) {
