@@ -531,7 +531,7 @@ export default function Home() {
           <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.8rem', opacity: 0.4 }}>🔍</span>
           <input type="text" placeholder="Buscar..." className="search-input glass-input" style={{ width: '100%', padding: '8px 8px 8px 30px', fontSize: '0.82rem' }} value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        {(canSeeAllChurches || isPastorRegional) ? (
+        {(!activeChurchId && (canSeeAllChurches || isPastorRegional)) ? (
           <select className="filter-select" style={{ padding: '8px', fontSize: '0.8rem', minWidth: '140px' }} value={church} onChange={e => setChurch(e.target.value)}>
             <option value="ALL">⛪ Todas as Igrejas da Rede</option>
             {scopedChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -609,7 +609,7 @@ export default function Home() {
         <div className="responsive-grid-3 kanban-board">
           {/* PENDENTES */}
           <div className="glass kanban-col">
-            <ColHead color="#f39c12" title="Aguardando" count={pendentes.length} />
+            <ColHead color="#f39c12" title="Aguardando" count={pendentesFull.length} />
             <div className="scroll-container" style={{ flex: 1, paddingRight: '4px' }}>
               {pendentes.length > 0 ? pendentes.map(m => <Row key={m.id} member={m} type="pendente" />) : (
                 <div style={{ textAlign: 'center', padding: '25px 8px', color: 'var(--text-secondary)', fontSize: '0.8rem' }}><div style={{ fontSize: '1.3rem', marginBottom: '6px', opacity: 0.4 }}>✅</div>Nenhum pendente</div>
@@ -619,7 +619,7 @@ export default function Home() {
 
           {/* ATIVOS */}
           <div className="glass kanban-col">
-            <ColHead color="#2ecc71" title="Ativos" count={ativos.length} />
+            <ColHead color="#2ecc71" title="Ativos" count={ativosFull.length} />
             <div className="scroll-container" style={{ flex: 1, paddingRight: '4px' }}>
               {ativos.length > 0 ? ativos.map(m => <Row key={m.id} member={m} type="ativo" />) : (
                 <div style={{ textAlign: 'center', padding: '25px 8px', color: 'var(--text-secondary)', fontSize: '0.8rem' }}><div style={{ fontSize: '1.3rem', marginBottom: '6px', opacity: 0.4 }}>👥</div>Nenhum ativo</div>
@@ -629,7 +629,7 @@ export default function Home() {
 
           {/* INATIVOS */}
           <div className="glass kanban-col">
-            <ColHead color="#95a5a6" title="Inativos" count={inativos.length} />
+            <ColHead color="#95a5a6" title="Inativos" count={inativosFull.length} />
             <div className="scroll-container" style={{ flex: 1, paddingRight: '4px' }}>
               {inativos.length > 0 ? inativos.map(m => <Row key={m.id} member={m} type="inativo" />) : (
                 <div style={{ textAlign: 'center', padding: '25px 8px', color: 'var(--text-secondary)', fontSize: '0.8rem' }}><div style={{ fontSize: '1.3rem', marginBottom: '6px', opacity: 0.4 }}>😴</div>Nenhum inativo</div>
