@@ -402,16 +402,33 @@ export default function DashboardSecretariaPage() {
         );
       }
 
-      // Carregar membros do Supabase com paginação
+      // Carregar membros do Supabase paralelamente e apenas os campos necessários
       let allMembersDb: any[] = [];
-      let page = 0;
       const pageSize = 1000;
-      while (true) {
-        const { data: pageData } = await supabase.from("members").select("*").range(page * pageSize, (page + 1) * pageSize - 1);
-        if (!pageData || pageData.length === 0) break;
-        allMembersDb = [...allMembersDb, ...pageData];
-        if (pageData.length < pageSize) break;
-        page++;
+      const selectFields = 'id, church_id, name, status, ministry, function, culto, horario, integration_date, created_at, employment_status, profession, is_baptized, baptism_date';
+      
+      const churchIds = churchesDb?.map((c: any) => c.id) || [];
+      
+      if (churchIds.length > 0) {
+        let countQuery = supabase.from('members').select('id', { count: 'exact', head: true });
+        countQuery = countQuery.in('church_id', churchIds);
+        
+        const { count } = await countQuery;
+        
+        if (count && count > 0) {
+          const totalPages = Math.ceil(count / pageSize);
+          const pagePromises = [];
+          
+          for (let page = 0; page < totalPages; page++) {
+            let query = supabase.from('members').select(selectFields).in('church_id', churchIds);
+            pagePromises.push(query.range(page * pageSize, (page + 1) * pageSize - 1));
+          }
+          
+          const results = await Promise.all(pagePromises);
+          for (const res of results) {
+            if (res.data) allMembersDb = allMembersDb.concat(res.data);
+          }
+        }
       }
       const membersDb = allMembersDb;
 
@@ -813,7 +830,7 @@ export default function DashboardSecretariaPage() {
           marginBottom: "12px",
         }}
       >
-        {(canSeeAllChurches || isPastorRegional) && (
+        {(!activeChurchId && (canSeeAllChurches || isPastorRegional)) ? (
           <div style={{ flex: 1.5, minWidth: "150px" }}>
             <label
               className="input-label"
@@ -835,7 +852,19 @@ export default function DashboardSecretariaPage() {
               ))}
             </select>
           </div>
-        )}
+        ) : (canSeeAllChurches || isPastorRegional || activeChurchId) ? (
+          <div style={{ flex: 1.5, minWidth: "150px" }}>
+            <label
+              className="input-label"
+              style={{ marginBottom: "5px", display: "block" }}
+            >
+              Igreja
+            </label>
+            <div className="search-input glass-input" style={{ width: "100%", padding: "9px 12px", opacity: 0.8, pointerEvents: 'none' }}>
+              {dbChurches.find(c => c.id === (activeChurchId || church))?.name || 'Igreja Local'}
+            </div>
+          </div>
+        ) : null}
         <div style={{ flex: 1.2, minWidth: "130px" }}>
           <label
             className="input-label"
