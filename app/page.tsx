@@ -27,18 +27,20 @@ const getFunctionColor = (func?: string, cardConfig?: any) => {
 export default function Home() {
   const { currentUser, loading, canSeeAllChurches, isPastorRegional, activeChurchId, activeMinistryId } = useAuth();
   const [search, setSearch] = useState('');
-  const [church, setChurch] = useState(activeChurchId ? activeChurchId : ((canSeeAllChurches || isPastorRegional) ? 'ALL' : currentUser?.churchId || ''));
+  const [church, setChurch] = useState(activeChurchId ? activeChurchId : (currentUser?.churchId || ''));
 
   // SEGURANÇA: useChurches filtra por ministryId no banco — nunca carrega igrejas de outras redes
   const { churches: dbChurches, loading: churchesLoading } = useChurches(activeMinistryId);
 
-
-
   // churchIds da rede ativa — para filtro de membros no banco
   const scopedChurchIds = useMemo(() => dbChurches.map(c => c.id), [dbChurches]);
 
-  // SEGURANÇA: useMembers usa churchIds da rede ativa, filtra no banco
-  const { members: allMembers, loading: membersLoading, setMembers } = useMembers(undefined, scopedChurchIds);
+  // SEGURANÇA: Se church for 'ALL', usa todos os IDs da rede. Se for uma igreja, usa apenas ela.
+  // Isso evita baixar milhares de membros da rede toda por padrão.
+  const { members: allMembers, loading: membersLoading, setMembers } = useMembers(
+    church === 'ALL' ? undefined : church, 
+    church === 'ALL' ? scopedChurchIds : undefined
+  );
 
   // Igrejas da rede (já chegam filtradas do banco via useChurches)
   const scopedChurches = dbChurches;
@@ -46,12 +48,10 @@ export default function Home() {
   useEffect(() => {
     if (activeChurchId) {
       setChurch(activeChurchId);
-    } else if (scopedChurches.length > 0) {
-      if (church === 'ALL' || !scopedChurches.some(c => c.id === church)) {
-        setChurch('ALL');
-      }
+    } else if (currentUser?.churchId && !church) {
+      setChurch(currentUser.churchId);
     }
-  }, [activeChurchId, scopedChurches]);
+  }, [activeChurchId, currentUser, church]);
 
   // Membros filtrados — dados já chegam do banco somente da rede ativa
   const members = useMemo(() => {
