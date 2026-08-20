@@ -135,28 +135,37 @@ export default function Visitantes() {
       const targetChurchIds = activeChurchId ? [activeChurchId] : networkChurchIds;
 
       let allData: any[] = [];
-      let page = 0;
       const pageSize = 1000;
-      
-      while (true) {
-        const { data, error } = await supabase
+      const selectFields = 'id, church_id, name, phone, email, state, ministry, address, function, status, culto, horario, integration_date, created_at';
+
+      if (targetChurchIds.length > 0) {
+        const countQuery = supabase
           .from('members')
-          .select('*')
+          .select('id', { count: 'exact', head: true })
           .in('function', ['Visitante (Kids)', 'Visitante', 'Ainda não definida'])
-          .in('church_id', targetChurchIds)
-          .range(page * pageSize, (page + 1) * pageSize - 1);
-        
-        if (error || !data || data.length === 0) {
-          break;
+          .in('church_id', targetChurchIds);
+          
+        const { count } = await countQuery;
+
+        if (count && count > 0) {
+          const totalPages = Math.ceil(count / pageSize);
+          const pagePromises = [];
+
+          for (let page = 0; page < totalPages; page++) {
+            let query = supabase
+              .from('members')
+              .select(selectFields)
+              .in('function', ['Visitante (Kids)', 'Visitante', 'Ainda não definida'])
+              .in('church_id', targetChurchIds)
+              .range(page * pageSize, (page + 1) * pageSize - 1);
+            pagePromises.push(query);
+          }
+
+          const results = await Promise.all(pagePromises);
+          for (const res of results) {
+            if (res.data) allData = allData.concat(res.data);
+          }
         }
-        
-        allData = [...allData, ...data];
-        
-        if (data.length < pageSize) {
-          break;
-        }
-        
-        page++;
       }
       
       if (allData.length > 0) {
@@ -465,14 +474,14 @@ export default function Visitantes() {
 
       <div className={`filters-container ${showMobileFilters ? 'mobile-visible' : ''} glass`} style={{ padding: '12px 14px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
         {/* Igreja */}
-        {(canSeeAllChurches || isPastorRegional) ? (
+        {(!activeChurchId && (canSeeAllChurches || isPastorRegional)) ? (
           <select className="filter-select" style={{ padding:'7px 8px', fontSize:'0.8rem', minWidth:'140px' }} value={churchF} onChange={e => setChurchF(e.target.value)}>
             <option value="all">⛪ Todas as Igrejas</option>
             {dbChurches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         ) : (
           <div className="filter-select" style={{ padding:'7px 8px', fontSize:'0.8rem', minWidth:'140px', opacity: 0.8, pointerEvents: 'none', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
-            {dbChurches.find(c => c.id === churchF)?.name || 'Igreja Local'}
+            {dbChurches.find(c => c.id === (activeChurchId || churchF))?.name || 'Igreja Local'}
           </div>
         )}
         

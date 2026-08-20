@@ -123,7 +123,7 @@ export default function AniversariantesPage() {
           </h1>
         </div>
 
-        {(canSeeAllChurches || isPastorRegional) && (
+        {(!activeChurchId && (canSeeAllChurches || isPastorRegional)) ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Filtro de Igreja:</span>
             <select
@@ -138,7 +138,14 @@ export default function AniversariantesPage() {
               ))}
             </select>
           </div>
-        )}
+        ) : (activeChurchId || canSeeAllChurches || isPastorRegional) ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Filtro de Igreja:</span>
+            <div className="glass-input" style={{ padding: '8px 12px', minWidth: '200px', opacity: 0.8, pointerEvents: 'none', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+              {dbChurches.find(c => c.id === (activeChurchId || churchF))?.name || 'Igreja Local'}
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
