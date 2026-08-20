@@ -207,9 +207,16 @@ export default function Home() {
     return <VendasPage />;
   }
 
-  const pendentes = filtered.filter(m => m.status === 'aguardando_aprovacao');
-  const ativos = filtered.filter(m => m.status === 'ativo');
-  const inativos = filtered.filter(m => m.status === 'inativo');
+  // LIMITADOR DE RENDERIZAÇÃO: Evita que redes gigantes travem o navegador
+  const MAX_RENDER = 200;
+  
+  const pendentesFull = filtered.filter(m => m.status === 'aguardando_aprovacao');
+  const ativosFull = filtered.filter(m => m.status === 'ativo');
+  const inativosFull = filtered.filter(m => m.status === 'inativo');
+
+  const pendentes = pendentesFull.slice(0, MAX_RENDER);
+  const ativos = ativosFull.slice(0, MAX_RENDER);
+  const inativos = inativosFull.slice(0, MAX_RENDER);
 
   const changeStatus = async (id: string, ns: 'ativo' | 'inativo' | 'visitante' | 'em_conversao' | 'aguardando_aprovacao') => {
     if (ns === 'ativo') {
