@@ -606,14 +606,14 @@ export default function ContasPagar() {
       </div>
 
       <div className={`filters-container ${showMobileFilters ? 'mobile-visible' : ''} glass`} style={{ padding: '12px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '8px' }}>
-        {canSeeAllChurches ? (
+        {(!activeChurchId && canSeeAllChurches) ? (
           <select value={church} onChange={e => setChurch(e.target.value)} className="search-input glass-input" style={{ padding: '6px 12px' }}>
             <option value="ALL">Todas as Igrejas</option>
             {churches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         ) : (
           <div className="search-input glass-input" style={{ padding: '6px 12px', fontSize: '0.8rem', opacity: 0.8, pointerEvents: 'none' }}>
-            {churches.find(c => c.id === church)?.name || 'Igreja Local'}
+            {churches.find(c => c.id === (activeChurchId || church))?.name || 'Igreja Local'}
           </div>
         )}
           <select value={cultoFilter} onChange={e => setCultoFilter(e.target.value)} className="search-input glass-input" style={{ padding: '6px 12px' }}>
