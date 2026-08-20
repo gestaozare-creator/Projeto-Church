@@ -414,8 +414,24 @@ export default function ContasReceber() {
         refDate = t.dueDate;
       }
 
-      if (startDate && refDate < startDate) return false;
-      if (endDate && refDate > endDate) return false;
+      let actualStartDate = startDate;
+      let actualEndDate = endDate;
+
+      if (startDate && !endDate) {
+        const [y, m] = startDate.split('-');
+        if (y && m) {
+          const lastDay = new Date(Number(y), Number(m), 0).getDate();
+          actualEndDate = `${y}-${m}-${lastDay}`;
+        }
+      } else if (!startDate && endDate) {
+        const [y, m] = endDate.split('-');
+        if (y && m) {
+          actualStartDate = `${y}-${m}-01`;
+        }
+      }
+
+      if (actualStartDate && refDate < actualStartDate) return false;
+      if (actualEndDate && refDate > actualEndDate) return false;
       
       if (cultoFilter !== 'ALL') {
         const desc = t.description.toLowerCase();
