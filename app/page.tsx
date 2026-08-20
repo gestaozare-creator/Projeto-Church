@@ -48,10 +48,14 @@ export default function Home() {
   useEffect(() => {
     if (activeChurchId) {
       setChurch(activeChurchId);
-    } else if (currentUser?.churchId && !church) {
-      setChurch(currentUser.churchId);
+    } else if (!church) {
+      if (currentUser?.churchId) {
+        setChurch(currentUser.churchId);
+      } else if (scopedChurches && scopedChurches.length > 0) {
+        setChurch(scopedChurches[0].id);
+      }
     }
-  }, [activeChurchId, currentUser, church]);
+  }, [activeChurchId, currentUser, church, scopedChurches]);
 
   // Membros filtrados — dados já chegam do banco somente da rede ativa
   const members = useMemo(() => {
