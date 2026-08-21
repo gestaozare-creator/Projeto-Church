@@ -302,9 +302,24 @@ export default function Home() {
     if (sel?.id === id) setSel(p => p ? { ...p, status: ns } : null);
   };
 
-  const fmt = (d?: string) => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
-  const isExp = (d?: string) => { if (!d) return false; const e = new Date(d); e.setFullYear(e.getFullYear() + 2); return e < new Date(); };
-  const calcExp = (d?: string) => { if (!d) return '—'; const e = new Date(d); e.setFullYear(e.getFullYear() + 2); return e.toLocaleDateString('pt-BR'); };
+  const fmt = (d?: string) => {
+    if (!d) return '—';
+    const parts = d.split('T')[0].split('-');
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    return new Date(d).toLocaleDateString('pt-BR');
+  };
+  const isExp = (d?: string) => { 
+    if (!d) return false; 
+    const e = new Date(d.includes('T') ? d : d + 'T12:00:00'); 
+    e.setFullYear(e.getFullYear() + 2); 
+    return e < new Date(); 
+  };
+  const calcExp = (d?: string) => { 
+    if (!d) return '—'; 
+    const parts = d.split('T')[0].split('-');
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parseInt(parts[0]) + 2}`;
+    const e = new Date(d); e.setFullYear(e.getFullYear() + 2); return e.toLocaleDateString('pt-BR'); 
+  };
 
   const openEdit = (m: Member) => {
     setEditForm({
