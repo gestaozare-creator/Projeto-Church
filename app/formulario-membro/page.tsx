@@ -269,12 +269,28 @@ export default function FormularioMembro() {
   
   let themeColor = '#1e3a5f';
   let themeColorLight = '#0f172a';
+  
+  let formConfig: any = {
+    addressRequired: false,
+    birthDateRequired: true,
+    maritalStatusRequired: true,
+    isBaptizedRequired: true,
+    employmentStatusRequired: false,
+    professionRequired: false
+  };
+
   try {
-    if (activeChurch?.config) {
-      const conf = typeof activeChurch.config === 'string' ? JSON.parse(activeChurch.config) : activeChurch.config;
-      if (conf.theme_color) {
-        themeColor = conf.theme_color;
-        themeColorLight = conf.theme_color + 'dd';
+    if (activeChurch) {
+      const hqChurch = churches.find((c: any) => c.ministry_id === activeChurch.ministry_id && c.is_headquarters) || activeChurch;
+      if (hqChurch?.config) {
+        const conf = typeof hqChurch.config === 'string' ? JSON.parse(hqChurch.config) : hqChurch.config;
+        if (conf.theme_color) {
+          themeColor = conf.theme_color;
+          themeColorLight = conf.theme_color + 'dd';
+        }
+        if (conf.formConfig) {
+          formConfig = { ...formConfig, ...conf.formConfig };
+        }
       }
     }
   } catch(e) {}
@@ -345,13 +361,13 @@ export default function FormularioMembro() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
               <div style={{ flex: 1 }}>
-                <label style={labelStyle}>Data de Nascimento *</label>
-                <MaskedDateInput name="birth_date" value={form.birth_date} onChange={onChange} style={fieldStyle} required={true} />
+                <label style={labelStyle}>Data de Nascimento {formConfig.birthDateRequired ? '*' : ''}</label>
+                <MaskedDateInput name="birth_date" value={form.birth_date} onChange={onChange} style={fieldStyle} required={formConfig.birthDateRequired} />
               </div>
               
               <div style={{ flex: 1 }}>
-                <label style={labelStyle}>Estado Civil *</label>
-                <select name="marital_status" value={form.marital_status} onChange={onChange} style={fieldStyle} required>
+                <label style={labelStyle}>Estado Civil {formConfig.maritalStatusRequired ? '*' : ''}</label>
+                <select name="marital_status" value={form.marital_status} onChange={onChange} style={fieldStyle} required={formConfig.maritalStatusRequired}>
                   <option value="">Selecione...</option>
                   <option value="Casado(a)">Casado(a)</option>
                   <option value="Solteiro(a)">Solteiro(a)</option>
@@ -364,8 +380,8 @@ export default function FormularioMembro() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
               <div style={{ flex: 1 }}>
-                <label style={labelStyle}>É Batizado(a) nas Águas? *</label>
-                <select name="is_baptized" value={form.is_baptized} onChange={onChange} style={fieldStyle} required>
+                <label style={labelStyle}>É Batizado(a) nas Águas? {formConfig.isBaptizedRequired ? '*' : ''}</label>
+                <select name="is_baptized" value={form.is_baptized} onChange={onChange} style={fieldStyle} required={formConfig.isBaptizedRequired}>
                   <option value="">Selecione...</option>
                   <option value="Sim">Sim</option>
                   <option value="Não">Não</option>
@@ -374,16 +390,16 @@ export default function FormularioMembro() {
 
               {form.is_baptized === 'Sim' && (
                 <div style={{ flex: 1 }}>
-                  <label style={labelStyle}>Data do Batismo *</label>
-                  <MaskedDateInput name="baptism_date" value={form.baptism_date} onChange={onChange} style={fieldStyle} required={true} />
+                  <label style={labelStyle}>Data do Batismo {formConfig.isBaptizedRequired ? '*' : ''}</label>
+                  <MaskedDateInput name="baptism_date" value={form.baptism_date} onChange={onChange} style={fieldStyle} required={formConfig.isBaptizedRequired} />
                 </div>
               )}
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
               <div style={{ flex: 1 }}>
-                <label style={labelStyle}>Situação Profissional</label>
-                <select name="employment_status" value={form.employment_status} onChange={onChange} style={fieldStyle}>
+                <label style={labelStyle}>Situação Profissional {formConfig.employmentStatusRequired ? '*' : ''}</label>
+                <select name="employment_status" value={form.employment_status} onChange={onChange} style={fieldStyle} required={formConfig.employmentStatusRequired}>
                   <option value="">Selecione...</option>
                   <option value="CLT">Assalariado (CLT)</option>
                   <option value="Autônomo">Autônomo</option>
@@ -395,8 +411,8 @@ export default function FormularioMembro() {
               </div>
 
               <div style={{ flex: 1 }}>
-                <label style={labelStyle}>Profissão</label>
-                <select name="profession" value={form.profession} onChange={onChange} style={fieldStyle}>
+                <label style={labelStyle}>Profissão {formConfig.professionRequired ? '*' : ''}</label>
+                <select name="profession" value={form.profession} onChange={onChange} style={fieldStyle} required={formConfig.professionRequired}>
                   <option value="">Selecione...</option>
                   <option value="Administrador(a)">Administrador(a)</option>
                   <option value="Advogado(a)">Advogado(a)</option>
@@ -425,8 +441,8 @@ export default function FormularioMembro() {
             </div>
 
             <div>
-              <label style={labelStyle}>Endereço *</label>
-              <input type="text" name="address" value={form.address} onChange={onChange} placeholder="Bairro, Cidade" style={fieldStyle} required />
+              <label style={labelStyle}>Endereço {formConfig.addressRequired ? '*' : ''}</label>
+              <input type="text" name="address" value={form.address} onChange={onChange} placeholder="Bairro, Cidade" style={fieldStyle} required={formConfig.addressRequired} />
             </div>
 
             <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px 14px', fontSize: '0.85rem', color: '#475569' }}>

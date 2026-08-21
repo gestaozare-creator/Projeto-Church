@@ -557,6 +557,46 @@ export function ChurchFormModal({
                   <h4 style={{ margin: 0, color: '#e67e22', borderBottom: '1px solid rgba(230, 126, 34, 0.3)', paddingBottom: '12px', fontSize: '1.1rem' }}>🪪 Carteirinha de Membro</h4>
                   <ChurchIdCardTab formData={formData} setFormData={setFormData} />
                 </div>
+
+                {/* SESSÃO 10: FORMULÁRIO PÚBLICO */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'rgba(26, 188, 156, 0.05)', padding: '24px', borderRadius: '12px', border: '1px solid rgba(26, 188, 156, 0.1)' }}>
+                  <h4 style={{ margin: 0, color: '#1abc9c', borderBottom: '1px solid rgba(26, 188, 156, 0.3)', paddingBottom: '12px', fontSize: '1.1rem' }}>📝 Formulário Público</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Escolha quais campos devem ser marcados como <strong>Obrigatórios (*)</strong> no formulário online de membros.</p>
+                    {[
+                      { key: 'addressRequired', label: 'Endereço Completo', default: false },
+                      { key: 'birthDateRequired', label: 'Data de Nascimento', default: true },
+                      { key: 'maritalStatusRequired', label: 'Estado Civil', default: true },
+                      { key: 'isBaptizedRequired', label: 'Já é Batizado / Data do Batismo', default: true },
+                      { key: 'employmentStatusRequired', label: 'Situação Profissional', default: false },
+                      { key: 'professionRequired', label: 'Profissão', default: false }
+                    ].map(field => {
+                      // Se não existir a chave ainda no JSON, usa o padrão
+                      const isRequired = formData.config?.formConfig !== undefined && formData.config?.formConfig[field.key] !== undefined 
+                        ? formData.config.formConfig[field.key] 
+                        : field.default;
+
+                      return (
+                        <label key={field.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', cursor: 'pointer' }}>
+                          <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>{field.label}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '0.75rem', color: isRequired ? '#1abc9c' : 'var(--text-secondary)' }}>{isRequired ? 'Obrigatório' : 'Opcional'}</span>
+                            <input 
+                              type="checkbox" 
+                              checked={isRequired} 
+                              onChange={e => {
+                                const newFormConfig = { ...(formData.config?.formConfig || {}) };
+                                newFormConfig[field.key] = e.target.checked;
+                                setFormData({ ...formData, config: { ...(formData.config || {}), formConfig: newFormConfig } });
+                              }} 
+                              style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                            />
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
               </>
             ) : (
               <div style={{ padding: '30px 20px', textAlign: 'center', background: 'rgba(46, 204, 113, 0.05)', borderRadius: '12px', border: '1px dashed rgba(46, 204, 113, 0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
