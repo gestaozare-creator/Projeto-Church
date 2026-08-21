@@ -564,6 +564,9 @@ export function ChurchFormModal({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Escolha quais campos devem ser marcados como <strong>Obrigatórios (*)</strong> no formulário online de membros.</p>
                     {[
+                      { key: 'photoRequired', label: 'Foto de Perfil (Para Carteirinha)', default: false },
+                      { key: 'phoneRequired', label: 'Telefone (WhatsApp)', default: true },
+                      { key: 'emailRequired', label: 'E-mail', default: false },
                       { key: 'addressRequired', label: 'Endereço Completo', default: false },
                       { key: 'birthDateRequired', label: 'Data de Nascimento', default: true },
                       { key: 'maritalStatusRequired', label: 'Estado Civil', default: true },

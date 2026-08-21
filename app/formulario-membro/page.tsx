@@ -271,6 +271,9 @@ export default function FormularioMembro() {
   let themeColorLight = '#0f172a';
   
   let formConfig: any = {
+    photoRequired: false,
+    phoneRequired: true,
+    emailRequired: false,
     addressRequired: false,
     birthDateRequired: true,
     maritalStatusRequired: true,
@@ -315,7 +318,7 @@ export default function FormularioMembro() {
             
             {/* INSTRUÇÕES E UPLOAD DA FOTO */}
             <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: '700', color: '#0f172a' }}>📷 Foto de Perfil (Para Carteirinha)</label>
+              <label style={{ fontSize: '0.85rem', fontWeight: '700', color: '#0f172a' }}>📷 Foto de Perfil (Para Carteirinha) {formConfig.photoRequired ? '*' : ''}</label>
               
               <ul style={{ fontSize: '0.75rem', color: '#64748b', margin: 0, paddingLeft: '20px', lineHeight: '1.4' }}>
                 <li>Tire uma foto bem iluminada do seu rosto.</li>
@@ -338,6 +341,7 @@ export default function FormularioMembro() {
                     accept="image/png, image/jpeg, image/jpg" 
                     onChange={handlePhotoChange} 
                     style={{ fontSize: '0.8rem', width: '100%' }} 
+                    required={formConfig.photoRequired}
                   />
                 </div>
               </div>
@@ -350,12 +354,12 @@ export default function FormularioMembro() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
               <div style={{ flex: 1 }}>
-                <label style={labelStyle}>Telefone (WhatsApp) *</label>
-                <input type="tel" name="phone" value={form.phone} onChange={onChange} placeholder="(00) 00000-0000" style={fieldStyle} required />
+                <label style={labelStyle}>Telefone (WhatsApp) {formConfig.phoneRequired ? '*' : ''}</label>
+                <input type="tel" name="phone" value={form.phone} onChange={onChange} placeholder="(00) 00000-0000" style={fieldStyle} required={formConfig.phoneRequired} />
               </div>
               <div style={{ flex: 1 }}>
-                <label style={labelStyle}>E-mail</label>
-                <input type="email" name="email" value={form.email} onChange={onChange} placeholder="seu@email.com" style={fieldStyle} />
+                <label style={labelStyle}>E-mail {formConfig.emailRequired ? '*' : ''}</label>
+                <input type="email" name="email" value={form.email} onChange={onChange} placeholder="seu@email.com" style={fieldStyle} required={formConfig.emailRequired} />
               </div>
             </div>
 
