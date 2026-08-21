@@ -24,6 +24,65 @@ const getFunctionColor = (func?: string, cardConfig?: any) => {
   return cardConfig?.primaryColor || '#cda136';
 };
 
+const MaskedDateInput = ({ name, value, onChange, required }: any) => {
+  const [displayValue, setDisplayValue] = useState('');
+  
+  useEffect(() => {
+    if (value && value.includes('-')) {
+       const parts = value.split('-');
+       if (parts.length === 3) {
+         setDisplayValue(`${parts[2]}/${parts[1]}/${parts[0]}`);
+       } else {
+         setDisplayValue(value);
+       }
+    } else {
+       setDisplayValue('');
+    }
+  }, [value]);
+
+  const handleDisplayChange = (e: any) => {
+    let raw = e.target.value.replace(/\D/g, '');
+    if (raw.length > 8) raw = raw.slice(0, 8);
+    let formatted = raw;
+    if (raw.length > 2) formatted = raw.slice(0, 2) + '/' + raw.slice(2);
+    if (raw.length > 4) formatted = formatted.slice(0, 5) + '/' + raw.slice(4);
+    
+    setDisplayValue(formatted);
+    
+    if (raw.length === 8) {
+       const d = raw.slice(0, 2);
+       const m = raw.slice(2, 4);
+       const y = raw.slice(4, 8);
+       onChange({ target: { name, value: `${y}-${m}-${d}` }});
+    } else if (raw.length === 0) {
+       onChange({ target: { name, value: '' }});
+    }
+  };
+
+  return (
+    <div style={{ position: 'relative', width: '100%' }}>
+      <input 
+        type="tel" 
+        placeholder="DD/MM/AAAA"
+        value={displayValue} 
+        onChange={handleDisplayChange} 
+        className="search-input glass-input" 
+        style={{ width: '100%', padding: '8px', paddingRight: '40px', boxSizing: 'border-box' }} 
+        required={required}
+        maxLength={10}
+      />
+      <input
+        type="date"
+        name={name}
+        value={value || ''}
+        onChange={onChange}
+        style={{ position: 'absolute', right: '0px', top: '0', opacity: 0, width: '40px', height: '100%', cursor: 'pointer', zIndex: 2 }}
+      />
+      <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: '1.1rem', zIndex: 1, opacity: 0.8 }}>📅</span>
+    </div>
+  );
+};
+
 export default function Home() {
   const { currentUser, loading, canSeeAllChurches, isPastorRegional, activeChurchId, activeMinistryId } = useAuth();
   const [search, setSearch] = useState('');
@@ -800,7 +859,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                  <div style={{ flex: 1 }}><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Data de Nascimento *</label><input type="date" name="birthDate" value={editForm.birthDate || ''} onChange={onChange} className="search-input glass-input" style={{ width: '100%', padding: '8px' }} required /></div>
+                  <div style={{ flex: 1 }}><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Data de Nascimento *</label><MaskedDateInput name="birthDate" value={editForm.birthDate || ''} onChange={onChange} required={true} /></div>
                   <div style={{ flex: 1 }}><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Estado Civil *</label>
                     <select name="maritalStatus" value={editForm.maritalStatus || ''} onChange={onChange} className="search-input glass-input" style={{ width: '100%', padding: '8px' }} required>
                       <option value="">Selecione...</option>
@@ -824,7 +883,7 @@ export default function Home() {
                   {editForm.isBaptized === 'Sim' && (
                     <div style={{ flex: 1 }}>
                       <label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Data do Batismo *</label>
-                      <input type="date" name="baptismDate" value={editForm.baptismDate || ''} onChange={onChange} className="search-input glass-input" style={{ width: '100%', padding: '8px' }} required />
+                      <MaskedDateInput name="baptismDate" value={editForm.baptismDate || ''} onChange={onChange} required={true} />
                     </div>
                   )}
                 </div>
@@ -903,7 +962,7 @@ export default function Home() {
                 </div>
                 <div><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Endereço</label><input type="text" name="address" value={editForm.address} onChange={onChange} className="search-input glass-input" style={{ width: '100%', padding: '8px' }} required /></div>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <div style={{ flex: 1 }}><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Data de Integração</label><input type="date" name="integrationDate" value={editForm.integrationDate} onChange={onChange} className="search-input glass-input" style={{ width: '100%', padding: '8px' }} /></div>
+                  <div style={{ flex: 1 }}><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Data de Integração</label><MaskedDateInput name="integrationDate" value={editForm.integrationDate || ''} onChange={onChange} required={false} /></div>
                   <div style={{ flex: 1 }}><label style={{ fontSize: '0.78rem', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>Validade da Carteirinha</label><input type="text" name="cardValidity" value={editForm.cardValidity || ''} onChange={onChange} placeholder="Ex: 12/2026" className="search-input glass-input" style={{ width: '100%', padding: '8px' }} /></div>
                 </div>
               </div>
