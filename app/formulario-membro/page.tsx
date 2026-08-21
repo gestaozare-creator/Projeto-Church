@@ -3,6 +3,64 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
+const MaskedDateInput = ({ name, value, onChange, required, style }: any) => {
+  const [displayValue, setDisplayValue] = useState('');
+  
+  useEffect(() => {
+    if (value && value.includes('-')) {
+       const parts = value.split('-');
+       if (parts.length === 3) {
+         setDisplayValue(`${parts[2]}/${parts[1]}/${parts[0]}`);
+       } else {
+         setDisplayValue(value);
+       }
+    } else {
+       setDisplayValue('');
+    }
+  }, [value]);
+
+  const handleDisplayChange = (e: any) => {
+    let raw = e.target.value.replace(/\D/g, '');
+    if (raw.length > 8) raw = raw.slice(0, 8);
+    let formatted = raw;
+    if (raw.length > 2) formatted = raw.slice(0, 2) + '/' + raw.slice(2);
+    if (raw.length > 4) formatted = formatted.slice(0, 5) + '/' + raw.slice(4);
+    
+    setDisplayValue(formatted);
+    
+    if (raw.length === 8) {
+       const d = raw.slice(0, 2);
+       const m = raw.slice(2, 4);
+       const y = raw.slice(4, 8);
+       onChange({ target: { name, value: `${y}-${m}-${d}` }});
+    } else if (raw.length === 0) {
+       onChange({ target: { name, value: '' }});
+    }
+  };
+
+  return (
+    <div style={{ position: 'relative', width: '100%' }}>
+      <input 
+        type="tel" 
+        placeholder="DD/MM/AAAA"
+        value={displayValue} 
+        onChange={handleDisplayChange} 
+        style={{ ...style, paddingRight: '40px', boxSizing: 'border-box' }} 
+        required={required}
+        maxLength={10}
+      />
+      <input
+        type="date"
+        name={name}
+        value={value || ''}
+        onChange={onChange}
+        style={{ position: 'absolute', right: '0px', top: '0', opacity: 0, width: '40px', height: '100%', cursor: 'pointer', zIndex: 2 }}
+      />
+      <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: '1.1rem', zIndex: 1, opacity: 0.8 }}>📅</span>
+    </div>
+  );
+};
+
 export default function FormularioMembro() {
   const [step, setStep] = useState<'form' | 'success'>('form');
   const [churches, setChurches] = useState<any[]>([]);
@@ -288,7 +346,7 @@ export default function FormularioMembro() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
               <div style={{ flex: 1 }}>
                 <label style={labelStyle}>Data de Nascimento *</label>
-                <input type="date" name="birth_date" value={form.birth_date} onChange={onChange} style={fieldStyle} required />
+                <MaskedDateInput name="birth_date" value={form.birth_date} onChange={onChange} style={fieldStyle} required={true} />
               </div>
               
               <div style={{ flex: 1 }}>
@@ -317,7 +375,7 @@ export default function FormularioMembro() {
               {form.is_baptized === 'Sim' && (
                 <div style={{ flex: 1 }}>
                   <label style={labelStyle}>Data do Batismo *</label>
-                  <input type="date" name="baptism_date" value={form.baptism_date} onChange={onChange} style={fieldStyle} required />
+                  <MaskedDateInput name="baptism_date" value={form.baptism_date} onChange={onChange} style={fieldStyle} required={true} />
                 </div>
               )}
             </div>
