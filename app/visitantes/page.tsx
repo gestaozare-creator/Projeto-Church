@@ -837,7 +837,11 @@ export default function Visitantes() {
       {/* CONVERT MODAL */}
       {showConvertModal && sel && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <form onSubmit={handleConvertSubmit} className="glass" style={{ padding: '24px', borderRadius: '16px', width: '100%', maxWidth: '440px', margin: '15px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <form onSubmit={handleConvertSubmit} className="glass" style={{ padding: '24px', borderRadius: '16px', width: '100%', maxWidth: '440px', margin: '15px', display: 'flex', flexDirection: 'column', gap: '12px' }} onKeyDown={(e) => {
+            if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'BUTTON' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
+              e.preventDefault();
+            }
+          }}>
             <h3 style={{ marginTop: 0, fontSize: '1.2rem', borderBottom: '1px solid var(--card-border)', paddingBottom: '10px', marginBottom: '4px' }}>➕ Novo Membro</h3>
             
             <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
@@ -904,7 +908,11 @@ export default function Visitantes() {
       {/* NEW VISITOR MODAL (Com a correção de Chave Estrangeira e Seleção de Igreja) */}
       {showNewModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <form onSubmit={handleNewSubmit} className="glass" style={{ padding: '24px', borderRadius: '16px', width: '100%', maxWidth: '440px', margin: '15px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <form onSubmit={handleNewSubmit} className="glass" style={{ padding: '24px', borderRadius: '16px', width: '100%', maxWidth: '440px', margin: '15px', display: 'flex', flexDirection: 'column', gap: '12px' }} onKeyDown={(e) => {
+            if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'BUTTON' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
+              e.preventDefault();
+            }
+          }}>
             <h3 style={{ marginTop: 0, fontSize: '1.2rem', borderBottom: '1px solid var(--card-border)', paddingBottom: '10px', marginBottom: '4px' }}>
               {newForm.id ? '✏️ Editar Visitante' : '➕ Adicionar Visitante'}
             </h3>

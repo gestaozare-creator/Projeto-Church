@@ -630,7 +630,7 @@ export default function Home() {
           <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="search-input glass-input" style={{ padding: '7px 8px', fontSize: '0.8rem', colorScheme: 'dark' }} />
         </div>
         <button className="modal-btn desktop-only-btn" style={{ margin: 0, padding: '8px 14px', fontSize: '0.8rem', backgroundColor: '#2ecc71' }} onClick={openCreate}>+ Novo</button>
-        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: 'auto' }}>Total: <strong style={{ color: 'var(--primary-light)' }}>{members.length}</strong></span>
+        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: 'auto' }}>Total: <strong style={{ color: 'var(--primary-light)' }}>{filtered.length}</strong></span>
       </div>
 
       {/* 3 COLUNAS KANBAN OU LISTA */}
@@ -646,7 +646,7 @@ export default function Home() {
                 </tr>
               </thead>
               <tbody>
-                {members.length > 0 ? members.map(m => (
+                {filtered.length > 0 ? filtered.slice(0, 600).map(m => (
                   <tr key={m.id} style={{ borderBottom: '1px solid var(--table-border)', cursor: 'pointer', transition: 'background 0.2s' }} onClick={() => setSel(m)} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                     <td data-label="Membro" style={{ padding: '12px 8px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -817,7 +817,11 @@ export default function Home() {
         <div className="modal-overlay" onClick={() => { setIsEditing(false); setIsCreating(false); setIsApproving(false); }}>
           <div className="modal-content" style={{ maxWidth: '520px', animation: 'slideUp 0.3s ease' }} onClick={e => e.stopPropagation()}>
             <button className="modal-close" onClick={() => { setIsEditing(false); setIsCreating(false); setIsApproving(false); }}>&times;</button>
-            <form onSubmit={handleSave} className="modal-body">
+            <form onSubmit={handleSave} className="modal-body" onKeyDown={(e) => {
+              if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'BUTTON' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
+                e.preventDefault();
+              }
+            }}>
               <h3 style={{ borderBottom: '1px solid var(--table-border)', paddingBottom: '10px', marginBottom: '10px', color: 'var(--text-primary)' }}>
                 {isApproving ? '✅ Aprovar Membro' : isCreating ? '➕ Novo Membro' : '📝 Editar'}
               </h3>
