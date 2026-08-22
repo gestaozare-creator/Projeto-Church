@@ -6,6 +6,7 @@ import { Member, Church } from '@/types/database';
 import { useChurches } from '@/hooks/useChurches';
 import { useMembers } from '@/hooks/useMembers';
 import VendasPage from './vendas/page';
+import ImportMembersModal from '@/components/admin/ImportMembersModal';
 
 const getFunctionColor = (func?: string, cardConfig?: any) => {
   const f = (func || '').toLowerCase();
@@ -87,6 +88,7 @@ export default function Home() {
   const { currentUser, loading, canSeeAllChurches, isPastorRegional, activeChurchId, activeMinistryId } = useAuth();
   const [search, setSearch] = useState('');
   const [church, setChurch] = useState(activeChurchId ? activeChurchId : (currentUser?.churchId || ''));
+  const [showImportModal, setShowImportModal] = useState(false);
 
   // SEGURANÇA: useChurches filtra por ministryId no banco — nunca carrega igrejas de outras redes
   const { churches: dbChurches, loading: churchesLoading } = useChurches(activeMinistryId);
@@ -596,7 +598,10 @@ export default function Home() {
               📄 Lista
             </button>
           </div>
-          <button className="modal-btn mobile-only-btn" style={{ display: 'none', margin: 0, padding: '8px 14px', fontSize: '0.8rem', backgroundColor: '#2ecc71' }} onClick={openCreate}>+ Novo</button>
+          <div className="mobile-only-btn" style={{ display: 'none', gap: '8px' }}>
+            <button className="modal-btn" style={{ margin: 0, padding: '8px 14px', fontSize: '0.8rem', backgroundColor: 'var(--primary-light)' }} onClick={() => setShowImportModal(true)}>📥 Importar</button>
+            <button className="modal-btn" style={{ margin: 0, padding: '8px 14px', fontSize: '0.8rem', backgroundColor: '#2ecc71' }} onClick={openCreate}>+ Novo</button>
+          </div>
         </div>
       </div>
 
@@ -629,7 +634,10 @@ export default function Home() {
           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Até:</span>
           <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="search-input glass-input" style={{ padding: '7px 8px', fontSize: '0.8rem', colorScheme: 'dark' }} />
         </div>
-        <button className="modal-btn desktop-only-btn" style={{ margin: 0, padding: '8px 14px', fontSize: '0.8rem', backgroundColor: '#2ecc71' }} onClick={openCreate}>+ Novo</button>
+        <div className="desktop-only-btn" style={{ display: 'flex', gap: '8px' }}>
+          <button className="modal-btn" style={{ margin: 0, padding: '8px 14px', fontSize: '0.8rem', backgroundColor: 'var(--primary-light)' }} onClick={() => setShowImportModal(true)}>📥 Importar</button>
+          <button className="modal-btn" style={{ margin: 0, padding: '8px 14px', fontSize: '0.8rem', backgroundColor: '#2ecc71' }} onClick={openCreate}>+ Novo</button>
+        </div>
         <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: 'auto' }}>Total: <strong style={{ color: 'var(--primary-light)' }}>{filtered.length}</strong></span>
       </div>
 
@@ -1039,6 +1047,15 @@ export default function Home() {
             </div>
           </div>
         </div>
+      )}
+
+      {showImportModal && (
+        <ImportMembersModal
+          supabase={supabase}
+          activeChurchId={activeChurchId || church}
+          onClose={() => setShowImportModal(false)}
+          onSuccess={() => window.location.reload()}
+        />
       )}
     </div>
   );
